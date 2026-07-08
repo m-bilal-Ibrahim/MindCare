@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+/* ——— MindCare Global Styles ——— */
+
+:root {
+  --mc-cream: #F5F0E8;
+  --mc-dark: #1a1a1a;
+  --mc-orange: #f97316;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--mc-cream);
+  color: #1a1a1a;
+  line-height: 1.6;
+}
+
+/* Skip to main content (accessibility) */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  background: #1a1a1a;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 0 0 0.5rem 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  z-index: 9999;
+  transition: top 0.2s;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Focus ring — visible for keyboard users, hidden for mouse */
+:focus-visible {
+  outline: 2px solid #1a1a1a;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Smooth image loading */
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* Typography utilities */
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+/* Subtle scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* Selection colour */
+::selection {
+  background: #f97316;
+  color: #fff;
+}
