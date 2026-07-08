@@ -8,6 +8,7 @@ import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import Logo from '../components/common/Logo';
 import Button from '../components/common/Button';
 import { ROUTES, THERAPIST_LOGIN_TESTIMONIAL, THERAPIST_WAITING_ITEMS } from '../constants';
+import { MAX_LENGTHS } from '../utils/validation';
 import type { TherapistLoginPayload } from '../types';
 
 const TherapistLoginPage: React.FC = () => {
@@ -19,6 +20,7 @@ const TherapistLoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [attempts, setAttempts] = useState(0);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -28,16 +30,32 @@ const TherapistLoginPage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.identifier || !form.password) {
+
+    // Basic client-side UX guard only — the real rate limit,
+    // account lockout, and credential check MUST happen server-side.
+    if (attempts >= 5) {
+      setError('Too many attempts. Please wait a moment and try again, or reset your password.');
+      return;
+    }
+
+    const identifier = form.identifier.trim();
+    if (!identifier || !form.password) {
       setError('Please fill in all fields.');
       return;
     }
+    if (identifier.length > MAX_LENGTHS.email || form.password.length > MAX_LENGTHS.password) {
+      setError('One of the fields is too long.');
+      return;
+    }
+
     setLoading(true);
-    // TODO: wire to real auth service
+    setAttempts((prev) => prev + 1);
+    // TODO: wire to real auth service — send over HTTPS only, never log
+    // the password, and let the backend own rate limiting + lockout.
     window.setTimeout(() => {
       setLoading(false);
       // eslint-disable-next-line no-console
-      console.info('[MindCare] Therapist sign-in submitted:', form);
+      console.info('[MindCare] Therapist sign-in submitted for identifier:', identifier);
     }, 800);
   };
 
@@ -74,6 +92,8 @@ const TherapistLoginPage: React.FC = () => {
                 onChange={handleChange}
                 placeholder="tariq.mahmood@mindcare.pk"
                 autoComplete="username"
+                maxLength={MAX_LENGTHS.email}
+                spellCheck={false}
                 className="w-full px-4 py-3.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
               />
             </div>
@@ -95,6 +115,7 @@ const TherapistLoginPage: React.FC = () => {
                   value={form.password}
                   onChange={handleChange}
                   autoComplete="current-password"
+                  maxLength={MAX_LENGTHS.password}
                   className="w-full px-4 py-3.5 pr-12 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
                 />
                 <button
