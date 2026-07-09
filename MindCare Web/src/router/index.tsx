@@ -18,6 +18,9 @@ const ForNGOsPage = lazy(() => import('../pages/ForNGOsPage'));
 const ForTherapistsPage = lazy(() => import('../pages/ForTherapistsPage'));
 const TherapistLoginPage = lazy(() => import('../pages/TherapistLoginPage'));
 const TherapistRegisterPage = lazy(() => import('../pages/TherapistRegisterPage'));
+const AboutUsPage = lazy(() => import('../pages/AboutUsPage'));
+const HelpPage = lazy(() => import('../pages/HelpPage'));
+const PricingPage = lazy(() => import('../pages/PricingPage'));
 
 // ——— Full-screen loading fallback ———
 const PageLoader: React.FC = () => (
@@ -64,6 +67,15 @@ const AppRouter: React.FC = () => (
         {/* Screen: Therapist auth */}
         <Route path={ROUTES.THERAPIST_LOGIN} element={<TherapistLoginPage />} />
         <Route path={ROUTES.THERAPIST_REGISTER} element={<TherapistRegisterPage />} />
+
+        {/* Screen: About us */}
+        <Route path={ROUTES.ABOUT_US} element={<AboutUsPage />} />
+
+        {/* Screen: Help */}
+        <Route path={ROUTES.HELP} element={<HelpPage />} />
+
+        {/* Screen: Pricing */}
+        <Route path={ROUTES.PRICING} element={<PricingPage />} />
 
         {/* Catch-all → home */}
         <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />

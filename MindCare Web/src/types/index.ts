@@ -132,3 +132,38 @@ export interface TherapistCredentials {
   focusAreas: string[];
   consentBackgroundCheck: boolean;
 }
+
+// ——— About Us page ———
+export interface AboutValueCard {
+  id: string;
+  title: string;
+  description: string;
+}
+
+export interface AboutTimelineEntry {
+  id: string;
+  date: string;
+  description: string;
+  current?: boolean;
+}
+
+// ——— Help page ———
+export interface HelpCategory {
+  id: string;
+  icon: 'users' | 'calendar' | 'file-text' | 'activity' | 'code' | 'heart';
+  title: string;
+  articleCount: number;
+}
+
+export interface HelpTopQuestion {
+  id: string;
+  question: string;
+}
+
+// ——— Pricing page ———
+export interface PricingFeatureStrip {
+  id: string;
+  icon: 'heart' | 'shield' | 'code';
+  title: string;
+  description: string;
+}

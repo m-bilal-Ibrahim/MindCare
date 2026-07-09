@@ -12,6 +12,11 @@ import type {
   StoryEntry,
   NGOPartnerEntry,
   TherapistFeature,
+  AboutValueCard,
+  AboutTimelineEntry,
+  HelpCategory,
+  HelpTopQuestion,
+  PricingFeatureStrip,
 } from '../types';
 
 export const APP_NAME = 'MindCare';
@@ -23,9 +28,9 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'For therapists', href: '/for-therapists' },
   { label: 'For NGOs', href: '/for-ngos' },
   { label: 'Stories', href: '/stories' },
-  { label: 'Pricing', href: '#pricing' },
-  { label: 'About us', href: '#about' },
-  { label: 'Help', href: '#help' },
+  { label: 'Pricing', href: '/pricing' },
+  { label: 'About us', href: '/about' },
+  { label: 'Help', href: '/help' },
 ];
 
 // ——— Landing page stats ———
@@ -153,6 +158,9 @@ export const ROUTES = {
   FOR_THERAPISTS: '/for-therapists',
   THERAPIST_LOGIN: '/therapist/sign-in',
   THERAPIST_REGISTER: '/therapist/apply',
+  ABOUT_US: '/about',
+  HELP: '/help',
+  PRICING: '/pricing',
 } as const;
 
 // ——— Stories page ———
@@ -347,6 +355,85 @@ export const THERAPIST_FOCUS_AREAS = [
   'Identity',
   'Post-partum',
   'OCD',
+];
+
+// ——— About Us page ———
+export const ABOUT_INTRO =
+  "We started MindCare in 2024 after watching too many friends drift through three apps, two therapists, and zero continuity. The honest answer wasn't another app — it was a steady human, supported by good technology, with the dignity to outlast the bad weeks.";
+
+export const ABOUT_VALUES: AboutValueCard[] = [
+  { id: 'val-1', title: 'Slow over flashy', description: 'A year of quiet work beats a viral feature.' },
+  { id: 'val-2', title: 'Human at the center', description: 'AI assists. People decide.' },
+  { id: 'val-3', title: 'Privacy by default', description: 'Your data is yours. Always.' },
+  { id: 'val-4', title: 'Built where we live', description: 'In Urdu and English. With local NGOs.' },
+];
+
+export const ABOUT_TIMELINE: AboutTimelineEntry[] = [
+  { id: 'tl-1', date: '2024 · Mar', description: 'Maryam and Hassan write the manifesto on a napkin.' },
+  { id: 'tl-2', date: '2024 · Sep', description: '12 founding therapists. First 30 patients.' },
+  { id: 'tl-3', date: '2025 · Feb', description: 'Aida v1 ships — therapist-shaped AI co-pilot.' },
+  { id: 'tl-4', date: '2025 · Nov', description: 'MindBand launches. NGO partnerships expand.' },
+  { id: 'tl-5', date: '2026 · May', description: '12,400 people in active care. 184 verified therapists.', current: true },
+];
+
+// ——— Help page ———
+export const HELP_POPULAR_LINKS = ['Cancel subscription', 'Switch therapist', 'Refund policy', 'Pair MindBand'];
+
+export const HELP_CATEGORIES: HelpCategory[] = [
+  { id: 'cat-1', icon: 'users', title: 'Getting started', articleCount: 18 },
+  { id: 'cat-2', icon: 'calendar', title: 'Sessions & booking', articleCount: 24 },
+  { id: 'cat-3', icon: 'file-text', title: 'Billing & refunds', articleCount: 14 },
+  { id: 'cat-4', icon: 'activity', title: 'MindBand', articleCount: 11 },
+  { id: 'cat-5', icon: 'code', title: 'Aida & privacy', articleCount: 22 },
+  { id: 'cat-6', icon: 'heart', title: 'Community & circles', articleCount: 9 },
+];
+
+export const HELP_TOP_QUESTIONS: HelpTopQuestion[] = [
+  { id: 'q-1', question: 'How do I switch my therapist?' },
+  { id: 'q-2', question: 'When am I charged for the trial?' },
+  { id: 'q-3', question: 'Can MindCare diagnose me?' },
+  { id: 'q-4', question: 'Is my data shared with my employer or insurer?' },
+  { id: 'q-5', question: 'What if I miss a session?' },
+];
+
+export const HELP_CRISIS_PHONE = '0311-7786264';
+export const HELP_CRISIS_PHONE_TEL = 'tel:+923117786264';
+export const HELP_EMAIL = 'help@mindcare.pk';
+export const HELP_EMAIL_MAILTO = 'mailto:help@mindcare.pk';
+
+// ——— Pricing page ———
+export const PRICING_PLAN = {
+  price: 'Rs 6,500',
+  period: '/month',
+  trial: '7-day free trial · no card required',
+  features: [
+    'Weekly 50-minute session with a verified therapist',
+    'Aida co-pilot between sessions',
+    'Body, journal & peer circles — one app',
+    'SOS crisis routing, 24/7',
+    'Switch therapist any time, no fee',
+  ],
+};
+
+export const PRICING_FEATURE_STRIPS: PricingFeatureStrip[] = [
+  {
+    id: 'pf-1',
+    icon: 'heart',
+    title: "Can't afford?",
+    description: 'NGO scholarships cover up to 80%. Apply during signup.',
+  },
+  {
+    id: 'pf-2',
+    icon: 'shield',
+    title: 'Includes SOS',
+    description: '24/7 trained listener · NGO escalation when needed.',
+  },
+  {
+    id: 'pf-3',
+    icon: 'code',
+    title: 'No upsells',
+    description: 'No premium tier, no add-ons. One subscription does it all.',
+  },
 ];
 
 // ——— API base URL (swap to real endpoint) ———
