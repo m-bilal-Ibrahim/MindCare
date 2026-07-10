@@ -3,15 +3,19 @@
 // ============================================================
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import Logo from '../components/common/Logo';
 import Button from '../components/common/Button';
 import { ROUTES, THERAPIST_LOGIN_TESTIMONIAL, THERAPIST_WAITING_ITEMS } from '../constants';
+import { CONSOLE_ROUTES } from '../constants/therapistConsole';
 import { MAX_LENGTHS } from '../utils/validation';
+import { useTherapistAuth } from '../utils/authGuard';
 import type { TherapistLoginPayload } from '../types';
 
 const TherapistLoginPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { login } = useTherapistAuth();
   const [form, setForm] = useState<TherapistLoginPayload>({
     identifier: '',
     password: '',
@@ -54,8 +58,12 @@ const TherapistLoginPage: React.FC = () => {
     // the password, and let the backend own rate limiting + lockout.
     window.setTimeout(() => {
       setLoading(false);
-      // eslint-disable-next-line no-console
-      console.info('[MindCare] Therapist sign-in submitted for identifier:', identifier);
+      const success = login(identifier, form.password);
+      if (success) {
+        navigate(CONSOLE_ROUTES.TODAY, { replace: true });
+      } else {
+        setError('Sign-in failed. Please check your details and try again.');
+      }
     }, 800);
   };
 
