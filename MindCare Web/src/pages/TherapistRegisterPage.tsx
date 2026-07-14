@@ -14,6 +14,7 @@ import {
   THERAPIST_FOCUS_AREAS,
   THERAPIST_STATS,
 } from '../constants';
+import { validatePmdcLicense, validateRequiredText, sanitizeText } from '../utils/validation';
 import type { TherapistCredentials, TherapistRegisterStep } from '../types';
 
 const MIN_FOCUS_AREAS = 3;
@@ -33,6 +34,7 @@ const initialCredentials: TherapistCredentials = {
 const TherapistRegisterPage: React.FC = () => {
   const [activeStep, setActiveStep] = useState<TherapistRegisterStep>('credentials');
   const [form, setForm] = useState<TherapistCredentials>(initialCredentials);
+  const [fieldErrors, setFieldErrors] = useState<{ pmdcLicenseNumber?: string; degree?: string }>({});
   const [documents, setDocuments] = useState({
     pmdcLicense: { name: 'pmdc-44871.pdf', size: '482 KB' } as { name: string; size: string } | null,
     degreeCertificate: { name: 'msc-clinical-fjwu.pdf', size: '1.2 MB' } as { name: string; size: string } | null,
@@ -41,6 +43,22 @@ const TherapistRegisterPage: React.FC = () => {
   });
 
   const stepIndex = THERAPIST_ONBOARDING_STEPS.findIndex((s) => s.id === activeStep);
+
+  const validateCredentialsStep = (): boolean => {
+    const errors: typeof fieldErrors = {};
+    const licenseError = validatePmdcLicense(form.pmdcLicenseNumber);
+    if (licenseError) errors.pmdcLicenseNumber = licenseError;
+    const degreeError = validateRequiredText(form.degree, 'Degree');
+    if (degreeError) errors.degree = degreeError;
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleContinueToPractice = () => {
+    if (!validateCredentialsStep()) return;
+    setForm((prev) => ({ ...prev, degree: sanitizeText(prev.degree), university: sanitizeText(prev.university) }));
+    goToStep('practice');
+  };
 
   const toggleFocusArea = (area: string) => {
     setForm((prev) => {
@@ -56,6 +74,9 @@ const TherapistRegisterPage: React.FC = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+    if (name in fieldErrors) {
+      setFieldErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
   };
 
   const removeDocument = (key: keyof typeof documents) => {
@@ -158,15 +179,26 @@ const TherapistRegisterPage: React.FC = () => {
                         name="pmdcLicenseNumber"
                         value={form.pmdcLicenseNumber}
                         onChange={handleChange}
-                        className="w-full pl-4 pr-24 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 bg-gray-50"
+                        aria-invalid={!!fieldErrors.pmdcLicenseNumber}
+                        className={`w-full pl-4 pr-24 py-3 text-sm border rounded-xl focus:outline-none focus:ring-2 bg-gray-50 ${
+                          fieldErrors.pmdcLicenseNumber
+                            ? 'border-red-300 focus:ring-red-500'
+                            : 'border-gray-200 focus:ring-gray-900'
+                        }`}
                       />
-                      {form.pmdcVerified && (
+                      {form.pmdcVerified && !fieldErrors.pmdcLicenseNumber && (
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs font-semibold text-emerald-700">
                           <Check size={14} /> Verified
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-emerald-700 mt-1.5">Valid through Aug 2027 · pulled from PMDC.gov.pk</p>
+                    {fieldErrors.pmdcLicenseNumber ? (
+                      <p role="alert" className="text-xs text-red-600 mt-1.5">
+                        {fieldErrors.pmdcLicenseNumber}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-emerald-700 mt-1.5">Valid through Aug 2027 · pulled from PMDC.gov.pk</p>
+                    )}
                   </div>
 
                   <div>
@@ -196,8 +228,16 @@ const TherapistRegisterPage: React.FC = () => {
                       value={form.degree}
                       onChange={handleChange}
                       placeholder="MS Clinical Psychology"
-                      className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 bg-gray-50"
+                      aria-invalid={!!fieldErrors.degree}
+                      className={`w-full px-4 py-3 text-sm border rounded-xl focus:outline-none focus:ring-2 bg-gray-50 ${
+                        fieldErrors.degree ? 'border-red-300 focus:ring-red-500' : 'border-gray-200 focus:ring-gray-900'
+                      }`}
                     />
+                    {fieldErrors.degree && (
+                      <p role="alert" className="text-xs text-red-600 mt-1.5">
+                        {fieldErrors.degree}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">University</label>
@@ -310,7 +350,7 @@ const TherapistRegisterPage: React.FC = () => {
                       size="md"
                       className="flex-1 sm:flex-none"
                       disabled={!canContinue}
-                      onClick={() => goToStep('practice')}
+                      onClick={handleContinueToPractice}
                     >
                       Continue · Practice <ArrowRight size={14} />
                     </Button>

@@ -10,6 +10,7 @@ import Logo from '../components/common/Logo';
 import Button from '../components/common/Button';
 import { ROUTES } from '../constants';
 import { signUp } from '../services/api.service';
+import { validateRequiredText, validatePmdcLicense, validateEmail, sanitizeText, MAX_LENGTHS } from '../utils/validation';
 
 // ——— Dummy form state type ———
 interface ClinicianForm {
@@ -50,22 +51,60 @@ const ClinicianPage: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ClinicianForm, string>>>({});
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    if (fieldErrors[name as keyof ClinicianForm]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const errors: Partial<Record<keyof ClinicianForm, string>> = {};
+
+    const nameError = validateRequiredText(form.name, 'Full name');
+    if (nameError) errors.name = nameError;
+
+    const emailError = validateEmail(form.email);
+    if (emailError) errors.email = emailError;
+
+    const pmdcError = validatePmdcLicense(form.pmdc);
+    if (pmdcError) errors.pmdc = pmdcError;
+
+    if (!form.specialty) errors.specialty = 'Please select a specialty.';
+    if (!form.city) errors.city = 'Please select a city.';
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
+
+    if (!validateForm()) {
+      setError('Please fix the highlighted fields below.');
+      return;
+    }
+
+    setLoading(true);
+
+    const cleanForm: ClinicianForm = {
+      name: sanitizeText(form.name),
+      email: form.email.trim().toLowerCase(),
+      pmdc: sanitizeText(form.pmdc),
+      specialty: form.specialty,
+      city: form.city,
+    };
 
     // Dummy call — replace with real API
     const result = await signUp({
-      name: form.name,
-      email: form.email,
+      name: cleanForm.name,
+      email: cleanForm.email,
       password: 'temp-set-on-backend',
       role: 'clinician',
     });
@@ -76,7 +115,7 @@ const ClinicianPage: React.FC = () => {
       setError('Application failed. Please try again.');
     } else {
       setSubmitted(true);
-      console.info('[MindCare] Clinician application submitted', form);
+      console.info('[MindCare] Clinician application submitted', cleanForm);
     }
   };
 
@@ -170,11 +209,20 @@ const ClinicianPage: React.FC = () => {
                     type="text"
                     required
                     autoComplete="name"
+                    maxLength={MAX_LENGTHS.shortText}
                     value={form.name}
                     onChange={handleChange}
                     placeholder="Dr. Ayesha Khan"
-                    className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
+                    aria-invalid={!!fieldErrors.name}
+                    className={`w-full px-4 py-3 text-sm border rounded-xl focus:outline-none focus:ring-2 bg-white ${
+                      fieldErrors.name ? 'border-red-300 focus:ring-red-500' : 'border-gray-200 focus:ring-gray-900'
+                    }`}
                   />
+                  {fieldErrors.name && (
+                    <p role="alert" className="text-xs text-red-600 mt-1.5">
+                      {fieldErrors.name}
+                    </p>
+                  )}
                 </div>
 
                 {/* Email */}
@@ -188,11 +236,20 @@ const ClinicianPage: React.FC = () => {
                     type="email"
                     required
                     autoComplete="email"
+                    maxLength={MAX_LENGTHS.email}
                     value={form.email}
                     onChange={handleChange}
                     placeholder="ayesha@clinic.pk"
-                    className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
+                    aria-invalid={!!fieldErrors.email}
+                    className={`w-full px-4 py-3 text-sm border rounded-xl focus:outline-none focus:ring-2 bg-white ${
+                      fieldErrors.email ? 'border-red-300 focus:ring-red-500' : 'border-gray-200 focus:ring-gray-900'
+                    }`}
                   />
+                  {fieldErrors.email && (
+                    <p role="alert" className="text-xs text-red-600 mt-1.5">
+                      {fieldErrors.email}
+                    </p>
+                  )}
                 </div>
 
                 {/* PMDC number */}
@@ -205,11 +262,20 @@ const ClinicianPage: React.FC = () => {
                     name="pmdc"
                     type="text"
                     required
+                    maxLength={MAX_LENGTHS.shortText}
                     value={form.pmdc}
                     onChange={handleChange}
                     placeholder="PMDC-12345-P"
-                    className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
+                    aria-invalid={!!fieldErrors.pmdc}
+                    className={`w-full px-4 py-3 text-sm border rounded-xl focus:outline-none focus:ring-2 bg-white ${
+                      fieldErrors.pmdc ? 'border-red-300 focus:ring-red-500' : 'border-gray-200 focus:ring-gray-900'
+                    }`}
                   />
+                  {fieldErrors.pmdc && (
+                    <p role="alert" className="text-xs text-red-600 mt-1.5">
+                      {fieldErrors.pmdc}
+                    </p>
+                  )}
                 </div>
 
                 {/* Specialty */}
@@ -223,13 +289,21 @@ const ClinicianPage: React.FC = () => {
                     required
                     value={form.specialty}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
+                    aria-invalid={!!fieldErrors.specialty}
+                    className={`w-full px-4 py-3 text-sm border rounded-xl focus:outline-none focus:ring-2 bg-white ${
+                      fieldErrors.specialty ? 'border-red-300 focus:ring-red-500' : 'border-gray-200 focus:ring-gray-900'
+                    }`}
                   >
                     <option value="">Select specialty</option>
                     {SPECIALTIES.map((s) => (
                       <option key={s} value={s}>{s}</option>
                     ))}
                   </select>
+                  {fieldErrors.specialty && (
+                    <p role="alert" className="text-xs text-red-600 mt-1.5">
+                      {fieldErrors.specialty}
+                    </p>
+                  )}
                 </div>
 
                 {/* City */}
@@ -243,13 +317,21 @@ const ClinicianPage: React.FC = () => {
                     required
                     value={form.city}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
+                    aria-invalid={!!fieldErrors.city}
+                    className={`w-full px-4 py-3 text-sm border rounded-xl focus:outline-none focus:ring-2 bg-white ${
+                      fieldErrors.city ? 'border-red-300 focus:ring-red-500' : 'border-gray-200 focus:ring-gray-900'
+                    }`}
                   >
                     <option value="">Select city</option>
                     {CITIES.map((c) => (
                       <option key={c} value={c}>{c}</option>
                     ))}
                   </select>
+                  {fieldErrors.city && (
+                    <p role="alert" className="text-xs text-red-600 mt-1.5">
+                      {fieldErrors.city}
+                    </p>
+                  )}
                 </div>
 
                 {error && (

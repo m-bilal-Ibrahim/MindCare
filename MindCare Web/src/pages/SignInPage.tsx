@@ -9,6 +9,7 @@ import Logo from '../components/common/Logo';
 import Button from '../components/common/Button';
 import { ROUTES } from '../constants';
 import { signIn } from '../services/api.service';
+import { validateEmail, validatePassword, MAX_LENGTHS } from '../utils/validation';
 
 interface FormState {
   email: string;
@@ -31,16 +32,14 @@ const SignInPage: React.FC = () => {
     e.preventDefault();
 
     // Basic client-side validation
-    if (!form.email || !form.password) {
-      setError('Please fill in all fields.');
+    const emailError = validateEmail(form.email);
+    if (emailError) {
+      setError(emailError);
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      setError('Please enter a valid email address.');
-      return;
-    }
-    if (form.password.length < 8) {
-      setError('Password must be at least 8 characters.');
+    const passwordError = validatePassword(form.password);
+    if (passwordError) {
+      setError(passwordError);
       return;
     }
 
@@ -124,6 +123,7 @@ const SignInPage: React.FC = () => {
                       type="email"
                       required
                       autoComplete="email"
+                      maxLength={MAX_LENGTHS.email}
                       value={form.email}
                       onChange={handleChange}
                       placeholder="you@example.com"
@@ -153,6 +153,7 @@ const SignInPage: React.FC = () => {
                       type={showPassword ? 'text' : 'password'}
                       required
                       autoComplete="current-password"
+                      maxLength={MAX_LENGTHS.password}
                       value={form.password}
                       onChange={handleChange}
                       placeholder="Min. 8 characters"

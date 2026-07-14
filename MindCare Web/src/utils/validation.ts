@@ -53,6 +53,36 @@ export function sanitizeText(value: string): string {
 }
 
 /**
+ * Validates a PMDC license number format (e.g. "102-CP-44871").
+ * Real verification against PMDC.gov.pk must happen server-side —
+ * this only rejects obviously malformed input.
+ */
+const PMDC_ID_REGEX = /^[A-Za-z0-9]{2,6}-[A-Za-z0-9]{1,8}-[A-Za-z0-9]{1,10}$/;
+
+export function validatePmdcLicense(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return 'PMDC license number is required.';
+  if (!PMDC_ID_REGEX.test(trimmed)) {
+    return 'Enter a valid PMDC license number (e.g. 102-CP-44871).';
+  }
+  return null;
+}
+
+/**
+ * For fields that accept either an email or a PMDC ID (e.g. therapist
+ * sign-in "Email or PMDC ID"). Detects which format was entered and
+ * validates accordingly.
+ */
+export function validateEmailOrPmdcId(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return 'Email or PMDC ID is required.';
+  if (trimmed.includes('@')) {
+    return validateEmail(trimmed);
+  }
+  return validatePmdcLicense(trimmed);
+}
+
+/**
  * Basic password strength check for therapist/clinician accounts.
  * Real enforcement (hashing with bcrypt/argon2, breach-list checks,
  * lockout after failed attempts) happens server-side.

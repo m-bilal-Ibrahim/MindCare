@@ -9,7 +9,7 @@ import Logo from '../components/common/Logo';
 import Button from '../components/common/Button';
 import { ROUTES, THERAPIST_LOGIN_TESTIMONIAL, THERAPIST_WAITING_ITEMS } from '../constants';
 import { CONSOLE_ROUTES } from '../constants/therapistConsole';
-import { MAX_LENGTHS } from '../utils/validation';
+import { validateEmailOrPmdcId, validatePassword, MAX_LENGTHS } from '../utils/validation';
 import { useTherapistAuth } from '../utils/authGuard';
 import type { TherapistLoginPayload } from '../types';
 
@@ -43,12 +43,16 @@ const TherapistLoginPage: React.FC = () => {
     }
 
     const identifier = form.identifier.trim();
-    if (!identifier || !form.password) {
-      setError('Please fill in all fields.');
+
+    const identifierError = validateEmailOrPmdcId(identifier);
+    if (identifierError) {
+      setError(identifierError);
       return;
     }
-    if (identifier.length > MAX_LENGTHS.email || form.password.length > MAX_LENGTHS.password) {
-      setError('One of the fields is too long.');
+
+    const passwordError = validatePassword(form.password);
+    if (passwordError) {
+      setError(passwordError);
       return;
     }
 
