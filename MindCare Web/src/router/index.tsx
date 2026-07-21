@@ -26,6 +26,14 @@ const PricingPage = lazy(() => import('../pages/PricingPage'));
 const TherapistTodayPage = lazy(() => import('../pages/TherapistTodayPage'));
 const TherapistPatientsPage = lazy(() => import('../pages/TherapistPatientsPage'));
 const PatientDetailPage = lazy(() => import('../pages/PatientDetailPage'));
+const TherapistSchedulePage = lazy(() => import('../pages/TherapistSchedulePage'));
+const TherapistRequestsPage = lazy(() => import('../pages/TherapistRequestsPage'));
+const InSessionPage = lazy(() => import('../pages/InSessionPage'));
+const CarePlanEditorPage = lazy(() => import('../pages/CarePlanEditorPage'));
+const MessagesPage = lazy(() => import('../pages/MessagesPage'));
+const WeeklyReportPage = lazy(() => import('../pages/WeeklyReportPage'));
+const ProfilePage = lazy(() => import('../pages/ProfilePage'));
+const CirclesPage = lazy(() => import('../pages/CirclesPage'));
 
 // ——— Full-screen loading fallback ———
 const PageLoader: React.FC = () => (
@@ -107,6 +115,70 @@ const AppRouter: React.FC = () => (
             element={
               <RequireTherapistAuth>
                 <PatientDetailPage />
+              </RequireTherapistAuth>
+            }
+          />
+          <Route
+            path={CONSOLE_ROUTES.SCHEDULE}
+            element={
+              <RequireTherapistAuth>
+                <TherapistSchedulePage />
+              </RequireTherapistAuth>
+            }
+          />
+          <Route
+            path={CONSOLE_ROUTES.REQUESTS}
+            element={
+              <RequireTherapistAuth>
+                <TherapistRequestsPage />
+              </RequireTherapistAuth>
+            }
+          />
+          <Route
+            path={CONSOLE_ROUTES.IN_SESSION}
+            element={
+              <RequireTherapistAuth>
+                <InSessionPage />
+              </RequireTherapistAuth>
+            }
+          />
+          <Route
+            path={CONSOLE_ROUTES.CARE_PLAN}
+            element={
+              <RequireTherapistAuth>
+                <CarePlanEditorPage />
+              </RequireTherapistAuth>
+            }
+          />
+          <Route
+            path={CONSOLE_ROUTES.MESSAGES}
+            element={
+              <RequireTherapistAuth>
+                <MessagesPage />
+              </RequireTherapistAuth>
+            }
+          />
+          <Route
+            path={CONSOLE_ROUTES.WEEKLY_REPORT}
+            element={
+              <RequireTherapistAuth>
+                <WeeklyReportPage />
+              </RequireTherapistAuth>
+            }
+          />
+          <Route
+            path={CONSOLE_ROUTES.PROFILE}
+            element={
+              <RequireTherapistAuth>
+                <ProfilePage />
+              </RequireTherapistAuth>
+            }
+          />
+          <Route
+            path={CONSOLE_ROUTES.CIRCLES}
+            element={
+              <RequireTherapistAuth>
+                <CirclesPage />
               </RequireTherapistAuth>
             }
           />

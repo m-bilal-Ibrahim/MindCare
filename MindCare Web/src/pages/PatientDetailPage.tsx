@@ -3,7 +3,7 @@
 // ============================================================
 
 import React, { useState } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, Navigate, Link, useNavigate } from 'react-router-dom';
 import { AreaChart, Area, ResponsiveContainer, YAxis } from 'recharts';
 import { Video, MessageSquare, Plus, X, Zap, Code } from 'lucide-react';
 import TherapistLayout from '../components/therapist/TherapistLayout';
@@ -14,12 +14,15 @@ import {
   LAYLA_DETAIL,
   PATIENT_DETAIL_TABS,
   CONSOLE_ROUTES,
+  buildCarePlanRoute,
+  buildWeeklyReportRoute,
 } from '../constants/therapistConsole';
 
 type Tab = (typeof PATIENT_DETAIL_TABS)[number];
 
 const PatientDetailPage: React.FC = () => {
   const { patientId } = useParams<{ patientId: string }>();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>('Overview');
   const [moodRange, setMoodRange] = useState<'30d' | '90d' | '1y'>('30d');
 
@@ -27,6 +30,18 @@ const PatientDetailPage: React.FC = () => {
   if (!patient) {
     return <Navigate to={CONSOLE_ROUTES.PATIENTS} replace />;
   }
+
+  const handleTabClick = (tab: Tab) => {
+    if (tab === 'Care plan') {
+      navigate(buildCarePlanRoute(patient.id));
+      return;
+    }
+    if (tab === 'Reports') {
+      navigate(buildWeeklyReportRoute(patient.id));
+      return;
+    }
+    setActiveTab(tab);
+  };
 
   // Full clinical mock content (notes, sensors, Aida) is only fully
   // authored for the Layla example patient; other patients reuse it
@@ -41,18 +56,18 @@ const PatientDetailPage: React.FC = () => {
       breadcrumb={['Practice', 'Patients', patient.name]}
       headerAction={
         <div className="flex gap-2 shrink-0">
-          <button
-            type="button"
+          <Link
+            to={`${CONSOLE_ROUTES.MESSAGES}?patientId=${patient.id}`}
             className="inline-flex items-center gap-2 border border-gray-200 bg-white text-gray-700 text-sm font-semibold px-4 py-2.5 rounded-xl hover:border-gray-400 transition-colors"
           >
             <MessageSquare size={15} aria-hidden="true" /> Message
-          </button>
-          <button
-            type="button"
+          </Link>
+          <Link
+            to={CONSOLE_ROUTES.IN_SESSION}
             className="inline-flex items-center gap-2 bg-gray-900 text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-gray-800 transition-colors"
           >
             <Video size={15} aria-hidden="true" /> Start session
-          </button>
+          </Link>
         </div>
       }
     >
@@ -125,7 +140,7 @@ const PatientDetailPage: React.FC = () => {
           <button
             key={tab}
             type="button"
-            onClick={() => setActiveTab(tab)}
+            onClick={() => handleTabClick(tab)}
             className={`pb-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${
               activeTab === tab ? 'text-gray-900 border-gray-900' : 'text-gray-400 border-transparent hover:text-gray-600'
             }`}
