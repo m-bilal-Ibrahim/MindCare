@@ -7,9 +7,10 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ROUTES } from '../constants';
 import { CONSOLE_ROUTES } from '../constants/therapistConsole';
+import { ADMIN_ROUTES } from '../constants/adminConsole';
 import { TherapistAuthProvider, RequireTherapistAuth } from '../utils/authGuard';
+import { AdminAuthProvider, RequireAdminAuth } from '../utils/adminAuthGuard';
 
-// ——— Lazy page imports ———
 const LandingPage = lazy(() => import('../pages/LandingPage'));
 const OnboardingPage = lazy(() => import('../pages/OnboardingPage'));
 const ClientAppPage = lazy(() => import('../pages/ClientAppPage'));
@@ -34,14 +35,19 @@ const MessagesPage = lazy(() => import('../pages/MessagesPage'));
 const WeeklyReportPage = lazy(() => import('../pages/WeeklyReportPage'));
 const ProfilePage = lazy(() => import('../pages/ProfilePage'));
 const CirclesPage = lazy(() => import('../pages/CirclesPage'));
+const AdminLoginPage = lazy(() => import('../pages/AdminLoginPage'));
+const AdminOverviewPage = lazy(() => import('../pages/AdminOverviewPage'));
+const AdminVerificationsPage = lazy(() => import('../pages/AdminVerificationsPage'));
+const AdminUsersPage = lazy(() => import('../pages/AdminUsersPage'));
+const ModerationPage = lazy(() => import('../pages/ModerationPage'));
+const SafetyPage = lazy(() => import('../pages/SafetyPage'));
+const TherapistsPage = lazy(() => import('../pages/TherapistsPage'));
+const NgoPartnersPage = lazy(() => import('../pages/NgoPartnersPage'));
+const BillingPage = lazy(() => import('../pages/BillingPage'));
+const SettingsPage = lazy(() => import('../pages/SettingsPage'));
 
-// ——— Full-screen loading fallback ———
 const PageLoader: React.FC = () => (
-  <div
-    className="min-h-screen bg-[#F5F0E8] flex items-center justify-center"
-    aria-live="polite"
-    aria-label="Loading page"
-  >
+  <div className="min-h-screen bg-[#F5F0E8] flex items-center justify-center" aria-live="polite" aria-label="Loading page">
     <div className="flex flex-col items-center gap-4">
       <div className="w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
       <p className="text-sm text-gray-500 font-medium">Loading…</p>
@@ -52,141 +58,50 @@ const PageLoader: React.FC = () => (
 const AppRouter: React.FC = () => (
   <BrowserRouter>
     <TherapistAuthProvider>
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          {/* Screen 1: Landing */}
-          <Route path={ROUTES.HOME} element={<LandingPage />} />
+      <AdminAuthProvider>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path={ROUTES.HOME} element={<LandingPage />} />
+            <Route path={ROUTES.ONBOARDING} element={<OnboardingPage />} />
+            <Route path={ROUTES.CLIENT_APP} element={<ClientAppPage />} />
+            <Route path={ROUTES.CLINICIAN_APP} element={<ClinicianPage />} />
+            <Route path={ROUTES.SIGN_IN} element={<SignInPage />} />
+            <Route path={ROUTES.STORIES} element={<StoriesPage />} />
+            <Route path={ROUTES.FOR_NGOS} element={<ForNGOsPage />} />
+            <Route path={ROUTES.FOR_THERAPISTS} element={<ForTherapistsPage />} />
+            <Route path={ROUTES.THERAPIST_LOGIN} element={<TherapistLoginPage />} />
+            <Route path={ROUTES.THERAPIST_REGISTER} element={<TherapistRegisterPage />} />
+            <Route path={ROUTES.ABOUT_US} element={<AboutUsPage />} />
+            <Route path={ROUTES.HELP} element={<HelpPage />} />
+            <Route path={ROUTES.PRICING} element={<PricingPage />} />
 
-          {/* Screen 2: Onboarding role picker */}
-          <Route path={ROUTES.ONBOARDING} element={<OnboardingPage />} />
+            <Route path={CONSOLE_ROUTES.TODAY} element={<RequireTherapistAuth><TherapistTodayPage /></RequireTherapistAuth>} />
+            <Route path={CONSOLE_ROUTES.PATIENTS} element={<RequireTherapistAuth><TherapistPatientsPage /></RequireTherapistAuth>} />
+            <Route path={CONSOLE_ROUTES.PATIENT_DETAIL} element={<RequireTherapistAuth><PatientDetailPage /></RequireTherapistAuth>} />
+            <Route path={CONSOLE_ROUTES.SCHEDULE} element={<RequireTherapistAuth><TherapistSchedulePage /></RequireTherapistAuth>} />
+            <Route path={CONSOLE_ROUTES.REQUESTS} element={<RequireTherapistAuth><TherapistRequestsPage /></RequireTherapistAuth>} />
+            <Route path={CONSOLE_ROUTES.IN_SESSION} element={<RequireTherapistAuth><InSessionPage /></RequireTherapistAuth>} />
+            <Route path={CONSOLE_ROUTES.CARE_PLAN} element={<RequireTherapistAuth><CarePlanEditorPage /></RequireTherapistAuth>} />
+            <Route path={CONSOLE_ROUTES.MESSAGES} element={<RequireTherapistAuth><MessagesPage /></RequireTherapistAuth>} />
+            <Route path={CONSOLE_ROUTES.WEEKLY_REPORT} element={<RequireTherapistAuth><WeeklyReportPage /></RequireTherapistAuth>} />
+            <Route path={CONSOLE_ROUTES.PROFILE} element={<RequireTherapistAuth><ProfilePage /></RequireTherapistAuth>} />
+            <Route path={CONSOLE_ROUTES.CIRCLES} element={<RequireTherapistAuth><CirclesPage /></RequireTherapistAuth>} />
 
-          {/* Screen 3: Client app download */}
-          <Route path={ROUTES.CLIENT_APP} element={<ClientAppPage />} />
+            <Route path={ADMIN_ROUTES.SIGN_IN} element={<AdminLoginPage />} />
+            <Route path={ADMIN_ROUTES.OVERVIEW} element={<RequireAdminAuth><AdminOverviewPage /></RequireAdminAuth>} />
+            <Route path={ADMIN_ROUTES.VERIFICATIONS} element={<RequireAdminAuth><AdminVerificationsPage /></RequireAdminAuth>} />
+            <Route path={ADMIN_ROUTES.USERS} element={<RequireAdminAuth><AdminUsersPage /></RequireAdminAuth>} />
+            <Route path={ADMIN_ROUTES.MODERATION} element={<RequireAdminAuth><ModerationPage /></RequireAdminAuth>} />
+            <Route path={ADMIN_ROUTES.SAFETY} element={<RequireAdminAuth><SafetyPage /></RequireAdminAuth>} />
+            <Route path={ADMIN_ROUTES.THERAPISTS} element={<RequireAdminAuth><TherapistsPage /></RequireAdminAuth>} />
+            <Route path={ADMIN_ROUTES.NGO_PARTNERS} element={<RequireAdminAuth><NgoPartnersPage /></RequireAdminAuth>} />
+            <Route path={ADMIN_ROUTES.BILLING} element={<RequireAdminAuth><BillingPage /></RequireAdminAuth>} />
+            <Route path={ADMIN_ROUTES.SETTINGS} element={<RequireAdminAuth><SettingsPage /></RequireAdminAuth>} />
 
-          {/* Clinician application */}
-          <Route path={ROUTES.CLINICIAN_APP} element={<ClinicianPage />} />
-
-          {/* Auth */}
-          <Route path={ROUTES.SIGN_IN} element={<SignInPage />} />
-
-          {/* Screen: Stories */}
-          <Route path={ROUTES.STORIES} element={<StoriesPage />} />
-
-          {/* Screen: For NGOs */}
-          <Route path={ROUTES.FOR_NGOS} element={<ForNGOsPage />} />
-
-          {/* Screen: For Therapists */}
-          <Route path={ROUTES.FOR_THERAPISTS} element={<ForTherapistsPage />} />
-
-          {/* Screen: Therapist auth */}
-          <Route path={ROUTES.THERAPIST_LOGIN} element={<TherapistLoginPage />} />
-          <Route path={ROUTES.THERAPIST_REGISTER} element={<TherapistRegisterPage />} />
-
-          {/* Screen: About us */}
-          <Route path={ROUTES.ABOUT_US} element={<AboutUsPage />} />
-
-          {/* Screen: Help */}
-          <Route path={ROUTES.HELP} element={<HelpPage />} />
-
-          {/* Screen: Pricing */}
-          <Route path={ROUTES.PRICING} element={<PricingPage />} />
-
-          {/* Therapist console — every route here requires a valid session.
-              See src/utils/authGuard.tsx for what a real implementation
-              needs before this can go to production. */}
-          <Route
-            path={CONSOLE_ROUTES.TODAY}
-            element={
-              <RequireTherapistAuth>
-                <TherapistTodayPage />
-              </RequireTherapistAuth>
-            }
-          />
-          <Route
-            path={CONSOLE_ROUTES.PATIENTS}
-            element={
-              <RequireTherapistAuth>
-                <TherapistPatientsPage />
-              </RequireTherapistAuth>
-            }
-          />
-          <Route
-            path={CONSOLE_ROUTES.PATIENT_DETAIL}
-            element={
-              <RequireTherapistAuth>
-                <PatientDetailPage />
-              </RequireTherapistAuth>
-            }
-          />
-          <Route
-            path={CONSOLE_ROUTES.SCHEDULE}
-            element={
-              <RequireTherapistAuth>
-                <TherapistSchedulePage />
-              </RequireTherapistAuth>
-            }
-          />
-          <Route
-            path={CONSOLE_ROUTES.REQUESTS}
-            element={
-              <RequireTherapistAuth>
-                <TherapistRequestsPage />
-              </RequireTherapistAuth>
-            }
-          />
-          <Route
-            path={CONSOLE_ROUTES.IN_SESSION}
-            element={
-              <RequireTherapistAuth>
-                <InSessionPage />
-              </RequireTherapistAuth>
-            }
-          />
-          <Route
-            path={CONSOLE_ROUTES.CARE_PLAN}
-            element={
-              <RequireTherapistAuth>
-                <CarePlanEditorPage />
-              </RequireTherapistAuth>
-            }
-          />
-          <Route
-            path={CONSOLE_ROUTES.MESSAGES}
-            element={
-              <RequireTherapistAuth>
-                <MessagesPage />
-              </RequireTherapistAuth>
-            }
-          />
-          <Route
-            path={CONSOLE_ROUTES.WEEKLY_REPORT}
-            element={
-              <RequireTherapistAuth>
-                <WeeklyReportPage />
-              </RequireTherapistAuth>
-            }
-          />
-          <Route
-            path={CONSOLE_ROUTES.PROFILE}
-            element={
-              <RequireTherapistAuth>
-                <ProfilePage />
-              </RequireTherapistAuth>
-            }
-          />
-          <Route
-            path={CONSOLE_ROUTES.CIRCLES}
-            element={
-              <RequireTherapistAuth>
-                <CirclesPage />
-              </RequireTherapistAuth>
-            }
-          />
-
-          {/* Catch-all → home */}
-          <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
-        </Routes>
-      </Suspense>
+            <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
+          </Routes>
+        </Suspense>
+      </AdminAuthProvider>
     </TherapistAuthProvider>
   </BrowserRouter>
 );

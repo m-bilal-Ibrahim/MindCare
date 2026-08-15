@@ -187,6 +187,13 @@ const TherapistLoginPage: React.FC = () => {
               <br />
               Verification takes 2–3 working days.
             </div>
+
+            <p className="text-center text-xs text-gray-400 pt-2">
+              Platform admin?{' '}
+              <Link to="/admin/sign-in" className="underline underline-offset-2 text-gray-500 hover:text-gray-700">
+                Sign in here
+              </Link>
+            </p>
           </form>
         </div>
       </div>
