@@ -9,7 +9,7 @@ import Logo from '../components/common/Logo';
 import Button from '../components/common/Button';
 import { ROUTES } from '../constants';
 import { ADMIN_ROUTES } from '../constants/adminConsole';
-import { validateEmail, validatePassword, MAX_LENGTHS } from '../utils/validation';
+import { validateEmail, validatePasswordForSignIn, MAX_LENGTHS } from '../utils/validation';
 import { useAdminAuth } from '../utils/adminAuthGuard';
 
 const AdminLoginPage: React.FC = () => {
@@ -42,7 +42,7 @@ const AdminLoginPage: React.FC = () => {
       setError(emailError);
       return;
     }
-    const passwordError = validatePassword(form.password);
+    const passwordError = validatePasswordForSignIn(form.password);
     if (passwordError) {
       setError(passwordError);
       return;

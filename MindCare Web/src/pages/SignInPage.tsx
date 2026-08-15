@@ -9,7 +9,7 @@ import Logo from '../components/common/Logo';
 import Button from '../components/common/Button';
 import { ROUTES } from '../constants';
 import { signIn } from '../services/api.service';
-import { validateEmail, validatePassword, MAX_LENGTHS } from '../utils/validation';
+import { validateEmail, validatePasswordForSignIn, MAX_LENGTHS } from '../utils/validation';
 
 interface FormState {
   email: string;
@@ -37,7 +37,7 @@ const SignInPage: React.FC = () => {
       setError(emailError);
       return;
     }
-    const passwordError = validatePassword(form.password);
+    const passwordError = validatePasswordForSignIn(form.password);
     if (passwordError) {
       setError(passwordError);
       return;
@@ -52,10 +52,14 @@ const SignInPage: React.FC = () => {
     if (result.error) {
       setError('Invalid email or password. Please try again.');
     } else {
-      // Store token securely (backend should use httpOnly cookies in production)
-      if (result.data?.token) {
-        sessionStorage.setItem('mc_access_token', result.data.token);
-      }
+      // SECURITY NOTE: the session token must never be stored in
+      // localStorage/sessionStorage — both are readable by any script
+      // that runs on the page (e.g. via an XSS bug), which defeats the
+      // point of the token. A real backend should set the session as
+      // an httpOnly, Secure, SameSite=Strict cookie itself; the
+      // frontend never sees or handles the raw token at all. Nothing
+      // is written to web storage here on purpose — this mock only
+      // keeps the signed-in user in memory (React state) for the demo.
       console.info('[MindCare] Signed in:', result.data?.user);
       setSuccess(true);
     }
@@ -156,7 +160,7 @@ const SignInPage: React.FC = () => {
                       maxLength={MAX_LENGTHS.password}
                       value={form.password}
                       onChange={handleChange}
-                      placeholder="Min. 8 characters"
+                      placeholder="Enter your password"
                       className="w-full pl-10 pr-12 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 bg-gray-50"
                     />
                     <button

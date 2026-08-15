@@ -9,7 +9,7 @@ import Logo from '../components/common/Logo';
 import Button from '../components/common/Button';
 import { ROUTES, THERAPIST_LOGIN_TESTIMONIAL, THERAPIST_WAITING_ITEMS } from '../constants';
 import { CONSOLE_ROUTES } from '../constants/therapistConsole';
-import { validateEmailOrPmdcId, validatePassword, MAX_LENGTHS } from '../utils/validation';
+import { validateEmailOrPmdcId, validatePasswordForSignIn, MAX_LENGTHS } from '../utils/validation';
 import { useTherapistAuth } from '../utils/authGuard';
 import type { TherapistLoginPayload } from '../types';
 
@@ -50,7 +50,10 @@ const TherapistLoginPage: React.FC = () => {
       return;
     }
 
-    const passwordError = validatePassword(form.password);
+    // Sign-in uses the lighter length-only check — existing accounts
+    // predate any policy change, so this only rejects clearly invalid
+    // input, not passwords that don't meet the current signup bar.
+    const passwordError = validatePasswordForSignIn(form.password);
     if (passwordError) {
       setError(passwordError);
       return;

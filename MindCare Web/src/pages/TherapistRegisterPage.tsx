@@ -4,8 +4,9 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, Upload, X, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Check, Upload, X, ArrowRight, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import Button from '../components/common/Button';
+import PasswordStrengthMeter from '../components/common/PasswordStrengthMeter';
 import {
   ROUTES,
   THERAPIST_ONBOARDING_STEPS,
@@ -14,7 +15,15 @@ import {
   THERAPIST_FOCUS_AREAS,
   THERAPIST_STATS,
 } from '../constants';
-import { validatePmdcLicense, validateRequiredText, sanitizeText } from '../utils/validation';
+import {
+  validatePmdcLicense,
+  validateRequiredText,
+  validateEmail,
+  validatePassword,
+  validatePasswordConfirmation,
+  sanitizeText,
+  MAX_LENGTHS,
+} from '../utils/validation';
 import type { TherapistCredentials, TherapistRegisterStep } from '../types';
 
 const MIN_FOCUS_AREAS = 3;
@@ -31,10 +40,32 @@ const initialCredentials: TherapistCredentials = {
   consentBackgroundCheck: true,
 };
 
+interface IdentityForm {
+  fullName: string;
+  email: string;
+  phone: string;
+  password: string;
+  confirmPassword: string;
+}
+
+const initialIdentity: IdentityForm = {
+  fullName: '',
+  email: '',
+  phone: '',
+  password: '',
+  confirmPassword: '',
+};
+
 const TherapistRegisterPage: React.FC = () => {
-  const [activeStep, setActiveStep] = useState<TherapistRegisterStep>('credentials');
+  const [activeStep, setActiveStep] = useState<TherapistRegisterStep>('identity');
   const [form, setForm] = useState<TherapistCredentials>(initialCredentials);
   const [fieldErrors, setFieldErrors] = useState<{ pmdcLicenseNumber?: string; degree?: string }>({});
+
+  const [identity, setIdentity] = useState<IdentityForm>(initialIdentity);
+  const [identityErrors, setIdentityErrors] = useState<Partial<Record<keyof IdentityForm, string>>>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [documents, setDocuments] = useState({
     pmdcLicense: { name: 'pmdc-44871.pdf', size: '482 KB' } as { name: string; size: string } | null,
     degreeCertificate: { name: 'msc-clinical-fjwu.pdf', size: '1.2 MB' } as { name: string; size: string } | null,
@@ -44,6 +75,40 @@ const TherapistRegisterPage: React.FC = () => {
 
   const stepIndex = THERAPIST_ONBOARDING_STEPS.findIndex((s) => s.id === activeStep);
 
+  // ——— Identity step ———
+  const handleIdentityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setIdentity((prev) => ({ ...prev, [name]: value }));
+    if (name in identityErrors) {
+      setIdentityErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+  };
+
+  const validateIdentityStep = (): boolean => {
+    const errors: typeof identityErrors = {};
+    const nameError = validateRequiredText(identity.fullName, 'Full name');
+    if (nameError) errors.fullName = nameError;
+
+    const emailError = validateEmail(identity.email);
+    if (emailError) errors.email = emailError;
+
+    const passwordError = validatePassword(identity.password);
+    if (passwordError) errors.password = passwordError;
+
+    const confirmError = validatePasswordConfirmation(identity.password, identity.confirmPassword);
+    if (confirmError) errors.confirmPassword = confirmError;
+
+    setIdentityErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleContinueToCredentials = () => {
+    if (!validateIdentityStep()) return;
+    setIdentity((prev) => ({ ...prev, fullName: sanitizeText(prev.fullName) }));
+    goToStep('credentials');
+  };
+
+  // ——— Credentials step ———
   const validateCredentialsStep = (): boolean => {
     const errors: typeof fieldErrors = {};
     const licenseError = validatePmdcLicense(form.pmdcLicenseNumber);
@@ -157,6 +222,165 @@ const TherapistRegisterPage: React.FC = () => {
 
           {/* Card */}
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+            {activeStep === 'identity' && (
+              <>
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-2xl font-black text-gray-900">Identity</h2>
+                  <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                    Step 1 of 4
+                  </span>
+                </div>
+                <p className="text-sm text-gray-500 mb-8">
+                  Confirm your name and contact details, then set a password for your account.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">
+                      Full name *
+                    </label>
+                    <input
+                      name="fullName"
+                      value={identity.fullName}
+                      onChange={handleIdentityChange}
+                      autoComplete="name"
+                      maxLength={MAX_LENGTHS.shortText}
+                      placeholder="Dr. Saima Hashmi"
+                      aria-invalid={!!identityErrors.fullName}
+                      className={`w-full px-4 py-3 text-sm border rounded-xl focus:outline-none focus:ring-2 bg-gray-50 ${
+                        identityErrors.fullName ? 'border-red-300 focus:ring-red-500' : 'border-gray-200 focus:ring-gray-900'
+                      }`}
+                    />
+                    {identityErrors.fullName && (
+                      <p role="alert" className="text-xs text-red-600 mt-1.5">
+                        {identityErrors.fullName}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">
+                      Email *
+                    </label>
+                    <input
+                      name="email"
+                      type="email"
+                      value={identity.email}
+                      onChange={handleIdentityChange}
+                      autoComplete="email"
+                      maxLength={MAX_LENGTHS.email}
+                      placeholder="saima.hashmi@gmail.com"
+                      aria-invalid={!!identityErrors.email}
+                      className={`w-full px-4 py-3 text-sm border rounded-xl focus:outline-none focus:ring-2 bg-gray-50 ${
+                        identityErrors.email ? 'border-red-300 focus:ring-red-500' : 'border-gray-200 focus:ring-gray-900'
+                      }`}
+                    />
+                    {identityErrors.email && (
+                      <p role="alert" className="text-xs text-red-600 mt-1.5">
+                        {identityErrors.email}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">
+                      Phone <span className="font-normal normal-case text-gray-400">(optional)</span>
+                    </label>
+                    <input
+                      name="phone"
+                      type="tel"
+                      value={identity.phone}
+                      onChange={handleIdentityChange}
+                      autoComplete="tel"
+                      maxLength={20}
+                      placeholder="+92 3XX XXXXXXX"
+                      className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 bg-gray-50"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">
+                      Password *
+                    </label>
+                    <div className="relative">
+                      <input
+                        name="password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={identity.password}
+                        onChange={handleIdentityChange}
+                        autoComplete="new-password"
+                        maxLength={MAX_LENGTHS.password}
+                        placeholder="At least 12 characters"
+                        aria-invalid={!!identityErrors.password}
+                        className={`w-full px-4 py-3 pr-11 text-sm border rounded-xl focus:outline-none focus:ring-2 bg-gray-50 ${
+                          identityErrors.password ? 'border-red-300 focus:ring-red-500' : 'border-gray-200 focus:ring-gray-900'
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((v) => !v)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                    <PasswordStrengthMeter password={identity.password} />
+                    {identityErrors.password && (
+                      <p role="alert" className="text-xs text-red-600 mt-1.5">
+                        {identityErrors.password}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">
+                      Confirm password *
+                    </label>
+                    <div className="relative">
+                      <input
+                        name="confirmPassword"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        value={identity.confirmPassword}
+                        onChange={handleIdentityChange}
+                        autoComplete="new-password"
+                        maxLength={MAX_LENGTHS.password}
+                        placeholder="Re-enter your password"
+                        aria-invalid={!!identityErrors.confirmPassword}
+                        className={`w-full px-4 py-3 pr-11 text-sm border rounded-xl focus:outline-none focus:ring-2 bg-gray-50 ${
+                          identityErrors.confirmPassword ? 'border-red-300 focus:ring-red-500' : 'border-gray-200 focus:ring-gray-900'
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword((v) => !v)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                        aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                    {identityErrors.confirmPassword && (
+                      <p role="alert" className="text-xs text-red-600 mt-1.5">
+                        {identityErrors.confirmPassword}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <p className="text-xs text-gray-400 mb-8">
+                  Use at least 12 characters with a mix of upper/lowercase letters and a number. A real
+                  backend must also reject passwords found in known data breaches.
+                </p>
+
+                <div className="flex items-center justify-end pt-4 border-t border-gray-100">
+                  <Button variant="primary" size="md" onClick={handleContinueToCredentials}>
+                    Continue · Credentials <ArrowRight size={14} />
+                  </Button>
+                </div>
+              </>
+            )}
+
             {activeStep === 'credentials' && (
               <>
                 <div className="flex items-center justify-between mb-2">
@@ -357,14 +581,6 @@ const TherapistRegisterPage: React.FC = () => {
                   </div>
                 </div>
               </>
-            )}
-
-            {activeStep === 'identity' && (
-              <PlaceholderStep
-                title="Identity"
-                description="Confirm your name, contact details, and city of practice."
-                onContinue={() => goToStep('credentials')}
-              />
             )}
 
             {activeStep === 'practice' && (
