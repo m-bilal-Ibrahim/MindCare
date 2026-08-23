@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
+import '../../main.dart';
+import '../../screens/sos/sos_screen.dart';
 
 class SosButton extends StatelessWidget {
   const SosButton({super.key, this.onTap});
@@ -8,12 +9,14 @@ class SosButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap ?? () => _showSosSheet(context),
+      onTap: onTap ?? () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const MobileFrame(child: SosScreen())),
+      ),
       child: Container(
         width: 64,
         height: 64,
         decoration: const BoxDecoration(
-          color: AppColors.sos,
+          color: Color(0xFFD8664B),
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 4)),
@@ -25,26 +28,6 @@ class SosButton extends StatelessWidget {
             Text('SOS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13)),
             Text('GET HELP', style: TextStyle(color: Colors.white, fontSize: 7, fontWeight: FontWeight.w600)),
           ],
-        ),
-      ),
-    );
-  }
-
-  void _showSosSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (_) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Need immediate help?', style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 8),
-              const Text('If you are in danger or crisis, contact your local emergency number right now.'),
-            ],
-          ),
         ),
       ),
     );

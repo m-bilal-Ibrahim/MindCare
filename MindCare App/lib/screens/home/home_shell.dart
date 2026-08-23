@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import '../../widgets/common/bottom_nav_bar.dart';
 import '../../widgets/common/sos_button.dart';
 import '../care/browse_therapists_screen.dart';
-import 'circles_placeholder_screen.dart';
+import 'circles_screen.dart';
 import 'home_screen.dart';
-import 'me_placeholder_screen.dart';
+import 'profile_screen.dart';
 import 'pulse_screen.dart';
 
 class HomeShell extends StatefulWidget {
@@ -21,8 +21,8 @@ class _HomeShellState extends State<HomeShell> {
     HomeScreen(),
     BrowseTherapistsScreen(),
     PulseScreen(),
-    CirclesPlaceholderScreen(),
-    MePlaceholderScreen(),
+    CirclesScreen(),
+    ProfileScreen(),
   ];
 
   @override
@@ -31,9 +31,10 @@ class _HomeShellState extends State<HomeShell> {
       body: Stack(
         children: [
           IndexedStack(index: _index, children: _tabs),
-          // Browse screen renders its own SOS button, so skip the
-          // shell-level one on that tab to avoid a duplicate.
-          if (_index != 1) const Positioned(right: 16, bottom: 78, child: SosButton()),
+          // Browse, Circles, and Profile screens each render their own
+          // SOS button in their scrollable content, so skip the
+          // shell-level one on those tabs to avoid a duplicate.
+          if (_index != 1 && _index != 3 && _index != 4) const Positioned(right: 16, bottom: 78, child: SosButton()),
         ],
       ),
       bottomNavigationBar: BottomNavBar(

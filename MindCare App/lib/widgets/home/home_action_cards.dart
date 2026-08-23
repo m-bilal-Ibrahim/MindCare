@@ -43,47 +43,55 @@ class AidaListeningCard extends StatelessWidget {
 }
 
 class AppointmentCard extends StatelessWidget {
-  const AppointmentCard({super.key});
+  const AppointmentCard({super.key, this.onTap});
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.calendar_today_outlined, size: 18, color: AppColors.textDark),
-          const SizedBox(height: 10),
-          Text('IN 2 DAYS', style: AppTextStyles.label()),
-          const SizedBox(height: 4),
-          const Text('Fri · 5:00 PM', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.textDark)),
-          Text('Dr. Tariq · Meet', style: AppTextStyles.body(size: 12)),
-        ],
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.calendar_today_outlined, size: 18, color: AppColors.textDark),
+            const SizedBox(height: 10),
+            Text('IN 2 DAYS', style: AppTextStyles.label()),
+            const SizedBox(height: 4),
+            const Text('Fri · 5:00 PM', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.textDark)),
+            Text('Dr. Tariq · Meet', style: AppTextStyles.body(size: 12)),
+          ],
+        ),
       ),
     );
   }
 }
 
 class QuickBreathCard extends StatelessWidget {
-  const QuickBreathCard({super.key});
+  const QuickBreathCard({super.key, this.onTap});
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: AppColors.cardBackground, borderRadius: BorderRadius.circular(20)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.eco_outlined, size: 18, color: AppColors.textDark),
-          const SizedBox(height: 10),
-          Text('QUICK', style: AppTextStyles.label()),
-          const SizedBox(height: 4),
-          const Text('3-min breath', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.textDark)),
-        ],
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(color: AppColors.cardBackground, borderRadius: BorderRadius.circular(20)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.eco_outlined, size: 18, color: AppColors.textDark),
+            const SizedBox(height: 10),
+            Text('QUICK', style: AppTextStyles.label()),
+            const SizedBox(height: 4),
+            const Text('3-min breath', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.textDark)),
+          ],
+        ),
       ),
     );
   }

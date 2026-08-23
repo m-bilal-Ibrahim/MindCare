@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/app_feedback.dart';
 import '../../providers/program_provider.dart';
 import '../../widgets/common/sos_button.dart';
 import '../../widgets/motivation/audio_list_item.dart';
@@ -38,7 +39,10 @@ class MotivationScreen extends StatelessWidget {
                           style: TextStyle(letterSpacing: 1, color: Colors.white70, fontWeight: FontWeight.w600, fontSize: 12),
                         ),
                       ),
-                      IconButton(onPressed: () {}, icon: const Icon(Icons.bookmark_border, color: Colors.white)),
+                      IconButton(
+                        onPressed: () => showComingSoon(context, 'Save to bookmarks'),
+                        icon: const Icon(Icons.bookmark_border, color: Colors.white),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -67,7 +71,10 @@ class MotivationScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   const Text('MORE FOR WHAT YOU\'RE CARRYING', style: TextStyle(color: Colors.white54, fontSize: 11, letterSpacing: 1, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 12),
-                  ...provider.moreTracks.map((track) => AudioListItem(track: track)),
+                  ...provider.moreTracks.map((track) => AudioListItem(
+                        track: track,
+                        onTap: () => showComingSoon(context, track.title),
+                      )),
                 ],
               ),
               const Positioned(right: 0, bottom: 24, child: SosButton()),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/utils/app_feedback.dart';
 import '../../models/checkin_data.dart';
 import '../../providers/checkin_provider.dart';
 import '../../widgets/chat/breathing_prompt_card.dart';
@@ -62,7 +63,7 @@ class _AidaChatScreenState extends State<AidaChatScreen> {
               child: Row(
                 children: [
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () => Navigator.of(context).maybePop(),
                     icon: const Icon(Icons.chevron_left, color: AppColors.textDark),
                   ),
                   Container(
@@ -88,7 +89,7 @@ class _AidaChatScreenState extends State<AidaChatScreen> {
                     ),
                   ),
                   OutlinedButton(
-                    onPressed: () {},
+                    onPressed: () => Navigator.of(context).maybePop(),
                     style: OutlinedButton.styleFrom(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                       side: const BorderSide(color: AppColors.border),
@@ -114,7 +115,10 @@ class _AidaChatScreenState extends State<AidaChatScreen> {
                   ),
                   ...provider.messages.map((message) {
                     if (message.exercise != null) {
-                      return BreathingPromptCard(exercise: message.exercise!, onBegin: () {});
+                      return BreathingPromptCard(
+                        exercise: message.exercise!,
+                        onBegin: () => showComingSoon(context, message.exercise!.title),
+                      );
                     }
                     return ChatBubble(text: message.text ?? '', isUser: message.sender == MessageSender.user);
                   }),
@@ -155,7 +159,7 @@ class _AidaChatScreenState extends State<AidaChatScreen> {
                       ),
                     ),
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () => showComingSoon(context, 'Voice input'),
                       icon: const Icon(Icons.mic_none_outlined, color: AppColors.textMuted),
                     ),
                   ],

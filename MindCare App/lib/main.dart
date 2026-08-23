@@ -5,6 +5,8 @@ import 'providers/onboarding_provider.dart';
 import 'providers/checkin_provider.dart';
 import 'providers/therapy_provider.dart';
 import 'providers/program_provider.dart';
+import 'providers/community_provider.dart';
+import 'providers/account_provider.dart';
 import 'screens/onboarding/welcome_screen.dart';
 import 'screens/home/home_shell.dart';
 
@@ -23,6 +25,8 @@ class MindCareApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CheckinProvider()),
         ChangeNotifierProvider(create: (_) => TherapyProvider()),
         ChangeNotifierProvider(create: (_) => ProgramProvider()),
+        ChangeNotifierProvider(create: (_) => CommunityProvider()),
+        ChangeNotifierProvider(create: (_) => AccountProvider()),
       ],
       child: MaterialApp(
         title: 'MindCare',

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/utils/app_feedback.dart';
 import '../../main.dart';
 import '../../providers/checkin_provider.dart';
 import '../../widgets/home/home_action_cards.dart';
@@ -57,25 +58,28 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      width: 42,
-                      height: 42,
-                      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                      child: const Icon(Icons.notifications_outlined, color: AppColors.textDark, size: 20),
-                    ),
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: Container(
-                        width: 10,
-                        height: 10,
-                        decoration: const BoxDecoration(color: AppColors.sos, shape: BoxShape.circle),
+                GestureDetector(
+                  onTap: () => showComingSoon(context, 'Notifications'),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                        child: const Icon(Icons.notifications_outlined, color: AppColors.textDark, size: 20),
                       ),
-                    ),
-                  ],
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: Container(
+                          width: 10,
+                          height: 10,
+                          decoration: const BoxDecoration(color: AppColors.sos, shape: BoxShape.circle),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(width: 10),
                 GestureDetector(
@@ -119,14 +123,14 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     flex: 5,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        AppointmentCard(),
-                        SizedBox(height: 12),
-                        QuickBreathCard(),
+                        AppointmentCard(onTap: () => showComingSoon(context, 'Your schedule')),
+                        const SizedBox(height: 12),
+                        QuickBreathCard(onTap: () => showComingSoon(context, '3-min breathing exercise')),
                       ],
                     ),
                   ),
@@ -156,11 +160,15 @@ class HomeScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('FOR YOU, TODAY', style: AppTextStyles.label()),
-                Text('see all', style: AppTextStyles.body(size: 13, weight: FontWeight.w600, color: AppColors.textDark)),
+                GestureDetector(
+                  onTap: () => showComingSoon(context, 'Full recommendations list'),
+                  child: Text('see all', style: AppTextStyles.body(size: 13, weight: FontWeight.w600, color: AppColors.textDark)),
+                ),
               ],
             ),
             const SizedBox(height: 12),
             ActionPillRow(
+              onBreathTap: () => showComingSoon(context, 'Breathing exercises'),
               onReflectTap: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const MobileFrame(child: MotivationScreen())),
               ),
