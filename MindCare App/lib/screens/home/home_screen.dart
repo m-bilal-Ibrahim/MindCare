@@ -7,6 +7,7 @@ import '../../providers/checkin_provider.dart';
 import '../../widgets/home/home_action_cards.dart';
 import '../../widgets/home/mood_selector.dart';
 import '../../widgets/home/vitals_card.dart';
+import '../care/motivation_screen.dart';
 import 'aida_chat_screen.dart';
 import 'progress_screen.dart';
 
@@ -159,7 +160,11 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            const ActionPillRow(),
+            ActionPillRow(
+              onReflectTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const MobileFrame(child: MotivationScreen())),
+              ),
+            ),
           ],
         ),
       ),

@@ -9,6 +9,7 @@ import '../../widgets/care/plan_option_tile.dart';
 import '../../widgets/common/primary_button.dart';
 import '../../widgets/common/sos_button.dart';
 import 'schedule_screen.dart';
+import 'your_program_screen.dart';
 
 class PlanTrialScreen extends StatelessWidget {
   const PlanTrialScreen({super.key});
@@ -143,14 +144,14 @@ class PlanTrialScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 Container(
                   decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
-                  child: const Column(
+                  child: Column(
                     children: [
-                      BenefitRow(
+                      const BenefitRow(
                         icon: Icons.videocam_outlined,
                         title: 'Weekly 50-min video sessions',
                         subtitle: 'Reschedule freely with notice.',
                       ),
-                      BenefitRow(
+                      const BenefitRow(
                         icon: Icons.chat_bubble_outline,
                         title: 'In-between chat with your therapist',
                         subtitle: '48-hour response, weekdays.',
@@ -160,6 +161,9 @@ class PlanTrialScreen extends StatelessWidget {
                         title: 'Your permanent care program',
                         subtitle: 'Updated by your therapist from time to time.',
                         showDivider: false,
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const MobileFrame(child: YourProgramScreen())),
+                        ),
                       ),
                     ],
                   ),

@@ -90,7 +90,9 @@ class QuickBreathCard extends StatelessWidget {
 }
 
 class ActionPillRow extends StatelessWidget {
-  const ActionPillRow({super.key});
+  const ActionPillRow({super.key, this.onBreathTap, this.onReflectTap});
+  final VoidCallback? onBreathTap;
+  final VoidCallback? onReflectTap;
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +102,7 @@ class ActionPillRow extends StatelessWidget {
           child: _GradientPill(
             label: 'BREATH',
             colors: const [AppColors.breathGradientStart, AppColors.breathGradientEnd],
-            onTap: () {},
+            onTap: onBreathTap ?? () {},
           ),
         ),
         const SizedBox(width: 12),
@@ -108,7 +110,7 @@ class ActionPillRow extends StatelessWidget {
           child: _GradientPill(
             label: 'REFLECT',
             colors: const [AppColors.reflectGradientStart, AppColors.reflectGradientEnd],
-            onTap: () {},
+            onTap: onReflectTap ?? () {},
           ),
         ),
       ],

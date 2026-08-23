@@ -4,6 +4,7 @@ import 'core/theme/app_theme.dart';
 import 'providers/onboarding_provider.dart';
 import 'providers/checkin_provider.dart';
 import 'providers/therapy_provider.dart';
+import 'providers/program_provider.dart';
 import 'screens/onboarding/welcome_screen.dart';
 import 'screens/home/home_shell.dart';
 
@@ -21,6 +22,7 @@ class MindCareApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => OnboardingProvider()),
         ChangeNotifierProvider(create: (_) => CheckinProvider()),
         ChangeNotifierProvider(create: (_) => TherapyProvider()),
+        ChangeNotifierProvider(create: (_) => ProgramProvider()),
       ],
       child: MaterialApp(
         title: 'MindCare',
@@ -38,10 +40,6 @@ class MindCareApp extends StatelessWidget {
   }
 }
 
-/// Constrains the app to a realistic phone width (max 430px, like an
-/// iPhone Pro Max) whenever it's running somewhere wider — desktop
-/// Chrome, Windows, macOS. On an actual phone screen, this has zero
-/// effect since the screen is already narrower than the cap.
 class MobileFrame extends StatelessWidget {
   const MobileFrame({super.key, required this.child});
   final Widget child;

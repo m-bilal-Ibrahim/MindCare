@@ -8,6 +8,7 @@ import '../../widgets/care/day_chip.dart';
 import '../../widgets/care/slot_tile.dart';
 import '../../widgets/common/sos_button.dart';
 import 'in_session_screen.dart';
+import 'your_program_screen.dart';
 
 class ScheduleScreen extends StatelessWidget {
   const ScheduleScreen({super.key});
@@ -43,7 +44,12 @@ class ScheduleScreen extends StatelessWidget {
                         style: TextStyle(letterSpacing: 1, color: AppColors.textLabel, fontWeight: FontWeight.w600, fontSize: 12),
                       ),
                     ),
-                    IconButton(onPressed: () {}, icon: const Icon(Icons.more_horiz, color: AppColors.textDark)),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const MobileFrame(child: YourProgramScreen())),
+                      ),
+                      icon: const Icon(Icons.more_horiz, color: AppColors.textDark),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
