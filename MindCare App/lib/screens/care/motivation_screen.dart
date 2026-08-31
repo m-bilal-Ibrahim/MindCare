@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/utils/app_feedback.dart';
 import '../../providers/program_provider.dart';
 import '../../widgets/common/sos_button.dart';
 import '../../widgets/motivation/audio_list_item.dart';
@@ -14,6 +13,7 @@ class MotivationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ProgramProvider>();
+    final featuredBookmarked = provider.isTrackBookmarked(provider.featuredTrack.id);
 
     return Scaffold(
       body: Container(
@@ -40,8 +40,13 @@ class MotivationScreen extends StatelessWidget {
                         ),
                       ),
                       IconButton(
-                        onPressed: () => showComingSoon(context, 'Save to bookmarks'),
-                        icon: const Icon(Icons.bookmark_border, color: Colors.white),
+                        onPressed: () {
+                          context.read<ProgramProvider>().toggleTrackBookmark(provider.featuredTrack.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(featuredBookmarked ? 'Removed from saved' : 'Saved · "${provider.featuredTrack.title}"')),
+                          );
+                        },
+                        icon: Icon(featuredBookmarked ? Icons.bookmark : Icons.bookmark_border, color: Colors.white),
                       ),
                     ],
                   ),
@@ -65,16 +70,19 @@ class MotivationScreen extends StatelessWidget {
                   FeaturedAudioCard(
                     track: provider.featuredTrack,
                     position: provider.featuredPosition,
-                    isPlaying: provider.featuredPlaying,
-                    onPlayToggle: () => context.read<ProgramProvider>().toggleFeaturedPlayback(),
+                    isPlaying: provider.isPlaying(provider.featuredTrack.id),
+                    onPlayToggle: () => context.read<ProgramProvider>().togglePlay(provider.featuredTrack.id),
                   ),
                   const SizedBox(height: 24),
-                  const Text('MORE FOR WHAT YOU\'RE CARRYING', style: TextStyle(color: Colors.white54, fontSize: 11, letterSpacing: 1, fontWeight: FontWeight.w600)),
+                  const Text("MORE FOR WHAT YOU'RE CARRYING", style: TextStyle(color: Colors.white54, fontSize: 11, letterSpacing: 1, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 12),
-                  ...provider.moreTracks.map((track) => AudioListItem(
-                        track: track,
-                        onTap: () => showComingSoon(context, track.title),
-                      )),
+                  ...provider.moreTracks.map((track) {
+                    return AudioListItem(
+                      track: track,
+                      isPlaying: provider.isPlaying(track.id),
+                      onTap: () => context.read<ProgramProvider>().togglePlay(track.id),
+                    );
+                  }),
                 ],
               ),
               const Positioned(right: 0, bottom: 24, child: SosButton()),

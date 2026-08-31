@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
-import '../../core/utils/app_feedback.dart';
 import '../../main.dart';
 import '../../widgets/common/sos_button.dart';
 import '../../widgets/common/primary_button.dart';
+import '../auth/sign_in_screen.dart';
 import 'sign_up_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -78,7 +78,9 @@ class WelcomeScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: () => showComingSoon(context, 'Sign in'),
+                          onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const MobileFrame(child: SignInScreen())),
+                          ),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 18),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),

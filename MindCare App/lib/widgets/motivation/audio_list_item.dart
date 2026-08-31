@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import '../../models/program_data.dart';
 
 class AudioListItem extends StatelessWidget {
-  const AudioListItem({super.key, required this.track, this.onTap});
+  const AudioListItem({super.key, required this.track, required this.isPlaying, required this.onTap});
   final AudioTrack track;
-  final VoidCallback? onTap;
+  final bool isPlaying;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -14,14 +15,17 @@ class AudioListItem extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(color: Colors.white.withOpacity(0.08), borderRadius: BorderRadius.circular(18)),
+        decoration: BoxDecoration(
+          color: isPlaying ? Colors.white.withOpacity(0.16) : Colors.white.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(18),
+        ),
         child: Row(
           children: [
             Container(
               width: 40,
               height: 40,
               decoration: BoxDecoration(color: Colors.white.withOpacity(0.14), shape: BoxShape.circle),
-              child: const Icon(Icons.play_arrow, color: Colors.white, size: 18),
+              child: Icon(isPlaying ? Icons.pause : Icons.play_arrow, color: Colors.white, size: 18),
             ),
             const SizedBox(width: 14),
             Expanded(

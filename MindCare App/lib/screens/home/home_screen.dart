@@ -2,13 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
-import '../../core/utils/app_feedback.dart';
 import '../../main.dart';
+import '../../models/breathing_data.dart';
 import '../../providers/checkin_provider.dart';
+import '../../providers/notifications_provider.dart';
+import '../../providers/therapy_provider.dart';
+import '../../providers/user_session_provider.dart';
 import '../../widgets/home/home_action_cards.dart';
 import '../../widgets/home/mood_selector.dart';
 import '../../widgets/home/vitals_card.dart';
+import '../care/breathing_player_screen.dart';
+import '../care/browse_therapists_screen.dart';
 import '../care/motivation_screen.dart';
+import '../care/schedule_screen.dart';
+import '../notifications/notifications_screen.dart';
 import 'aida_chat_screen.dart';
 import 'progress_screen.dart';
 
@@ -27,8 +34,26 @@ class HomeScreen extends StatelessWidget {
     return '$weekday, $month ${now.day}'.toUpperCase();
   }
 
+  void _openSchedule(BuildContext context) {
+    final therapy = context.read<TherapyProvider>();
+    if (therapy.selectedTherapist != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const MobileFrame(child: ScheduleScreen())),
+      );
+    } else {
+      // No therapist chosen yet — send them to pick one first, rather
+      // than opening a Schedule screen with nothing to show.
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const MobileFrame(child: BrowseTherapistsScreen())),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final unread = context.watch<NotificationsProvider>().unreadCount;
+    final session = context.watch<UserSessionProvider>();
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -50,7 +75,7 @@ class HomeScreen extends StatelessWidget {
                           style: AppTextStyles.heading(size: 28),
                           children: [
                             const TextSpan(text: 'Good morning, '),
-                            TextSpan(text: 'Layla.', style: AppTextStyles.heading(size: 28, style: FontStyle.italic)),
+                            TextSpan(text: '${session.firstName}.', style: AppTextStyles.heading(size: 28, style: FontStyle.italic)),
                           ],
                         ),
                       ),
@@ -59,7 +84,9 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 GestureDetector(
-                  onTap: () => showComingSoon(context, 'Notifications'),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const MobileFrame(child: NotificationsScreen())),
+                  ),
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
@@ -69,15 +96,16 @@ class HomeScreen extends StatelessWidget {
                         decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                         child: const Icon(Icons.notifications_outlined, color: AppColors.textDark, size: 20),
                       ),
-                      Positioned(
-                        top: 0,
-                        right: 0,
-                        child: Container(
-                          width: 10,
-                          height: 10,
-                          decoration: const BoxDecoration(color: AppColors.sos, shape: BoxShape.circle),
+                      if (unread > 0)
+                        Positioned(
+                          top: 0,
+                          right: 0,
+                          child: Container(
+                            width: 10,
+                            height: 10,
+                            decoration: const BoxDecoration(color: AppColors.sos, shape: BoxShape.circle),
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),
@@ -86,10 +114,10 @@ class HomeScreen extends StatelessWidget {
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const MobileFrame(child: ProgressScreen())),
                   ),
-                  child: const CircleAvatar(
+                  child: CircleAvatar(
                     radius: 21,
                     backgroundColor: AppColors.sos,
-                    child: Text('L', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                    child: Text(session.initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
                   ),
                 ),
               ],
@@ -128,9 +156,13 @@ class HomeScreen extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        AppointmentCard(onTap: () => showComingSoon(context, 'Your schedule')),
+                        AppointmentCard(onTap: () => _openSchedule(context)),
                         const SizedBox(height: 12),
-                        QuickBreathCard(onTap: () => showComingSoon(context, '3-min breathing exercise')),
+                        QuickBreathCard(
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const MobileFrame(child: BreathingPlayerScreen(pattern: BreathingPattern.quickBreath))),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -161,14 +193,18 @@ class HomeScreen extends StatelessWidget {
               children: [
                 Text('FOR YOU, TODAY', style: AppTextStyles.label()),
                 GestureDetector(
-                  onTap: () => showComingSoon(context, 'Full recommendations list'),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const MobileFrame(child: ProgressScreen())),
+                  ),
                   child: Text('see all', style: AppTextStyles.body(size: 13, weight: FontWeight.w600, color: AppColors.textDark)),
                 ),
               ],
             ),
             const SizedBox(height: 12),
             ActionPillRow(
-              onBreathTap: () => showComingSoon(context, 'Breathing exercises'),
+              onBreathTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const MobileFrame(child: BreathingPlayerScreen(pattern: BreathingPattern.quickBreath))),
+              ),
               onReflectTap: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const MobileFrame(child: MotivationScreen())),
               ),

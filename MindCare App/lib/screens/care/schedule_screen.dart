@@ -7,7 +7,9 @@ import '../../providers/therapy_provider.dart';
 import '../../widgets/care/day_chip.dart';
 import '../../widgets/care/slot_tile.dart';
 import '../../widgets/common/sos_button.dart';
+import 'cancel_session_screen.dart';
 import 'in_session_screen.dart';
+import 'reschedule_screen.dart';
 import 'your_program_screen.dart';
 
 class ScheduleScreen extends StatelessWidget {
@@ -77,74 +79,100 @@ class ScheduleScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 20),
-                Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(color: const Color(0xFFDCEAE2), borderRadius: BorderRadius.circular(20)),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('NEXT CONFIRMED', style: AppTextStyles.label()),
-                                const SizedBox(height: 6),
-                                Text('Fri · 5:00 PM', style: AppTextStyles.heading(size: 22)),
-                              ],
-                            ),
+                if (provider.nextConfirmedCancelled)
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.event_busy, color: AppColors.textMuted),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('No confirmed session', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                              const SizedBox(height: 2),
+                              Text('Your last session was cancelled. Request a new time below.', style: AppTextStyles.body(size: 12)),
+                            ],
                           ),
-                          ElevatedButton.icon(
-                            onPressed: () => Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const MobileFrame(child: InSessionScreen())),
-                            ),
-                            icon: const Icon(Icons.videocam_outlined, size: 16, color: Colors.white),
-                            label: const Text('Join Meet', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.progressActive,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text('50 min · Meet link sent to both', style: AppTextStyles.body(size: 12)),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () {},
-                              style: OutlinedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                                side: BorderSide.none,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(color: const Color(0xFFDCEAE2), borderRadius: BorderRadius.circular(20)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('NEXT CONFIRMED', style: AppTextStyles.label()),
+                                  const SizedBox(height: 6),
+                                  Text(provider.nextConfirmedLabel, style: AppTextStyles.heading(size: 22)),
+                                ],
                               ),
-                              child: const Text('Reschedule', style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w600, fontSize: 13)),
                             ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () {},
-                              style: OutlinedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                                side: BorderSide.none,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
+                            ElevatedButton.icon(
+                              onPressed: () => Navigator.of(context).push(
+                                MaterialPageRoute(builder: (_) => const MobileFrame(child: InSessionScreen())),
                               ),
-                              child: const Text('Cancel · with note', style: TextStyle(color: AppColors.sos, fontWeight: FontWeight.w600, fontSize: 13)),
+                              icon: const Icon(Icons.videocam_outlined, size: 16, color: Colors.white),
+                              label: const Text('Join Meet', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.progressActive,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text('50 min · Meet link sent to both', style: AppTextStyles.body(size: 12)),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (_) => const MobileFrame(child: RescheduleScreen())),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  side: BorderSide.none,
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                ),
+                                child: const Text('Reschedule', style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w600, fontSize: 13)),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (_) => const MobileFrame(child: CancelSessionScreen())),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  side: BorderSide.none,
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                ),
+                                child: const Text('Cancel · with note', style: TextStyle(color: AppColors.sos, fontWeight: FontWeight.w600, fontSize: 13)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
                 const SizedBox(height: 14),
                 Container(
                   padding: const EdgeInsets.all(16),

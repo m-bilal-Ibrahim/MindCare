@@ -6,6 +6,7 @@ class ProfileHeader extends StatelessWidget {
   const ProfileHeader({
     super.key,
     required this.name,
+    this.initials,
     required this.joinedInfo,
     required this.levelBadge,
     required this.streak,
@@ -14,6 +15,7 @@ class ProfileHeader extends StatelessWidget {
   });
 
   final String name;
+  final String? initials;
   final String joinedInfo;
   final String levelBadge;
   final int streak;
@@ -22,13 +24,15 @@ class ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final displayInitials = initials ?? (name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?');
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const CircleAvatar(radius: 34, backgroundColor: Color(0xFFE5382B), child: Text('LS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18))),
+            CircleAvatar(radius: 34, backgroundColor: const Color(0xFFE5382B), child: Text(displayInitials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18))),
             const SizedBox(width: 16),
             Expanded(
               child: Column(

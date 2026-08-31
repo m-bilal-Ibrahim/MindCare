@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/services/share_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../main.dart';
 import '../../providers/account_provider.dart';
 import '../../widgets/common/sos_button.dart';
 import '../../widgets/rewards/badge_tile.dart';
 import '../../widgets/rewards/earn_today_tile.dart';
 import '../../widgets/rewards/level_progress_card.dart';
 import '../../widgets/rewards/streak_stats_row.dart';
+import '../care/badge_detail_screen.dart';
 
 class RewardsScreen extends StatelessWidget {
   const RewardsScreen({super.key});
@@ -37,7 +40,13 @@ class RewardsScreen extends StatelessWidget {
                         style: TextStyle(letterSpacing: 1, color: AppColors.textLabel, fontWeight: FontWeight.w600, fontSize: 12),
                       ),
                     ),
-                    IconButton(onPressed: () {}, icon: const Icon(Icons.ios_share, size: 18, color: AppColors.textDark)),
+                    IconButton(
+                      onPressed: () => ShareService.instance.shareText(
+                        "I'm on a ${provider.checkinStreak}-day check-in streak on MindCare — Level ${provider.levelNumber} · ${provider.levelName}!",
+                        subject: 'My MindCare progress',
+                      ),
+                      icon: const Icon(Icons.ios_share, size: 18, color: AppColors.textDark),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -74,12 +83,33 @@ class RewardsScreen extends StatelessWidget {
                     crossAxisSpacing: 12,
                     childAspectRatio: 0.95,
                   ),
-                  itemBuilder: (context, index) => BadgeTile(badge: provider.badges[index]),
+                  itemBuilder: (context, index) {
+                    final badge = provider.badges[index];
+                    return GestureDetector(
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => MobileFrame(child: BadgeDetailScreen(badge: badge))),
+                      ),
+                      child: BadgeTile(badge: badge),
+                    );
+                  },
                 ),
                 const SizedBox(height: 22),
                 Text('EARN TODAY', style: AppTextStyles.label()),
                 const SizedBox(height: 12),
-                ...provider.earnTasks.map((task) => EarnTodayTile(task: task)),
+                ...List.generate(provider.earnTasks.length, (index) {
+                  final task = provider.earnTasks[index];
+                  return GestureDetector(
+                    onTap: task.done
+                        ? null
+                        : () {
+                            context.read<AccountProvider>().completeEarnTask(index);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('+${task.points} points · ${task.title} done!')),
+                            );
+                          },
+                    child: EarnTodayTile(task: task),
+                  );
+                }),
               ],
             ),
             const Positioned(right: 0, bottom: 24, child: SosButton()),

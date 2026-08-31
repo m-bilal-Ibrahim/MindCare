@@ -108,6 +108,12 @@ class CheckinProvider extends ChangeNotifier {
   bool isAssistantTyping = false;
   int _idCounter = 0;
 
+  /// Set once, the first time the chat screen opens with a known
+  /// user name — used to personalize the seeded greeting and canned
+  /// replies instead of a hardcoded placeholder name.
+  String _userFirstName = 'there';
+  bool _greetingPersonalized = false;
+
   String _nextId() => 'msg_${_idCounter++}';
 
   void _seedChat() {
@@ -115,7 +121,7 @@ class CheckinProvider extends ChangeNotifier {
       ChatMessage(
         id: _nextId(),
         sender: MessageSender.assistant,
-        text: "Morning, Layla. Your resting heart rate is a touch high and your breathing's quick. Want to talk about it?",
+        text: "Morning, {name}. Your resting heart rate is a touch high and your breathing's quick. Want to talk about it?",
       ),
       ChatMessage(
         id: _nextId(),
@@ -147,6 +153,30 @@ class CheckinProvider extends ChangeNotifier {
         text: "Done — added a 4 PM nudge. Whenever you're ready.",
       ),
     ]);
+  }
+
+  /// Replaces the `{name}` placeholder in the seeded greeting with
+  /// the person's real first name, and remembers it for canned
+  /// replies. Safe to call every time the chat screen opens — it
+  /// only actually rewrites messages once.
+  void personalizeGreeting(String firstName) {
+    _userFirstName = firstName.isEmpty ? 'there' : firstName;
+    if (_greetingPersonalized) return;
+    _greetingPersonalized = true;
+
+    for (int i = 0; i < messages.length; i++) {
+      final m = messages[i];
+      if (m.text != null && m.text!.contains('{name}')) {
+        messages[i] = ChatMessage(
+          id: m.id,
+          sender: m.sender,
+          text: m.text!.replaceAll('{name}', _userFirstName),
+          exercise: m.exercise,
+          timestamp: m.timestamp,
+        );
+      }
+    }
+    notifyListeners();
   }
 
   static const List<String> quickReplies = [
@@ -186,7 +216,7 @@ class CheckinProvider extends ChangeNotifier {
       return 'Rest matters more than it gets credit for. Want a wind-down routine for tonight?';
     }
     if (lower.contains('thanks') || lower.contains('thank you')) {
-      return 'Always here for you, Layla.';
+      return 'Always here for you, $_userFirstName.';
     }
     return "I hear you. Tell me a little more, and we'll figure out the next small step together.";
   }

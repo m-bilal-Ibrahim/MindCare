@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/services/share_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../providers/checkin_provider.dart';
@@ -37,7 +38,10 @@ class ProgressScreen extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () => ShareService.instance.shareText(
+                        "${provider.streakDays}-day check-in streak on MindCare, average mood ${provider.avgMood.toStringAsFixed(1)}/5 this month.",
+                        subject: 'My MindCare progress',
+                      ),
                       icon: const Icon(Icons.ios_share, color: AppColors.textDark, size: 20),
                     ),
                   ],

@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
-import '../../core/utils/app_feedback.dart';
 import '../../main.dart';
 import '../../providers/community_provider.dart';
 import '../../widgets/circles/circle_tag_card.dart';
 import '../../widgets/circles/post_card.dart';
+import '../../widgets/circles/post_options_sheet.dart';
+import '../circles/circle_detail_screen.dart';
+import '../circles/create_post_screen.dart';
 import '../sos/peer_talk_screen.dart';
 
 class CirclesScreen extends StatelessWidget {
@@ -37,7 +39,9 @@ class CirclesScreen extends StatelessWidget {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () => showComingSoon(context, 'Create a post'),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const MobileFrame(child: CreatePostScreen())),
+                  ),
                   child: Container(
                     width: 42,
                     height: 42,
@@ -90,7 +94,9 @@ class CirclesScreen extends StatelessWidget {
                   final tag = provider.circleTags[index];
                   return CircleTagCard(
                     tag: tag,
-                    onTap: () => showComingSoon(context, '${tag.name} circle'),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => MobileFrame(child: CircleDetailScreen(tag: tag))),
+                    ),
                   );
                 },
               ),
@@ -122,10 +128,10 @@ class CirclesScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 14),
-            ...provider.posts.map(
+            ...provider.visiblePosts.map(
               (post) => PostCard(
                 post: post,
-                onMoreTap: () => showComingSoon(context, 'Post options'),
+                onMoreTap: () => showPostOptionsSheet(context, provider: context.read<CommunityProvider>(), post: post),
               ),
             ),
           ],

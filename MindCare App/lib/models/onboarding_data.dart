@@ -7,6 +7,13 @@ class OnboardingData {
   String phone;
   String cnic;
 
+  /// Held only in memory for the duration of the sign-up flow, long
+  /// enough to send once over HTTPS to the backend for hashing
+  /// (bcrypt/argon2) and storage. Never written to disk, never logged,
+  /// and cleared immediately after the account-creation request
+  /// completes via clearPassword().
+  String password;
+
   Set<String> selectedMoods;
   double intensity;
 
@@ -22,6 +29,7 @@ class OnboardingData {
     this.email = '',
     this.phone = '',
     this.cnic = '',
+    this.password = '',
     Set<String>? selectedMoods,
     this.intensity = 0.5,
     this.therapistHistory = 'Never',
@@ -30,14 +38,15 @@ class OnboardingData {
   })  : selectedMoods = selectedMoods ?? <String>{},
         concerns = concerns ?? <String>{};
 
-  /// Redacts sensitive fields (CNIC, phone, email) so PII never
-  /// ends up in debug logs or crash reports.
+  /// Redacts sensitive fields (CNIC, phone, email, password) so PII
+  /// never ends up in debug logs or crash reports.
   Map<String, dynamic> toRedactedMap() {
     return {
       'fullName': fullName,
       'email': _maskEmail(email),
       'phone': '***redacted***',
       'cnic': '***redacted***',
+      'password': '***redacted***',
       'gender': gender,
       'selectedMoods': selectedMoods.toList(),
       'intensity': intensity,

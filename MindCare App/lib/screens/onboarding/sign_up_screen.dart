@@ -8,6 +8,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/utils/validators.dart';
 import '../../main.dart';
 import '../../providers/onboarding_provider.dart';
+import '../../providers/user_session_provider.dart';
 import '../../widgets/common/primary_button.dart';
 import '../../widgets/common/sos_button.dart';
 import '../../widgets/common/step_progress_bar.dart';
@@ -26,10 +27,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _cnicController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   DateTime? _dob;
   String _gender = 'Woman';
   File? _photo;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
@@ -37,7 +42,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _emailController.dispose();
     _phoneController.dispose();
     _cnicController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  /// Computes 1–2 initials directly from whatever is currently typed
+  /// in the Full Name field — deliberately NOT read from
+  /// UserSessionProvider here, since that only updates once the
+  /// person taps Continue. Using it before then would show stale
+  /// (empty) initials even after the person has typed their name.
+  String _initialsFromTypedName() {
+    final trimmed = _nameController.text.trim();
+    if (trimmed.isEmpty) return '';
+    final parts = trimmed.split(RegExp(r'\s+'));
+    if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
+    return (parts.first.substring(0, 1) + parts.last.substring(0, 1)).toUpperCase();
   }
 
   Future<void> _pickPhoto() async {
@@ -73,6 +93,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return '${date.day.toString().padLeft(2, '0')} · ${months[date.month - 1]} · ${date.year}';
   }
 
+  String? _validateConfirmPassword(String? value) {
+    if (value == null || value.isEmpty) return 'Please confirm your password';
+    if (value != _passwordController.text) return 'Passwords do not match';
+    return null;
+  }
+
   void _onContinue() {
     final isValid = _formKey.currentState!.validate();
     if (_dob == null) {
@@ -90,6 +116,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
     provider.setEmail(_emailController.text.trim());
     provider.setPhone(_phoneController.text.trim());
     provider.setCnic(_cnicController.text.trim());
+    provider.setPassword(_passwordController.text);
+
+    context.read<UserSessionProvider>().setName(_nameController.text.trim());
 
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const MobileFrame(child: FeelingCheckinScreen())),
@@ -98,6 +127,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final hasName = _nameController.text.trim().isNotEmpty;
+    final typedInitials = _initialsFromTypedName();
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -139,9 +171,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             radius: 34,
                             backgroundColor: const Color(0xFFDA9A8A),
                             backgroundImage: _photo != null ? FileImage(_photo!) : null,
-                            child: _photo == null
-                                ? const Text('L', style: TextStyle(color: Colors.white, fontSize: 24))
-                                : null,
+                            child: _photo != null
+                                ? null
+                                : hasName
+                                    ? Text(typedInitials, style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w600))
+                                    : const Icon(Icons.person, color: Colors.white, size: 34),
                           ),
                           Positioned(
                             bottom: 0,
@@ -175,6 +209,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   controller: _nameController,
                   textCapitalization: TextCapitalization.words,
                   validator: Validators.fullName,
+                  onChanged: (_) => setState(() {}),
                   decoration: const InputDecoration(hintText: 'Your full name'),
                 ),
                 const SizedBox(height: 18),
@@ -264,6 +299,38 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text('For verification only — never shown publicly.', style: AppTextStyles.body(size: 12)),
+                const SizedBox(height: 22),
+                Text('PASSWORD', style: AppTextStyles.label()),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: _obscurePassword,
+                  validator: Validators.password,
+                  decoration: InputDecoration(
+                    hintText: 'Create a password',
+                    suffixIcon: IconButton(
+                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.textMuted),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text('At least 8 characters, with upper, lower, a number, and a symbol.', style: AppTextStyles.body(size: 12)),
+                const SizedBox(height: 18),
+                Text('CONFIRM PASSWORD', style: AppTextStyles.label()),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  obscureText: _obscureConfirmPassword,
+                  validator: _validateConfirmPassword,
+                  decoration: InputDecoration(
+                    hintText: 'Re-enter your password',
+                    suffixIcon: IconButton(
+                      onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                      icon: Icon(_obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.textMuted),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 26),
                 Row(
                   children: [

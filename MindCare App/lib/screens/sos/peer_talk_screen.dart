@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/utils/app_feedback.dart';
 import '../../providers/community_provider.dart';
 import '../../widgets/common/sos_button.dart';
 import '../../widgets/onboarding/selectable_chip.dart';
@@ -29,6 +30,50 @@ class _PeerTalkScreenState extends State<PeerTalkScreen> {
     super.dispose();
   }
 
+  void _showMoreOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.help_outline, color: AppColors.textDark),
+                  title: const Text('How Peer Talk works', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark)),
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    showComingSoon(context, 'Peer Talk help');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.flag_outlined, color: AppColors.sos),
+                  title: const Text('Report a listener', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.sos)),
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    showComingSoon(context, 'Report a listener');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.block, color: AppColors.textMuted),
+                  title: const Text('Blocked listeners', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark)),
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    showComingSoon(context, 'Blocked listeners');
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<CommunityProvider>();
@@ -52,7 +97,10 @@ class _PeerTalkScreenState extends State<PeerTalkScreen> {
                     style: TextStyle(letterSpacing: 1, color: AppColors.textLabel, fontWeight: FontWeight.w600, fontSize: 12),
                   ),
                 ),
-                IconButton(onPressed: () {}, icon: const Icon(Icons.more_horiz, color: AppColors.textDark)),
+                IconButton(
+                  onPressed: () => _showMoreOptions(context),
+                  icon: const Icon(Icons.more_horiz, color: AppColors.textDark),
+                ),
               ],
             ),
             const SizedBox(height: 6),

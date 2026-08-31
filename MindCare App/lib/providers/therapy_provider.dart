@@ -88,8 +88,30 @@ class TherapyProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ----- Sort & extra filters -----
+  /// 'default' | 'rating' | 'price_low' | 'trial' | 'language'
+  String sortMode = 'default';
+  String? languageFilter;
+
+  static const List<String> availableLanguages = ['English', 'Urdu', 'Pashto'];
+
+  void setSortMode(String mode) {
+    sortMode = mode;
+    // Choosing a sort mode other than the language filter clears any
+    // active language filter, so only one refinement applies at a
+    // time — keeps the UI predictable rather than silently stacking.
+    if (mode != 'language') languageFilter = null;
+    notifyListeners();
+  }
+
+  void setLanguageFilter(String? language) {
+    languageFilter = language;
+    sortMode = language == null ? 'default' : 'language';
+    notifyListeners();
+  }
+
   List<Therapist> get filteredTherapists {
-    return therapists.where((t) {
+    var results = therapists.where((t) {
       final matchesFilter =
           selectedFilter == 'All' || t.specialty.toLowerCase().contains(selectedFilter.toLowerCase());
       final matchesSearch = searchQuery.isEmpty ||
@@ -97,6 +119,56 @@ class TherapyProvider extends ChangeNotifier {
           t.specialty.toLowerCase().contains(searchQuery.toLowerCase());
       return matchesFilter && matchesSearch;
     }).toList();
+
+    switch (sortMode) {
+      case 'rating':
+        results.sort((a, b) => b.rating.compareTo(a.rating));
+        break;
+      case 'price_low':
+        results.sort((a, b) => a.priceMonthly.compareTo(b.priceMonthly));
+        break;
+      case 'trial':
+        results = results.where((t) => t.trialAvailable).toList();
+        break;
+      case 'language':
+        if (languageFilter != null) {
+          final shortCode = _languageShortCode(languageFilter!);
+          results = results.where((t) => t.languages.contains(shortCode)).toList();
+        }
+        break;
+      case 'default':
+      default:
+        break;
+    }
+
+    return results;
+  }
+
+  String _languageShortCode(String language) {
+    switch (language) {
+      case 'English':
+        return 'En';
+      case 'Urdu':
+        return 'Ur';
+      case 'Pashto':
+        return 'Pa';
+      default:
+        return language;
+    }
+  }
+
+  // ----- Bookmarks -----
+  Set<String> bookmarkedTherapistIds = {};
+
+  bool isBookmarked(String therapistId) => bookmarkedTherapistIds.contains(therapistId);
+
+  void toggleBookmark(String therapistId) {
+    if (bookmarkedTherapistIds.contains(therapistId)) {
+      bookmarkedTherapistIds.remove(therapistId);
+    } else {
+      bookmarkedTherapistIds.add(therapistId);
+    }
+    notifyListeners();
   }
 
   // ----- Plan & trial -----
@@ -157,16 +229,24 @@ class TherapyProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Sends a session request to the backend.
-  ///
-  /// NOTE: demo/placeholder only. In production this must be a real,
-  /// authenticated HTTPS call. The server — never the client — must
-  /// be the source of truth for slot availability, to prevent double
-  /// booking, and must generate the video-call link itself using a
-  /// short-lived, single-use, per-session token rather than a static
-  /// reusable link that could be shared or replayed.
   Future<void> requestSession() async {
     await Future.delayed(const Duration(milliseconds: 500));
+    notifyListeners();
+  }
+
+  // ----- Next confirmed session -----
+  String nextConfirmedLabel = 'Fri · 5:00 PM';
+  bool nextConfirmedCancelled = false;
+
+  Future<void> rescheduleSession(String dayLabel, int date, String time) async {
+    await Future.delayed(const Duration(milliseconds: 600));
+    nextConfirmedLabel = '$dayLabel · $time';
+    notifyListeners();
+  }
+
+  Future<void> cancelSession(String note) async {
+    await Future.delayed(const Duration(milliseconds: 600));
+    nextConfirmedCancelled = true;
     notifyListeners();
   }
 }

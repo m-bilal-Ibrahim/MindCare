@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/services/share_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../main.dart';
@@ -9,7 +10,6 @@ import '../../widgets/care/plan_option_tile.dart';
 import '../../widgets/common/primary_button.dart';
 import '../../widgets/common/sos_button.dart';
 import 'schedule_screen.dart';
-import 'your_program_screen.dart';
 
 class PlanTrialScreen extends StatelessWidget {
   const PlanTrialScreen({super.key});
@@ -33,6 +33,8 @@ class PlanTrialScreen extends StatelessWidget {
       return const Scaffold(body: Center(child: Text('No therapist selected')));
     }
 
+    final bookmarked = provider.isBookmarked(therapist.id);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -50,9 +52,24 @@ class PlanTrialScreen extends StatelessWidget {
                     ),
                     Row(
                       children: [
-                        _CircleIconButton(icon: Icons.bookmark_border, onTap: () {}),
+                        _CircleIconButton(
+                          icon: bookmarked ? Icons.bookmark : Icons.bookmark_border,
+                          iconColor: bookmarked ? AppColors.progressActive : AppColors.textDark,
+                          onTap: () {
+                            context.read<TherapyProvider>().toggleBookmark(therapist.id);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(bookmarked ? 'Removed from saved' : 'Saved for later')),
+                            );
+                          },
+                        ),
                         const SizedBox(width: 10),
-                        _CircleIconButton(icon: Icons.ios_share, onTap: () {}),
+                        _CircleIconButton(
+                          icon: Icons.ios_share,
+                          onTap: () => ShareService.instance.shareText(
+                            '${therapist.name} · ${therapist.title} on MindCare. Rs ${_formatPrice(therapist.priceMonthly)}/month.',
+                            subject: 'Check out this therapist on MindCare',
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -144,14 +161,14 @@ class PlanTrialScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 Container(
                   decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
-                  child: Column(
+                  child: const Column(
                     children: [
-                      const BenefitRow(
+                      BenefitRow(
                         icon: Icons.videocam_outlined,
                         title: 'Weekly 50-min video sessions',
                         subtitle: 'Reschedule freely with notice.',
                       ),
-                      const BenefitRow(
+                      BenefitRow(
                         icon: Icons.chat_bubble_outline,
                         title: 'In-between chat with your therapist',
                         subtitle: '48-hour response, weekdays.',
@@ -161,9 +178,6 @@ class PlanTrialScreen extends StatelessWidget {
                         title: 'Your permanent care program',
                         subtitle: 'Updated by your therapist from time to time.',
                         showDivider: false,
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const MobileFrame(child: YourProgramScreen())),
-                        ),
                       ),
                     ],
                   ),
@@ -203,19 +217,24 @@ class PlanTrialScreen extends StatelessWidget {
 }
 
 class _CircleIconButton extends StatelessWidget {
-  const _CircleIconButton({required this.icon, required this.onTap});
+  const _CircleIconButton({required this.icon, required this.onTap, this.iconColor});
   final IconData icon;
   final VoidCallback onTap;
+  final Color? iconColor;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 42,
-        height: 42,
-        decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-        child: Icon(icon, size: 18, color: AppColors.textDark),
+    return Material(
+      color: Colors.white,
+      shape: const CircleBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: SizedBox(
+          width: 42,
+          height: 42,
+          child: Icon(icon, size: 18, color: iconColor ?? AppColors.textDark),
+        ),
       ),
     );
   }

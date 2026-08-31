@@ -24,6 +24,7 @@ class OnboardingProvider extends ChangeNotifier {
   void setEmail(String value) => data.email = value;
   void setPhone(String value) => data.phone = value;
   void setCnic(String value) => data.cnic = value;
+  void setPassword(String value) => data.password = value;
 
   void toggleMood(String mood) {
     if (data.selectedMoods.contains(mood)) {
@@ -59,16 +60,23 @@ class OnboardingProvider extends ChangeNotifier {
   }
 
   /// Called once the whole onboarding flow finishes.
-  /// In production this sends `data` to your backend over HTTPS
-  /// (never plain HTTP), the backend hashes/stores it securely
-  /// (e.g. bcrypt/argon2 for any password, encrypted-at-rest DB
-  /// columns for CNIC), and returns a session token — which is the
-  /// ONLY thing saved on-device, via SecureStorageService.
+  ///
+  /// NOTE: demo/placeholder only. In production this sends `data`
+  /// (including the plaintext password, only over HTTPS) to a
+  /// backend endpoint that hashes it immediately with bcrypt/argon2
+  /// and stores only the hash — the plaintext password must never be
+  /// written to any database, log, or file, on the client or server.
+  /// The backend then returns a session token, which is the ONLY
+  /// thing saved on-device, via SecureStorageService.
   Future<void> finishSetup() async {
     // TODO: replace with a real API call, e.g.:
     // final token = await AuthApi.completeOnboarding(data);
     // await SecureStorageService.instance.saveAuthToken(token);
     await Future.delayed(const Duration(milliseconds: 600));
     debugPrint('Submitting onboarding: ${data.toRedactedMap()}');
+
+    // Clear the password from memory now that "submission" is done —
+    // it has no further reason to exist in this session's state.
+    data.password = '';
   }
 }

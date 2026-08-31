@@ -49,7 +49,7 @@ class ProgramProvider extends ChangeNotifier {
   final List<String> movementDayLabels = const ['Th', 'Fr', 'Sa', 'Su', 'Mo', 'Tu', 'We'];
   final String movementTip = 'a 10-minute walk after lunch tends to drop your resting heart rate by 6 bpm in the afternoon.';
 
-  final List<bool> mealsDone = const [true, true, true, false]; // B, L, S, D
+  final List<bool> mealsDone = const [true, true, true, false];
   final String dinnerTime = 'Dinner — 8 PM';
 
   final int waterGlassesTotal = 8;
@@ -86,12 +86,6 @@ class ProgramProvider extends ChangeNotifier {
   );
 
   final String featuredPosition = '1:14';
-  bool featuredPlaying = false;
-
-  void toggleFeaturedPlayback() {
-    featuredPlaying = !featuredPlaying;
-    notifyListeners();
-  }
 
   final List<AudioTrack> moreTracks = const [
     AudioTrack(id: 'dua_ease', tag: 'For stress', title: 'Dua for ease', translation: '"My Lord, expand my chest..."', duration: '1:42'),
@@ -99,4 +93,30 @@ class ProgramProvider extends ChangeNotifier {
     AudioTrack(id: 'dua_sleep', tag: '', title: 'Dua for sleep', translation: 'In Your name I die and live.', duration: '0:46'),
     AudioTrack(id: 'al_falaq', tag: '', title: 'Surah Al-Falaq', translation: '', duration: '0:34'),
   ];
+
+  /// Unified playback: the id of whichever track is currently
+  /// "playing" (featured or from the list) — only one at a time.
+  /// Null means nothing is playing.
+  String? playingTrackId;
+
+  bool isPlaying(String trackId) => playingTrackId == trackId;
+
+  void togglePlay(String trackId) {
+    playingTrackId = playingTrackId == trackId ? null : trackId;
+    notifyListeners();
+  }
+
+  /// Bookmarked tracks — shown as filled once saved.
+  Set<String> bookmarkedTrackIds = {};
+
+  bool isTrackBookmarked(String trackId) => bookmarkedTrackIds.contains(trackId);
+
+  void toggleTrackBookmark(String trackId) {
+    if (bookmarkedTrackIds.contains(trackId)) {
+      bookmarkedTrackIds.remove(trackId);
+    } else {
+      bookmarkedTrackIds.add(trackId);
+    }
+    notifyListeners();
+  }
 }

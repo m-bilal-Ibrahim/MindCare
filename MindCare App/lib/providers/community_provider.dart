@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../models/community_data.dart';
+import '../models/hospital_data.dart';
 
 class CommunityProvider extends ChangeNotifier {
   // ----- Circles feed -----
@@ -19,8 +20,8 @@ class CommunityProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  final List<CommunityPost> posts = const [
-    CommunityPost(
+  List<CommunityPost> _posts = [
+    const CommunityPost(
       id: 'p1',
       authorName: 'Anonymous',
       handle: '@warm-thistle',
@@ -33,7 +34,7 @@ class CommunityProvider extends ChangeNotifier {
       comments: 8,
       isAnonymous: true,
     ),
-    CommunityPost(
+    const CommunityPost(
       id: 'p2',
       authorName: 'Ammar S.',
       handle: '@ammar.s',
@@ -45,7 +46,72 @@ class CommunityProvider extends ChangeNotifier {
       hugs: 19,
       comments: 14,
     ),
+    const CommunityPost(
+      id: 'p3',
+      authorName: 'Sana K.',
+      handle: '@sana.k',
+      avatarColor: Color(0xFFCBB36B),
+      circleName: 'New parents',
+      timeAgo: '8h',
+      content: "3 AM feed, and for once I wasn't dreading it. Small thing, but I noticed it.",
+      hearts: 31,
+      hugs: 12,
+      comments: 4,
+    ),
   ];
+
+  final Set<String> _hiddenPostIds = {};
+  final Set<String> _blockedHandles = {};
+  final Set<String> _reportedPostIds = {};
+
+  List<CommunityPost> get visiblePosts =>
+      _posts.where((p) => !_hiddenPostIds.contains(p.id) && !_blockedHandles.contains(p.handle)).toList();
+
+  List<CommunityPost> get posts => visiblePosts;
+
+  List<CommunityPost> postsForCircle(String circleName) =>
+      visiblePosts.where((p) => p.circleName == circleName).toList();
+
+  int postCountForCircle(String circleName) => postsForCircle(circleName).length;
+
+  void createPost({required String circleName, required String content}) {
+    final trimmed = content.trim();
+    if (trimmed.isEmpty) return;
+
+    final newPost = CommunityPost(
+      id: 'p_${DateTime.now().millisecondsSinceEpoch}',
+      authorName: 'Anonymous',
+      handle: '@you',
+      avatarColor: AppColors.progressActive,
+      circleName: circleName,
+      timeAgo: 'now',
+      content: trimmed,
+      hearts: 0,
+      hugs: 0,
+      comments: 0,
+      isAnonymous: true,
+    );
+
+    _posts = [newPost, ..._posts];
+    notifyListeners();
+  }
+
+  void reportPost(String postId) {
+    _reportedPostIds.add(postId);
+    notifyListeners();
+  }
+
+  bool isReported(String postId) => _reportedPostIds.contains(postId);
+
+  void hidePost(String postId) {
+    _hiddenPostIds.add(postId);
+    notifyListeners();
+  }
+
+  void blockUser(String handle) {
+    _blockedHandles.add(handle);
+    notifyListeners();
+  }
 
   // ----- Peer talk request -----
   static const List<String> feelingOptions = ['Lonely', 'Anxious', 'Low', 'Overwhelmed'];
@@ -75,15 +141,6 @@ class CommunityProvider extends ChangeNotifier {
 
   bool postingRequest = false;
 
-  /// Posts an anonymous peer-talk request to the backend matching queue.
-  ///
-  /// NOTE: demo/placeholder only. In production, this must go through
-  /// an authenticated HTTPS call. The note text and mood selection are
-  /// sensitive personal-support content — the backend must never log
-  /// this in plaintext analytics, and the eventual voice call must use
-  /// a masked/pitch-shifted audio pipeline server-side so raw voice
-  /// data isn't exposed to the peer listener, matching the "voices
-  /// are softly masked" promise shown in the UI.
   Future<void> postPeerTalkRequest() async {
     postingRequest = true;
     notifyListeners();
@@ -118,5 +175,11 @@ class CommunityProvider extends ChangeNotifier {
       title: 'Nearby hospitals',
       subtitle: '3 within 5 km · Shifa, Quaid-e-Azam, KRL',
     ),
+  ];
+
+   final List<Hospital> nearbyHospitals = const [
+    Hospital(name: 'Shifa International Hospital', address: 'Pitras Bukhari Rd, H-8/4, Islamabad', distanceKm: 1.8, isOpen24h: true, phoneNumber: '+925184444'),
+    Hospital(name: 'Quaid-e-Azam International Hospital', address: 'Rawal Rd, Chak Shahzad, Islamabad', distanceKm: 3.2, isOpen24h: true, phoneNumber: '+92519106666'),
+    Hospital(name: 'KRL Hospital', address: 'G-9/4, Islamabad', distanceKm: 4.5, isOpen24h: false, phoneNumber: '+925191051190'),
   ];
 }

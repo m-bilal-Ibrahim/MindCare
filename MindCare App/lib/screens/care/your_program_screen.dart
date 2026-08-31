@@ -1,13 +1,69 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/services/share_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../main.dart';
 import '../../providers/program_provider.dart';
 import '../../widgets/care/program_task_tile.dart';
 import '../../widgets/common/sos_button.dart';
+import 'past_programs_screen.dart';
+import 'request_change_screen.dart';
 
 class YourProgramScreen extends StatelessWidget {
   const YourProgramScreen({super.key});
+
+  void _showMoreOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.edit_note_outlined, color: AppColors.textDark),
+                  title: const Text('Request a change', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark)),
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const MobileFrame(child: RequestChangeScreen())),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.history, color: AppColors.textDark),
+                  title: const Text('View past programs', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark)),
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const MobileFrame(child: PastProgramsScreen())),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.ios_share, color: AppColors.textDark),
+                  title: const Text('Share with someone', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark)),
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    final provider = context.read<ProgramProvider>();
+                    ShareService.instance.shareText(
+                      "My weekly care program on MindCare: ${provider.totalDone} of ${provider.totalTasks} tasks done this week.",
+                      subject: 'My MindCare program',
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +90,19 @@ class YourProgramScreen extends StatelessWidget {
                         style: TextStyle(letterSpacing: 1, color: AppColors.textLabel, fontWeight: FontWeight.w600, fontSize: 12),
                       ),
                     ),
-                    IconButton(onPressed: () {}, icon: const Icon(Icons.more_horiz, color: AppColors.textDark)),
+                    Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        onTap: () => _showMoreOptions(context),
+                        child: const SizedBox(
+                          width: 42,
+                          height: 42,
+                          child: Icon(Icons.more_horiz, color: AppColors.textDark),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 6),
@@ -61,7 +129,7 @@ class YourProgramScreen extends StatelessWidget {
                           children: [
                             const Text('Set by Dr. Tariq', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.textDark)),
                             const SizedBox(height: 2),
-                            Text('Updated 3 days ago · next review on Friday\'s session', style: AppTextStyles.body(size: 12)),
+                            Text("Updated 3 days ago · next review on Friday's session", style: AppTextStyles.body(size: 12)),
                           ],
                         ),
                       ),
@@ -91,22 +159,27 @@ class YourProgramScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 ...provider.weeklyTasks.map((task) => ProgramTaskTile(task: task)),
                 const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(Icons.lock_outline, size: 14, color: AppColors.textMuted),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: RichText(
-                        text: TextSpan(
-                          style: AppTextStyles.body(size: 12),
-                          children: const [
-                            TextSpan(text: 'Only Dr. Tariq can change your program. '),
-                            TextSpan(text: 'Request a change →', style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w600)),
-                          ],
+                GestureDetector(
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const MobileFrame(child: RequestChangeScreen())),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.lock_outline, size: 14, color: AppColors.textMuted),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: RichText(
+                          text: TextSpan(
+                            style: AppTextStyles.body(size: 12),
+                            children: const [
+                              TextSpan(text: 'Only Dr. Tariq can change your program. '),
+                              TextSpan(text: 'Request a change →', style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w600)),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 24),
                 Text('QUICK RELIEF FROM AIDA', style: AppTextStyles.label()),

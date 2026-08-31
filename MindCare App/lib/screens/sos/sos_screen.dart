@@ -1,13 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/utils/app_feedback.dart';
 import '../../main.dart';
 import '../../providers/community_provider.dart';
 import '../../widgets/sos/sos_action_tile.dart';
 import '../home/aida_chat_screen.dart';
+import 'nearby_hospitals_screen.dart';
+import 'notify_circle_screen.dart';
 
 class SosScreen extends StatelessWidget {
   const SosScreen({super.key});
+
+  /// Opens the phone's own dialer, pre-filled with the helpline
+  /// number. MindCare never places the call itself — this hands off
+  /// to the OS dialer, which is the safe, standard approach for a
+  /// crisis line: the person can see the number, confirm, and place
+  /// the call through their normal phone app.
+  Future<void> _callHelpline(BuildContext context, String number) async {
+    final uri = Uri(scheme: 'tel', path: number);
+    final launched = await launchUrl(uri);
+    if (!launched && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Couldn't open the dialer. Call $number directly.")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +79,7 @@ class SosScreen extends StatelessWidget {
             const SizedBox(height: 34),
             Center(
               child: GestureDetector(
-                onLongPress: () => showComingSoon(context, 'Connecting you to a person'),
+                onTap: () => _callHelpline(context, '03117786264'),
                 child: Container(
                   width: 220,
                   height: 220,
@@ -74,12 +92,12 @@ class SosScreen extends StatelessWidget {
                         shape: BoxShape.circle,
                         gradient: RadialGradient(colors: [Color(0xFFC96A50), Color(0xFFAD4C36)]),
                       ),
-                      child: Column(
+                      child: const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
+                        children: [
                           Text('Call a person', style: TextStyle(color: Colors.white, fontSize: 20, fontFamily: 'serif')),
                           SizedBox(height: 8),
-                          Text('HOLD TO CONNECT', style: TextStyle(color: Colors.white70, fontSize: 10, letterSpacing: 1, fontWeight: FontWeight.w700)),
+                          Text('TAP TO CALL', style: TextStyle(color: Colors.white70, fontSize: 10, letterSpacing: 1, fontWeight: FontWeight.w700)),
                         ],
                       ),
                     ),
@@ -90,7 +108,7 @@ class SosScreen extends StatelessWidget {
             const SizedBox(height: 36),
             SosActionTile(
               resource: resources[0],
-              onTap: () => showComingSoon(context, 'Calling the Umang helpline (requires phone permission)'),
+              onTap: () => _callHelpline(context, '03117786264'),
             ),
             SosActionTile(
               resource: resources[1],
@@ -100,11 +118,15 @@ class SosScreen extends StatelessWidget {
             ),
             SosActionTile(
               resource: resources[2],
-              onTap: () => showComingSoon(context, 'Notifying your circle'),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const MobileFrame(child: NotifyCircleScreen())),
+              ),
             ),
             SosActionTile(
               resource: resources[3],
-              onTap: () => showComingSoon(context, 'Nearby hospitals map'),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const MobileFrame(child: NearbyHospitalsScreen())),
+              ),
             ),
           ],
         ),

@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/services/voice_input_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
-import '../../core/utils/app_feedback.dart';
 import '../../models/checkin_data.dart';
 import '../../providers/checkin_provider.dart';
 import '../../widgets/chat/breathing_prompt_card.dart';
 import '../../widgets/chat/chat_bubble.dart';
 import '../../widgets/chat/quick_reply_row.dart';
+import '../../providers/user_session_provider.dart';
+import '../../main.dart';
+import '../../models/breathing_data.dart';
+import '../care/breathing_player_screen.dart';
 
 class AidaChatScreen extends StatefulWidget {
   const AidaChatScreen({super.key});
@@ -20,10 +24,15 @@ class _AidaChatScreenState extends State<AidaChatScreen> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
 
+  bool _isListening = false;
+  bool _micUnavailable = false;
+  String _textBeforeListening = '';
+
   @override
   void dispose() {
     _controller.dispose();
     _scrollController.dispose();
+    if (_isListening) VoiceInputService.instance.cancelListening();
     super.dispose();
   }
 
@@ -42,14 +51,66 @@ class _AidaChatScreenState extends State<AidaChatScreen> {
   void _send([String? preset]) {
     final text = preset ?? _controller.text;
     if (text.trim().isEmpty) return;
+    if (_isListening) _stopListening(clearIfEmpty: false);
     context.read<CheckinProvider>().sendMessage(text);
     _controller.clear();
     _scrollToBottom();
   }
 
-  @override
+    Future<void> _toggleListening() async {
+    if (_micUnavailable) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Microphone isn't available — check your browser/site permissions.")),
+      );
+      return;
+    }
+
+    if (_isListening) {
+      _stopListening(clearIfEmpty: false);
+      return;
+    }
+
+    _textBeforeListening = _controller.text;
+    final started = await VoiceInputService.instance.startListening(
+      onResult: (text, isFinal) {
+        if (!mounted) return;
+        final combined = _textBeforeListening.isEmpty ? text : '$_textBeforeListening $text';
+        setState(() {
+          _controller.text = combined;
+          _controller.selection = TextSelection.collapsed(offset: _controller.text.length);
+        });
+        if (isFinal) {
+          setState(() => _isListening = false);
+        }
+      },
+    );
+
+    if (!mounted) return;
+
+    if (!started) {
+      setState(() => _micUnavailable = true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Microphone isn't available — check your browser/site permissions.")),
+      );
+      return;
+    }
+
+    setState(() => _isListening = true);
+  }
+  void _stopListening({required bool clearIfEmpty}) {
+    VoiceInputService.instance.stopListening();
+    if (!mounted) return;
+    setState(() => _isListening = false);
+    if (clearIfEmpty && _controller.text.trim().isEmpty) {
+      _controller.clear();
+    }
+  }
+
+   @override
   Widget build(BuildContext context) {
     final provider = context.watch<CheckinProvider>();
+    final firstName = context.watch<UserSessionProvider>().firstName;
+    provider.personalizeGreeting(firstName);
     _scrollToBottom();
 
     return Scaffold(
@@ -117,7 +178,9 @@ class _AidaChatScreenState extends State<AidaChatScreen> {
                     if (message.exercise != null) {
                       return BreathingPromptCard(
                         exercise: message.exercise!,
-                        onBegin: () => showComingSoon(context, message.exercise!.title),
+                        onBegin: () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const MobileFrame(child: BreathingPlayerScreen(pattern: BreathingPattern.quickBreath))),
+                        ),
                       );
                     }
                     return ChatBubble(text: message.text ?? '', isUser: message.sender == MessageSender.user);
@@ -133,6 +196,18 @@ class _AidaChatScreenState extends State<AidaChatScreen> {
                 ],
               ),
             ),
+            if (_isListening)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(width: 8, height: 8, decoration: const BoxDecoration(color: AppColors.sos, shape: BoxShape.circle)),
+                    const SizedBox(width: 8),
+                    Text('Listening… tap the mic to stop', style: AppTextStyles.body(size: 12)),
+                  ],
+                ),
+              ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: QuickReplyRow(suggestions: CheckinProvider.quickReplies, onTap: _send),
@@ -141,26 +216,37 @@ class _AidaChatScreenState extends State<AidaChatScreen> {
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 18),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(30)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                  border: _isListening ? Border.all(color: AppColors.sos, width: 1.4) : null,
+                ),
                 child: Row(
                   children: [
                     Expanded(
                       child: TextField(
                         controller: _controller,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
                           focusedBorder: InputBorder.none,
                           filled: false,
-                          contentPadding: EdgeInsets.symmetric(vertical: 16),
-                          hintText: "Tell me what's on your mind...",
+                          contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                          hintText: _isListening ? 'Listening…' : "Tell me what's on your mind...",
                         ),
                         onSubmitted: (_) => _send(),
                       ),
                     ),
-                    IconButton(
-                      onPressed: () => showComingSoon(context, 'Voice input'),
-                      icon: const Icon(Icons.mic_none_outlined, color: AppColors.textMuted),
+                                       IconButton(
+                      onPressed: _toggleListening,
+                      icon: Icon(
+                        _isListening ? Icons.mic : Icons.mic_none_outlined,
+                        color: _isListening
+                            ? AppColors.sos
+                            : _micUnavailable
+                                ? AppColors.border
+                                : AppColors.textMuted,
+                      ),
                     ),
                   ],
                 ),
