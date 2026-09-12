@@ -6,7 +6,9 @@ MindCare AI is an ML project scaffold for clinician-facing mental-health decisio
 
 - `data/raw/`: original, read-only source data
 - `data/interim/`: partially cleaned datasets
-- `data/processed/`: train, validation, and test-ready datasets
+- `data/processed/`: combined train, validation, test, and scaled datasets only
+- `data/artifacts/`: fitted encoders, scalers, and class-weight metadata
+- `data/reference/`: business-logic lookup data, separate from training data
 - `data/external/`: reference data and lookup tables
 - `notebooks/`: numbered exploratory analysis and experiments
 - `src/`: reusable data, feature, model, feedback, and API code
@@ -29,3 +31,29 @@ uvicorn src.api.app:app --reload
 ```
 
 The API is decision support for qualified professionals. It does not provide a diagnosis or replace clinical judgment.
+
+Prepare or refresh the dataset layout with:
+
+```powershell
+python -m src.data.prepare_dataset
+```
+
+Train baseline models and select the production model with:
+
+```powershell
+python -m scripts.train_models
+```
+
+The production severity model uses wearable-compatible inputs: sleep hours,
+physical activity, heart rate, breathing rate, sweating level, and dizziness.
+It does not require oxygen level or use `Anxiety Level (1-10)` as an input.
+
+Train the separate anxiety-level model with:
+
+```powershell
+python -m scripts.train_anxiety_model
+```
+
+The anxiety model is evaluated independently because anxiety level is a target,
+not an input to severity prediction. Its current held-out results are recorded
+in `reports/metrics/anxiety_metrics.json`.

@@ -1,13 +1,13 @@
-"""Inference helpers."""
+"""Backward-compatible model inference exports."""
 
 from pathlib import Path
 
-import joblib
+from src.infrastructure.model_predictor import JoblibPredictor
 
 
 def load_model(path: str | Path):
     """Load a serialized model artifact."""
-    return joblib.load(path)
+    return JoblibPredictor(path)
 
 
 def predict(model, features):

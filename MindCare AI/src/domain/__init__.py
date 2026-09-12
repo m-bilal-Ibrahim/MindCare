@@ -1,0 +1,1 @@
+"""Core business contracts and rules."""
