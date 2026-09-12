@@ -91,3 +91,51 @@ img {
   background: #f97316;
   color: #fff;
 }
+
+/* Slow "breathing" pulse for hero background blobs — calm, not clinical */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+.animate-breathe {
+  animation: breathe 6s ease-in-out infinite;
+}
+
+/* Infinite horizontal marquee for the partners strip */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 28s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-breathe,
+  .animate-marquee {
+    animation: none;
+  }
+}
+
+/* ——— Whole-page warm aura, behind the entire front page ———
+   A soft concentric glow (cream → peach → terracotta) pinned to the
+   viewport so it reads as one continuous backdrop while scrolling,
+   not a background confined to a single section or card. */
+.mc-page-glow {
+  background-color: var(--mc-cream);
+  background-image: radial-gradient(
+    ellipse 120% 85% at 50% 15%,
+    #fffaf3 0%,
+    #fdf0e1 12%,
+    #fbe3c9 24%,
+    #f6d1ac 36%,
+    #eebb90 48%,
+    #e2a379 60%,
+    #d38c68 72%,
+    var(--mc-cream) 88%
+  );
+  background-attachment: fixed;
+  background-size: 100% 100%;
+}
