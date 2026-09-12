@@ -18,8 +18,8 @@ data/artifacts/*
 data/reference/*
 !data/reference/.gitkeep
 models/*
-!models/experiments/
-!models/production/
+models/experiments/*
+models/production/*
 !models/experiments/.gitkeep
 !models/production/.gitkeep
 catboost_info/
