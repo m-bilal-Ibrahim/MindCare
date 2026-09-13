@@ -91,3 +91,140 @@ img {
   background: #f97316;
   color: #fff;
 }
+
+/* Slow "breathing" pulse for hero background blobs — calm, not clinical */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+.animate-breathe {
+  animation: breathe 6s ease-in-out infinite;
+}
+
+/* Infinite horizontal marquee for the partners strip */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 28s linear infinite;
+}
+
+/* Gentle bob for the floating partner chips — each one staggered via
+   animation-delay so they drift asynchronously, not in lockstep. */
+@keyframes float-card {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+.floating-card {
+  animation: float-card 3.4s ease-in-out infinite;
+}
+
+/* Small continuous drift for the hero headline words — keeps the text
+   visibly alive after the one-time entrance settles, instead of going
+   still. Subtler and slower than the card float. */
+@keyframes float-text {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.floating-text {
+  animation: float-text 4.5s ease-in-out infinite;
+}
+
+/* Slow sheen sweeping across gradient headline words */
+@keyframes text-shimmer {
+  0% { background-position: 0% center; }
+  100% { background-position: -200% center; }
+}
+
+.animate-text-shimmer {
+  animation: text-shimmer 6s linear infinite;
+}
+
+/* Slow, drifting aurora blobs — two layers at different speeds/directions
+   so the flow never looks like an obvious loop. Warm palette, not purple. */
+@keyframes aurora-drift-a {
+  0%   { transform: translate(0%, 0%) scale(1) rotate(0deg); }
+  33%  { transform: translate(-6%, 5%) scale(1.12) rotate(6deg); }
+  66%  { transform: translate(5%, -4%) scale(0.95) rotate(-5deg); }
+  100% { transform: translate(-4%, -6%) scale(1.05) rotate(4deg); }
+}
+
+@keyframes aurora-drift-b {
+  0%   { transform: translate(0%, 0%) scale(1.05) rotate(0deg); }
+  50%  { transform: translate(6%, 6%) scale(0.92) rotate(-6deg); }
+  100% { transform: translate(-5%, 3%) scale(1.08) rotate(5deg); }
+}
+
+/* "Walking the path" figures in the hero — real motion along an SVG path,
+   not just a color shift. offset-rotate: 0 keeps the figure upright rather
+   than tilting to match the path's tangent. */
+@keyframes walk-path {
+  0%   { offset-distance: 0%; opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+
+.walker {
+  offset-rotate: 0deg;
+  animation-name: walk-path;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-breathe,
+  .animate-marquee,
+  .floating-card,
+  .floating-text,
+  .animate-text-shimmer,
+  .walker,
+  .mc-page-glow::before,
+  .mc-page-glow::after {
+    animation: none;
+  }
+}
+
+/* ——— Whole-page warm aura, behind the entire front page ———
+   A slow-flowing "aurora" of warm blobs (cream → orange → rose → amber
+   → a touch of emerald), pinned to the viewport so it reads as one
+   continuous, gently moving backdrop rather than a static image. */
+.mc-page-glow {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--mc-cream);
+}
+
+.mc-page-glow::before,
+.mc-page-glow::after {
+  content: '';
+  position: fixed;
+  inset: -15%;
+  z-index: -1;
+  pointer-events: none;
+  filter: blur(70px);
+  will-change: transform;
+}
+
+.mc-page-glow::before {
+  opacity: 0.6;
+  background:
+    radial-gradient(circle at 22% 28%, #fdba74 0%, transparent 42%),
+    radial-gradient(circle at 78% 18%, #fda4af 0%, transparent 42%),
+    radial-gradient(circle at 55% 82%, #fcd34d 0%, transparent 42%),
+    radial-gradient(circle at 88% 72%, #f0abfc 0%, transparent 38%);
+  animation: aurora-drift-a 32s ease-in-out infinite alternate;
+}
+
+.mc-page-glow::after {
+  opacity: 0.35;
+  background:
+    radial-gradient(circle at 68% 55%, #6ee7b7 0%, transparent 38%),
+    radial-gradient(circle at 15% 70%, #fb923c 0%, transparent 40%);
+  animation: aurora-drift-b 44s ease-in-out infinite alternate;
+}

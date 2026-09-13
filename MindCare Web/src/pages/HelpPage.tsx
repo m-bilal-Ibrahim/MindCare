@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { Users, Calendar, FileText, Activity, Code, Heart, Phone, MessageCircle, Send, Video, ArrowRight, type LucideIcon } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
+import Reveal, { RevealGroup, RevealItem } from '../components/motion/Reveal';
 import {
   HELP_POPULAR_LINKS,
   HELP_CATEGORIES,
@@ -55,12 +56,13 @@ const HelpPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F0E8]">
+    <div className="min-h-screen mc-page-glow">
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24 grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* Left column */}
         <div>
+          <Reveal>
           <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase mb-6">Help center</p>
           <h1 className="text-4xl sm:text-6xl font-black text-gray-900 leading-[1.05] mb-6">
             How can we <span className="italic font-serif font-normal">help?</span>
@@ -93,35 +95,38 @@ const HelpPage: React.FC = () => {
               </React.Fragment>
             ))}
           </div>
+          </Reveal>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <RevealGroup className="grid grid-cols-1 sm:grid-cols-2 gap-4" stagger={0.08}>
             {HELP_CATEGORIES.map((cat) => {
               const Icon = ICON_MAP[cat.icon];
               return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center justify-between text-left hover:border-gray-300 transition-colors"
-                >
-                  <span className="flex items-center gap-4">
-                    <span className="w-11 h-11 rounded-xl bg-[#EFE9DF] flex items-center justify-center text-gray-700 shrink-0">
-                      <Icon size={18} aria-hidden="true" />
+                <RevealItem key={cat.id}>
+                  <button
+                    type="button"
+                    className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center justify-between text-left hover:border-gray-300 transition-colors"
+                  >
+                    <span className="flex items-center gap-4">
+                      <span className="w-11 h-11 rounded-xl bg-[#EFE9DF] flex items-center justify-center text-gray-700 shrink-0">
+                        <Icon size={18} aria-hidden="true" />
+                      </span>
+                      <span>
+                        <span className="block font-bold text-gray-900">{cat.title}</span>
+                        <span className="block text-sm text-gray-500">{cat.articleCount} articles</span>
+                      </span>
                     </span>
-                    <span>
-                      <span className="block font-bold text-gray-900">{cat.title}</span>
-                      <span className="block text-sm text-gray-500">{cat.articleCount} articles</span>
-                    </span>
-                  </span>
-                  <ArrowRight size={16} className="text-gray-300 shrink-0" aria-hidden="true" />
-                </button>
+                    <ArrowRight size={16} className="text-gray-300 shrink-0" aria-hidden="true" />
+                  </button>
+                </RevealItem>
               );
             })}
-          </div>
+          </RevealGroup>
         </div>
 
         {/* Right column */}
         <div>
           {/* Crisis box */}
+          <Reveal>
           <div className="bg-orange-50 border border-orange-200 rounded-2xl p-8 mb-6">
             <p className="text-xs font-semibold tracking-widest text-orange-600 uppercase mb-4 flex items-center gap-2">
               ⚠ If you need help right now
@@ -147,8 +152,10 @@ const HelpPage: React.FC = () => {
               </button>
             </div>
           </div>
+          </Reveal>
 
           {/* Top questions */}
+          <Reveal delay={0.1}>
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
             <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase mb-1">Top questions</p>
             <h3 className="text-lg font-bold text-gray-900 mb-5">The 5 we get most</h3>
@@ -194,6 +201,7 @@ const HelpPage: React.FC = () => {
               </button>
             </div>
           </div>
+          </Reveal>
         </div>
       </main>
 

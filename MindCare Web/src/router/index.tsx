@@ -12,10 +12,7 @@ import { TherapistAuthProvider, RequireTherapistAuth } from '../utils/authGuard'
 import { AdminAuthProvider, RequireAdminAuth } from '../utils/adminAuthGuard';
 
 const LandingPage = lazy(() => import('../pages/LandingPage'));
-const OnboardingPage = lazy(() => import('../pages/OnboardingPage'));
 const ClientAppPage = lazy(() => import('../pages/ClientAppPage'));
-const ClinicianPage = lazy(() => import('../pages/ClinicianPage'));
-const SignInPage = lazy(() => import('../pages/SignInPage'));
 const StoriesPage = lazy(() => import('../pages/StoriesPage'));
 const ForNGOsPage = lazy(() => import('../pages/ForNGOsPage'));
 const ForTherapistsPage = lazy(() => import('../pages/ForTherapistsPage'));
@@ -24,6 +21,10 @@ const TherapistRegisterPage = lazy(() => import('../pages/TherapistRegisterPage'
 const AboutUsPage = lazy(() => import('../pages/AboutUsPage'));
 const HelpPage = lazy(() => import('../pages/HelpPage'));
 const PricingPage = lazy(() => import('../pages/PricingPage'));
+const PrivacyPolicyPage = lazy(() => import('../pages/PrivacyPolicyPage'));
+const TermsOfServicePage = lazy(() => import('../pages/TermsOfServicePage'));
+const HipaaAlignmentPage = lazy(() => import('../pages/HipaaAlignmentPage'));
+const CookiePolicyPage = lazy(() => import('../pages/CookiePolicyPage'));
 const TherapistTodayPage = lazy(() => import('../pages/TherapistTodayPage'));
 const TherapistPatientsPage = lazy(() => import('../pages/TherapistPatientsPage'));
 const PatientDetailPage = lazy(() => import('../pages/PatientDetailPage'));
@@ -62,10 +63,7 @@ const AppRouter: React.FC = () => (
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path={ROUTES.HOME} element={<LandingPage />} />
-            <Route path={ROUTES.ONBOARDING} element={<OnboardingPage />} />
             <Route path={ROUTES.CLIENT_APP} element={<ClientAppPage />} />
-            <Route path={ROUTES.CLINICIAN_APP} element={<ClinicianPage />} />
-            <Route path={ROUTES.SIGN_IN} element={<SignInPage />} />
             <Route path={ROUTES.STORIES} element={<StoriesPage />} />
             <Route path={ROUTES.FOR_NGOS} element={<ForNGOsPage />} />
             <Route path={ROUTES.FOR_THERAPISTS} element={<ForTherapistsPage />} />
@@ -74,6 +72,10 @@ const AppRouter: React.FC = () => (
             <Route path={ROUTES.ABOUT_US} element={<AboutUsPage />} />
             <Route path={ROUTES.HELP} element={<HelpPage />} />
             <Route path={ROUTES.PRICING} element={<PricingPage />} />
+            <Route path={ROUTES.PRIVACY} element={<PrivacyPolicyPage />} />
+            <Route path={ROUTES.TERMS} element={<TermsOfServicePage />} />
+            <Route path={ROUTES.HIPAA} element={<HipaaAlignmentPage />} />
+            <Route path={ROUTES.COOKIES} element={<CookiePolicyPage />} />
 
             <Route path={CONSOLE_ROUTES.TODAY} element={<RequireTherapistAuth><TherapistTodayPage /></RequireTherapistAuth>} />
             <Route path={CONSOLE_ROUTES.PATIENTS} element={<RequireTherapistAuth><TherapistPatientsPage /></RequireTherapistAuth>} />

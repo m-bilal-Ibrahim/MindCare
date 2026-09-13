@@ -14,9 +14,11 @@ export interface Stat {
   label: string;
 }
 
+export type FeatureIcon = 'therapist' | 'aida' | 'mindband' | 'journal' | 'circles' | 'sos';
+
 export interface Feature {
   id: string;
-  icon: string;
+  icon: FeatureIcon;
   title: string;
   description: string;
   color: string;
@@ -30,6 +32,14 @@ export interface HowItWorksStep {
 
 export interface Partner {
   name: string;
+}
+
+// ——— Team / partners section — photoUrl is loaded from the backend ———
+export interface TeamMember {
+  id: string;
+  name: string;
+  role: string;
+  photoUrl?: string;
 }
 
 export interface Therapist {
@@ -166,4 +176,11 @@ export interface PricingFeatureStrip {
   icon: 'heart' | 'shield' | 'code';
   title: string;
   description: string;
+}
+
+// ——— Legal pages (Privacy, Terms, HIPAA Alignment, Cookies) ———
+export interface LegalSection {
+  id: string;
+  title: string;
+  body: string[];
 }

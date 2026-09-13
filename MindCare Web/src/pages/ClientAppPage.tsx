@@ -5,11 +5,13 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Mail } from 'lucide-react';
 import Logo from '../components/common/Logo';
 import PhoneMockup from '../components/mockup/PhoneMockup';
 import QRCode from '../components/mockup/QRCode';
 import Button from '../components/common/Button';
+import Reveal from '../components/motion/Reveal';
 import { ROUTES } from '../constants';
 import { signIn } from '../services/api.service';
 
@@ -102,25 +104,25 @@ const StoreButton: React.FC<StoreButtonProps> = ({ platform }) => (
 
 // ——— Main Page ———
 const ClientAppPage: React.FC = () => (
-  <div className="min-h-screen bg-[#F5F0E8] flex flex-col">
+  <div className="min-h-screen mc-page-glow flex flex-col">
     {/* Header */}
     <header className="flex items-center justify-between px-6 sm:px-10 py-5 border-b border-gray-200/60">
       <Logo />
       <Link
-        to={ROUTES.ONBOARDING}
+        to={ROUTES.HOME}
         className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
       >
-        ← Choose again
+        ← Back to home
       </Link>
     </header>
 
     {/* Split layout */}
     <main className="flex-1 grid md:grid-cols-2">
       {/* Left: Copy */}
-      <div className="flex flex-col justify-center px-8 sm:px-14 py-16 max-w-xl">
+      <Reveal className="flex flex-col justify-center px-8 sm:px-14 py-16 max-w-xl" y={16}>
         {/* Step badge */}
         <p className="text-[10px] font-black tracking-[0.25em] text-gray-500 uppercase mb-6">
-          Step 2 · Client · On your phone
+          Get the app
         </p>
 
         {/* Headline */}
@@ -175,12 +177,17 @@ const ClientAppPage: React.FC = () => (
             <EmailLinkForm />
           </div>
         </div>
-      </div>
+      </Reveal>
 
       {/* Right: Phone mockup */}
-      <div className="hidden md:flex items-center justify-center bg-[#EDEAE0] px-10 py-16">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}
+        className="hidden md:flex items-center justify-center bg-[#EDEAE0] px-10 py-16"
+      >
         <PhoneMockup />
-      </div>
+      </motion.div>
     </main>
   </div>
 );

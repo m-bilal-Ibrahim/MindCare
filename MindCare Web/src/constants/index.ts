@@ -17,6 +17,8 @@ import type {
   HelpCategory,
   HelpTopQuestion,
   PricingFeatureStrip,
+  LegalSection,
+  TeamMember,
 } from '../types';
 
 export const APP_NAME = 'MindCare';
@@ -24,7 +26,7 @@ export const APP_TAGLINE = 'A quieter mind is the work of a year, not a download
 
 // ——— Navigation ———
 export const NAV_ITEMS: NavItem[] = [
-  { label: 'How it works', href: '#how-it-works' },
+  { label: 'How it works', href: '/#how-it-works' },
   { label: 'For therapists', href: '/for-therapists' },
   { label: 'For NGOs', href: '/for-ngos' },
   { label: 'Stories', href: '/stories' },
@@ -45,9 +47,14 @@ export const PARTNERS: Partner[] = [
   { name: 'Umang' },
   { name: 'Rozan' },
   { name: 'Karwan-e-Hayat' },
-  { name: 'Dawn' },
-  { name: 'Geo' },
-  { name: 'Aurora' },
+  { name: 'Taskeen' },
+];
+
+// ——— Team behind MindCare — photoUrl is populated from the backend ———
+export const TEAM_MEMBERS: TeamMember[] = [
+  { id: 'team-1', name: 'Muhammad Bilal Ibrahim', role: 'Full-Stack Developer' },
+  { id: 'team-2', name: 'Raja Rehan Mustafa', role: 'Backend Developer' },
+  { id: 'team-3', name: 'Malaika Irfan', role: 'Frontend Developer' },
 ];
 
 // ——— How It Works steps ———
@@ -78,45 +85,45 @@ export const HOW_IT_WORKS: HowItWorksStep[] = [
 export const FEATURES: Feature[] = [
   {
     id: 'therapist',
-    icon: '🧑‍⚕️',
+    icon: 'therapist',
     title: 'A real therapist',
     description: 'Weekly 50-minute video sessions. Switch any time, no questions asked.',
-    color: 'bg-emerald-100 text-emerald-700',
+    color: 'from-emerald-400 to-emerald-600',
   },
   {
     id: 'aida',
-    icon: '🤖',
+    icon: 'aida',
     title: 'Aida, your co-pilot',
     description: 'AI between sessions — your therapist shapes what it can say and recommend.',
-    color: 'bg-purple-100 text-purple-700',
+    color: 'from-purple-400 to-purple-600',
   },
   {
     id: 'mindband',
-    icon: '📡',
+    icon: 'mindband',
     title: 'MindBand sensors',
     description: 'Optional wearable. Heart, breath, sleep — picked up so you don\'t have to log.',
-    color: 'bg-orange-100 text-orange-700',
+    color: 'from-orange-400 to-orange-600',
   },
   {
     id: 'journal',
-    icon: '📓',
+    icon: 'journal',
     title: 'Journaling that breathes',
     description: 'Prompts, freewrite, voice. Auto-summarised for your next session.',
-    color: 'bg-yellow-100 text-yellow-700',
+    color: 'from-amber-400 to-amber-600',
   },
   {
     id: 'circles',
-    icon: '❤️',
+    icon: 'circles',
     title: 'Quiet peer circles',
     description: 'Anonymous, moderated. Anxiety, sober walks, grief, new parents.',
-    color: 'bg-rose-100 text-rose-700',
+    color: 'from-rose-400 to-rose-600',
   },
   {
     id: 'sos',
-    icon: '🆘',
+    icon: 'sos',
     title: 'SOS, held by humans',
     description: 'One tap. Trained listener within 4 minutes, NGO escalation if needed.',
-    color: 'bg-red-100 text-red-700',
+    color: 'from-red-400 to-red-600',
   },
 ];
 
@@ -131,28 +138,10 @@ export const DUMMY_MOOD_DATA: MoodEntry[] = [
   { day: 'Sun', value: 5 },
 ];
 
-// ——— Client benefits (onboarding) ———
-export const CLIENT_BENEFITS = [
-  'Weekly therapy with a verified clinician',
-  'Aida co-pilot between sessions',
-  'Body, journal, circles, SOS — one app',
-];
-
-// ——— Clinician benefits (onboarding) ———
-export const CLINICIAN_BENEFITS = [
-  'Verified profile · matched patients',
-  'Session video, notes, billing in one place',
-  'Aida assists, you stay in charge',
-];
-
 // ——— Routes ———
 export const ROUTES = {
   HOME: '/',
-  ONBOARDING: '/get-started',
-  CLIENT_APP: '/get-started/client',
-  CLINICIAN_APP: '/get-started/clinician',
-  SIGN_IN: '/sign-in',
-  SIGN_UP: '/sign-up',
+  CLIENT_APP: '/get-started',
   STORIES: '/stories',
   FOR_NGOS: '/for-ngos',
   FOR_THERAPISTS: '/for-therapists',
@@ -161,6 +150,10 @@ export const ROUTES = {
   ABOUT_US: '/about',
   HELP: '/help',
   PRICING: '/pricing',
+  PRIVACY: '/privacy',
+  TERMS: '/terms',
+  HIPAA: '/hipaa-alignment',
+  COOKIES: '/cookies',
 } as const;
 
 // ——— Stories page ———
@@ -433,6 +426,246 @@ export const PRICING_FEATURE_STRIPS: PricingFeatureStrip[] = [
     icon: 'code',
     title: 'No upsells',
     description: 'No premium tier, no add-ons. One subscription does it all.',
+  },
+];
+
+// ——— Legal: Privacy Policy ———
+export const PRIVACY_LAST_UPDATED = 'September 2026';
+
+export const PRIVACY_SECTIONS: LegalSection[] = [
+  {
+    id: 'what-we-collect',
+    title: 'What we collect',
+    body: [
+      'Client accounts: name, age, gender, and contact details, plus an optional mental health history and profile photo you can edit any time.',
+      'Psychologist accounts: certifications, medical background, specialization areas, and the licenses/credentials you upload for verification.',
+      'Sensor & health data: breathing rate, heart rate, and step count from your connected wearable, used to monitor your mental and physical state in real time and personalize exercise recommendations.',
+      'Therapy records: session notes and observations your psychologist maintains, progress tracked over time, and the automated weekly/monthly reports the system generates from your sessions, mood check-ins, and sensor data.',
+      'Community activity: anything you post, comment, or volunteer for inside a Community Support space.',
+      'Engagement data: points, badges, streaks, and levels earned from wellness activities, sessions, and daily check-ins.',
+      'Emergency data: any emergency contacts you configure, and the details of an SOS activation — the helplines, hospitals, or contacts notified.',
+      'Payment data: session fees, number of sessions taken, and amounts paid. Card and mobile-wallet details are handled by our payment processor and never stored on our servers.',
+    ],
+  },
+  {
+    id: 'how-we-use-it',
+    title: 'How we use it',
+    body: [
+      'To verify and onboard psychologists, match you with one, and run your sessions — including any third-party video conferencing tool (such as Zoom or Google Meet) your psychologist chooses to integrate.',
+      "To power the AI recommendation engine, which reviews your therapy history and sensor data to suggest personalised exercises. Your psychologist approves every recommendation, including ones surfaced live during a session, before it reaches you.",
+      'To run the 24/7 AI chat assistant, which can answer common questions, suggest coping strategies, perform initial triage, and — if it detects signs of distress — proactively trigger SOS support on your behalf.',
+      'To personalise your Lifestyle & Wellness content and Motivation Corner (duas, quotes, surahs) around your stated needs.',
+      "To generate your automated progress reports for your psychologist's review.",
+      'We do not sell your data, and we do not use it to serve ads. That is a promise, not a feature toggle.',
+    ],
+  },
+  {
+    id: 'who-can-see-it',
+    title: 'Who can see it',
+    body: [
+      'Your assigned psychologist sees your full therapy record, notes, sensor data, and generated reports. Other psychologists on the platform cannot.',
+      'Admins can view the credentials psychologists submit for verification, and any reports or complaints raised in Community spaces — never your private therapy notes.',
+      'Anything you post publicly in a Community space, or a volunteering role you sign up for, is visible to other members of that community.',
+      'If you opt into an engagement leaderboard, your display name and points may be visible to other users — this is optional and off by default.',
+      'During an SOS activation, your pre-configured emergency contacts, partnered helplines/hospitals, and an available psychologist may be contacted, and the event is logged for admin follow-up.',
+    ],
+  },
+  {
+    id: 'security',
+    title: 'How we protect it',
+    body: [
+      'All data — including sensor readings, therapy notes, and uploaded credentials — is encrypted in transit (TLS) and at rest.',
+      'Access to identifiable care records requires authenticated, logged sessions — every view is auditable.',
+      'We follow the safeguards described in our HIPAA Alignment page, even though MindCare is not a US covered entity.',
+    ],
+  },
+  {
+    id: 'your-rights',
+    title: 'Your rights',
+    body: [
+      'You can request an export of everything we hold on you, ask us to correct it, or ask us to delete your account and associated care data.',
+      'You can remove emergency contacts, opt out of public leaderboards, or leave a community at any time.',
+      'You can switch psychologists or leave the platform at any time — your data does not hold you hostage.',
+      'Reach us at privacy@mindcare.pk for any of the above; we respond within 5 business days.',
+    ],
+  },
+  {
+    id: 'changes',
+    title: 'Changes to this policy',
+    body: [
+      "If we materially change how we handle your data, we'll email you before the change takes effect, not just post a quiet update here.",
+    ],
+  },
+];
+
+// ——— Legal: Terms of Service ———
+export const TERMS_LAST_UPDATED = 'September 2026';
+
+export const TERMS_SECTIONS: LegalSection[] = [
+  {
+    id: 'not-a-crisis-service',
+    title: 'MindCare is not a replacement for emergency services',
+    body: [
+      "The SOS button, available from every screen, connects you to local helplines and nearby hospitals, notifies your pre-configured emergency contacts, and attempts to connect you with an available psychologist in real time. Our AI chat assistant can also trigger SOS on its own if it detects signs of distress in a conversation.",
+      'If you or someone else is in immediate danger, please call Umang at 0311-7786264 or your local emergency number first. SOS is a bridge to help, not a substitute for emergency medical care.',
+    ],
+  },
+  {
+    id: 'eligibility',
+    title: 'Eligibility & onboarding',
+    body: [
+      'You must be 18 or older to create a client account, or have a parent/guardian complete intake on your behalf where locally permitted. An optional mental health history can be provided at signup.',
+      'Psychologists register with their certifications, medical background, and specialization, and upload licenses/credentials for verification. An admin reviews and approves or rejects each application before the account can take patients.',
+    ],
+  },
+  {
+    id: 'the-relationship',
+    title: 'The psychologist relationship',
+    body: [
+      'Psychologists on MindCare are independent, licensed clinicians — not MindCare employees. Clinical judgment, the therapy notes they keep on you, and treatment decisions are theirs alone.',
+      'Psychologists set their own availability, manage their own bookings, and choose the video conferencing tool (e.g. Zoom, Google Meet) used for your session.',
+    ],
+  },
+  {
+    id: 'ai-features',
+    title: 'AI recommendations & the AI chat assistant',
+    body: [
+      'Our AI analyses your therapy history and sensor data to suggest personalised exercises, including suggestions surfaced live during a session — but nothing reaches you without your psychologist reviewing and approving it first. The AI does not diagnose and is not a licensed clinician.',
+      'The 24/7 AI chat assistant offers general information, coping strategies, and initial triage. It is not a substitute for professional care, and serious concerns should always be raised with your psychologist or, in an emergency, via SOS.',
+    ],
+  },
+  {
+    id: 'community-and-conduct',
+    title: 'Community, volunteering & acceptable use',
+    body: [
+      "Community spaces are moderated by admins, who review reports and complaints and can remove content or suspend accounts. Harassment, sharing another member's private information, or impersonating a clinician will get an account suspended.",
+      'Volunteering roles within a community are subject to admin approval and can be withdrawn if guidelines are not followed.',
+      'You agree not to attempt to reverse-engineer, scrape, or resell any part of the platform.',
+    ],
+  },
+  {
+    id: 'engagement-rewards',
+    title: 'Points, badges & rewards',
+    body: [
+      'Points, badges, streaks, and levels earned through wellness activities and check-ins are for motivation only and have no cash value.',
+      'Rewards such as discounts, premium content, or session benefits are offered at our discretion and may change or be withdrawn. Leaderboard participation is optional.',
+    ],
+  },
+  {
+    id: 'billing',
+    title: 'Fees & billing',
+    body: [
+      'Your profile shows your session fees, total sessions taken, and total amount paid at all times. Payment can be made by credit/debit card or mobile wallet, and invoices/receipts are issued for every transaction.',
+      'NGO scholarships, where approved, can cover up to 80% of your cost.',
+    ],
+  },
+  {
+    id: 'liability',
+    title: 'Limitation of liability',
+    body: [
+      'MindCare provides a platform connecting you with licensed psychologists; we are not liable for clinical outcomes, which depend on the independent judgment of your treating psychologist.',
+      'To the extent permitted by law, our liability for platform issues is limited to the fees you paid in the preceding 3 months.',
+    ],
+  },
+  {
+    id: 'governing-law',
+    title: 'Governing law',
+    body: ['These terms are governed by the laws of Pakistan. Disputes are subject to the courts of Pakistan. Questions about these terms can be sent to legal@mindcare.pk.'],
+  },
+];
+
+// ——— Legal: HIPAA Alignment ———
+export const HIPAA_LAST_UPDATED = 'September 2026';
+
+export const HIPAA_SECTIONS: LegalSection[] = [
+  {
+    id: 'what-alignment-means',
+    title: 'What "HIPAA-aligned" means here',
+    body: [
+      'HIPAA is a US federal law, and MindCare currently operates in Pakistan — so we are not a HIPAA "covered entity" in the legal sense. What we mean by HIPAA-aligned is that we voluntarily hold ourselves to the same safeguards HIPAA requires of US healthcare providers, across therapy notes, sensor data, and the automated reports generated from them — because mental health records deserve that bar regardless of jurisdiction.',
+    ],
+  },
+  {
+    id: 'administrative',
+    title: 'Administrative safeguards',
+    body: [
+      'Psychologist accounts only gain access to patient records after an admin has verified their certifications, medical background, and uploaded licenses.',
+      'Every team member with any access to care data completes a confidentiality agreement before onboarding. Access is role-based and reviewed quarterly — a support engineer cannot open a therapy note; only your assigned psychologist and a narrow clinical-safety team can.',
+      'Admins moderating Community content or reviewing complaints can see the report itself, never the therapy notes or sensor data behind it.',
+    ],
+  },
+  {
+    id: 'technical',
+    title: 'Technical & physical safeguards',
+    body: [
+      'Encryption in transit (TLS 1.2+) and at rest for therapy notes, sensor readings (breathing rate, heart rate, steps), automated reports, and uploaded credentials alike.',
+      'Every access to a patient record is logged and auditable — we can show, on request, exactly who viewed what and when.',
+      'Session video is not recorded by default; if a psychologist enables recording for supervision, it requires your explicit, separate consent.',
+    ],
+  },
+  {
+    id: 'third-party-tools',
+    title: 'Third-party video conferencing',
+    body: [
+      'Psychologists may integrate a video tool of their choice, such as Zoom or Google Meet, to run sessions. These are external platforms we do not control directly; we require psychologists to use accounts with appropriate security settings, and encourage the same scrutiny you would apply to any telehealth call.',
+    ],
+  },
+  {
+    id: 'confidentiality',
+    title: 'Confidentiality obligations',
+    body: [
+      "Psychologists are bound by professional confidentiality standards and a platform-level data agreement — the same information a psychologist could not disclose in a physical clinic, they cannot disclose here.",
+    ],
+  },
+  {
+    id: 'breach-notification',
+    title: 'Breach notification commitment',
+    body: [
+      "In the unlikely event of a data breach involving your health information, we commit to notifying affected users within 72 hours of confirming the breach, consistent with HIPAA's own notification window.",
+    ],
+  },
+  {
+    id: 'your-rights-mirrored',
+    title: 'Rights mirrored from HIPAA',
+    body: [
+      'Access your full record — including sensor data, session notes, and generated reports — request corrections, request an export, and request deletion, the same rights HIPAA grants US patients, extended to everyone on MindCare regardless of where they live. Security questions or a disclosure to report can go to security@mindcare.pk.',
+    ],
+  },
+];
+
+// ——— Legal: Cookie Policy ———
+export const COOKIE_LAST_UPDATED = 'September 2026';
+
+export const COOKIE_SECTIONS: LegalSection[] = [
+  {
+    id: 'what-we-use',
+    title: 'What cookies we use',
+    body: [
+      'Essential cookies: keep you signed in and your session secure across the web dashboard. The platform will not function without these.',
+      'Preference cookies: remember small choices, like whether you dismissed a banner or which tab you had open in Settings.',
+      'Limited analytics cookies: aggregate, anonymised usage patterns — e.g. which of the Wellness, Community, or Motivation Corner sections get used — so we can improve the product. Never tied to your therapy notes, sensor data, or journal content.',
+    ],
+  },
+  {
+    id: 'what-we-dont-use',
+    title: "What we deliberately don't use",
+    body: [
+      "No advertising or cross-site tracking cookies. We don't run ads, so we have no reason to track you across the web — this is one of our core promises, not a setting you have to find and turn off.",
+    ],
+  },
+  {
+    id: 'third-party',
+    title: 'Third-party cookies',
+    body: [
+      'Our payment processor sets a small number of cookies during checkout to prevent fraud. We do not control these directly, but we vet any processor we use for the same privacy bar we hold ourselves to.',
+    ],
+  },
+  {
+    id: 'managing-cookies',
+    title: 'Managing cookies',
+    body: [
+      'You can block or delete cookies in your browser settings at any time. Blocking essential cookies will sign you out and may prevent the app from working correctly. Questions about cookies or tracking can be sent to privacy@mindcare.pk.',
+    ],
   },
 ];
 
