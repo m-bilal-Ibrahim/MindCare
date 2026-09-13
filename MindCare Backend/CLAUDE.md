@@ -13,6 +13,7 @@ Django + DRF, PostgreSQL, Celery + Redis, JWT auth (simplejwt), Stripe, Zoom API
 - NEVER log PHI (patient names, journal content, clinical notes, health data) in plaintext in application logs. Use core/audit.py for access logging instead.
 - ALWAYS write a service-layer test (tests/test_services.py) for new business logic before considering a feature done.
 - Ask before adding a new third-party package not already in requirements/base.txt.
+- After implementing any new service, selector, or API endpoint, append an entry to docs/module-reference.md in its existing table format. Never skip this — it is required for the project's final documentation.
 
 ## Commands
 - Activate venv: [OS-appropriate command]
