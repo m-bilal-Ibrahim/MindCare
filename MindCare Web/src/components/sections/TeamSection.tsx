@@ -12,17 +12,23 @@ import type { TeamMember } from '../../types';
 
 const ACCENTS = ['from-orange-400 to-rose-400', 'from-emerald-400 to-teal-400', 'from-purple-400 to-fuchsia-400'];
 
-const TeamPhoto: React.FC<{ member: TeamMember; accent: string }> = ({ member, accent }) =>
+const TeamPhoto: React.FC<{ member: TeamMember; accent: string; delay: string }> = ({
+  member,
+  accent,
+  delay,
+}) =>
   member.photoUrl ? (
     <img
       src={member.photoUrl}
       alt={member.name}
       loading="lazy"
-      className="w-24 h-24 rounded-full object-cover shadow-md"
+      className="floating-card w-24 h-24 rounded-full object-cover shadow-md"
+      style={{ animationDelay: delay }}
     />
   ) : (
     <div
-      className={`w-24 h-24 rounded-full bg-gradient-to-br ${accent} flex items-center justify-center shadow-md`}
+      className={`floating-card w-24 h-24 rounded-full bg-gradient-to-br ${accent} flex items-center justify-center shadow-md`}
+      style={{ animationDelay: delay }}
       aria-hidden="true"
     >
       <User size={32} className="text-white/90" strokeWidth={1.75} />
@@ -43,7 +49,7 @@ const TeamSection: React.FC = () => (
         {TEAM_MEMBERS.map((member, i) => (
           <RevealItem key={member.id}>
             <div className="flex flex-col items-center">
-              <TeamPhoto member={member} accent={ACCENTS[i % ACCENTS.length]} />
+              <TeamPhoto member={member} accent={ACCENTS[i % ACCENTS.length]} delay={`${i * 0.4}s`} />
               <p className="mt-4 font-bold text-gray-900">{member.name}</p>
               <p className="text-sm text-gray-500">{member.role}</p>
             </div>

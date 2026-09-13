@@ -4,11 +4,29 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Shield, Heart, Lock } from 'lucide-react';
+import { motion, type Variants } from 'framer-motion';
+import { Shield, Heart, Lock, Stethoscope } from 'lucide-react';
 import Button from '../common/Button';
 import { ROUTES } from '../../constants';
 import { RevealGroup, RevealItem } from '../motion/Reveal';
+
+// ——— Headline word-stagger: each phrase swings and focuses into place ———
+const headlineContainer: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.13, delayChildren: 0.15 } },
+};
+
+const headlineWord: Variants = {
+  hidden: { opacity: 0, y: 34, scale: 0.88, rotate: -3, filter: 'blur(12px)' },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    rotate: 0,
+    filter: 'blur(0px)',
+    transition: { duration: 0.75, ease: [0.22, 1, 0.36, 1] },
+  },
+};
 
 // ——— Floating appointment card ———
 const AppointmentCard: React.FC = () => (
@@ -26,11 +44,11 @@ const AppointmentCard: React.FC = () => (
       Next · Today 5 PM
     </p>
     <div className="flex items-center gap-3">
-      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-rose-400 flex items-center justify-center text-xs font-bold">
-        TM
+      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-rose-400 flex items-center justify-center">
+        <Stethoscope size={16} className="text-white" aria-hidden="true" />
       </div>
       <div>
-        <p className="font-semibold text-sm">Dr. Tariq</p>
+        <p className="font-semibold text-sm">Your Therapist</p>
         <p className="text-gray-400 text-xs">Anxiety · 50 min</p>
       </div>
     </div>
@@ -111,17 +129,21 @@ const TrustBadges: React.FC = () => (
   </div>
 );
 
-// ——— Photographic backdrop with breathing gradient blobs ———
+// ——— Looping meditation clip, standing in for "the work" ———
 const HeroVisualBackdrop: React.FC = () => (
   <div className="relative w-full h-full" aria-hidden="true">
     <div className="absolute inset-0 bg-gray-900 rounded-3xl overflow-hidden">
-      {/* Calm mountain-top photo, standing for "the path" */}
-      <img
-        src="https://images.unsplash.com/photo-1519834785169-98be25ec3f84?q=80&w=1200&auto=format&fit=crop"
-        alt=""
-        loading="lazy"
+      {/* Short looping clip — poster shows instantly, video fades in once it can play */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        poster="https://images.unsplash.com/photo-1519834785169-98be25ec3f84?q=80&w=1200&auto=format&fit=crop"
         className="absolute inset-0 w-full h-full object-cover opacity-80"
-      />
+      >
+        <source src="https://assets.mixkit.co/videos/15715/15715-360.mp4" type="video/mp4" />
+      </video>
       <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/30 to-gray-900/10" />
       {/* Breathing blobs */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-gradient-to-br from-orange-300/25 to-rose-400/30 blur-2xl animate-breathe" />
@@ -133,12 +155,53 @@ const HeroVisualBackdrop: React.FC = () => (
   </div>
 );
 
+// ——— "Walking the path": a couple of small figures travelling a winding
+// route across the hero, echoing the "12,400+ walking the path" copy. Real
+// motion, not just a color shift — built in plain SVG/CSS, on-theme color. ———
+const PATH_D = 'M -40 300 Q 220 120 460 240 T 900 160';
+
+const WalkerIcon: React.FC<{ className?: string; delay: string; duration: string }> = ({
+  className,
+  delay,
+  duration,
+}) => (
+  <div
+    className={`walker absolute ${className ?? ''}`}
+    style={{
+      offsetPath: `path('${PATH_D}')`,
+      animationDelay: delay,
+      animationDuration: duration,
+    } as React.CSSProperties}
+  >
+    <svg width="22" height="30" viewBox="0 0 20 28" fill="none">
+      <circle cx="10" cy="4" r="4" fill="currentColor" />
+      <path
+        d="M10 8 L10 18 M10 12 L4 16 M10 12 L16 16 M10 18 L5 27 M10 18 L15 27"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  </div>
+);
+
+const WalkingPathMotif: React.FC = () => (
+  <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+    <svg className="absolute inset-0 w-full h-full opacity-30" viewBox="0 0 900 400" preserveAspectRatio="none">
+      <path d={PATH_D} fill="none" stroke="#c48a5a" strokeWidth="2" strokeDasharray="2 10" strokeLinecap="round" />
+    </svg>
+    <WalkerIcon className="text-orange-500/70" delay="0s" duration="16s" />
+    <WalkerIcon className="text-rose-500/60" delay="7s" duration="16s" />
+  </div>
+);
+
 // ——— Main Hero Section ———
 const HeroSection: React.FC = () => (
   <section
     className="relative min-h-screen pt-24 pb-16 overflow-hidden"
     aria-labelledby="hero-heading"
   >
+    <WalkingPathMotif />
     <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Eyebrow */}
       <RevealItem>
@@ -150,33 +213,63 @@ const HeroSection: React.FC = () => (
       <div className="grid lg:grid-cols-2 gap-12 items-center">
         {/* Left: Copy */}
         <RevealGroup stagger={0.12}>
-          <RevealItem>
-            <h1
-              id="hero-heading"
-              className="text-5xl sm:text-6xl xl:text-7xl font-black text-gray-900 leading-[1.05] tracking-tight mb-8"
-              style={{ fontFamily: "'Inter', sans-serif" }}
-            >
-              A quieter{' '}
-              <em
-                className="not-italic italic bg-gradient-to-r from-orange-500 via-rose-500 to-purple-500 bg-clip-text text-transparent"
-                style={{ fontFamily: "'Playfair Display', serif" }}
-              >
-                mind
-              </em>
-              <br />
-              is the work
-              <br />
-              of{' '}
-              <em
-                className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent"
-                style={{ fontFamily: "'Playfair Display', serif" }}
-              >
-                a year
-              </em>
-              , not
-              <br />a download.
-            </h1>
-          </RevealItem>
+          <motion.h1
+            id="hero-heading"
+            className="text-5xl sm:text-6xl xl:text-7xl font-black text-gray-900 leading-[1.05] tracking-tight mb-8"
+            style={{ fontFamily: "'Inter', sans-serif" }}
+            initial="hidden"
+            animate="visible"
+            variants={headlineContainer}
+          >
+            <motion.span variants={headlineWord} className="inline-block">
+              <span className="inline-block floating-text" style={{ animationDelay: '0s' }}>
+                A quieter
+              </span>
+            </motion.span>{' '}
+            <motion.span variants={headlineWord} className="inline-block">
+              <span className="inline-block floating-text" style={{ animationDelay: '0.3s' }}>
+                <em
+                  className="not-italic italic bg-[length:200%_auto] animate-text-shimmer bg-gradient-to-r from-orange-500 via-rose-500 to-purple-500 bg-clip-text text-transparent"
+                  style={{ fontFamily: "'Playfair Display', serif" }}
+                >
+                  mind
+                </em>
+              </span>
+            </motion.span>
+            <br />
+            <motion.span variants={headlineWord} className="inline-block">
+              <span className="inline-block floating-text" style={{ animationDelay: '0.6s' }}>
+                is the work
+              </span>
+            </motion.span>
+            <br />
+            <motion.span variants={headlineWord} className="inline-block">
+              <span className="inline-block floating-text" style={{ animationDelay: '0.9s' }}>
+                of
+              </span>
+            </motion.span>{' '}
+            <motion.span variants={headlineWord} className="inline-block">
+              <span className="inline-block floating-text" style={{ animationDelay: '1.2s' }}>
+                <em
+                  className="bg-[length:200%_auto] animate-text-shimmer bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent"
+                  style={{ fontFamily: "'Playfair Display', serif" }}
+                >
+                  a year
+                </em>
+              </span>
+            </motion.span>
+            <motion.span variants={headlineWord} className="inline-block">
+              <span className="inline-block floating-text" style={{ animationDelay: '1.5s' }}>
+                , not
+              </span>
+            </motion.span>
+            <br />
+            <motion.span variants={headlineWord} className="inline-block">
+              <span className="inline-block floating-text" style={{ animationDelay: '1.8s' }}>
+                a download.
+              </span>
+            </motion.span>
+          </motion.h1>
 
           <RevealItem>
             <p className="text-gray-600 text-base sm:text-lg leading-relaxed max-w-md mb-10">
