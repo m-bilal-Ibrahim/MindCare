@@ -1,0 +1,32 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        files: ^MindCare Backend/
+      - id: end-of-file-fixer
+        files: ^MindCare Backend/
+      - id: check-added-large-files
+        files: ^MindCare Backend/
+        args: ["--maxkb=1000"]
+      - id: check-merge-conflict
+        files: ^MindCare Backend/
+      - id: detect-private-key
+        files: ^MindCare Backend/
+      - id: check-yaml
+        files: ^MindCare Backend/
+
+  # Ruff replaces black + isort + flake8 in one fast tool — lint + format
+  # for the backend's Python code specifically.
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.5.0
+    hooks:
+      - id: ruff
+        files: ^MindCare Backend/
+        args: [--fix]
+      - id: ruff-format
+        files: ^MindCare Backend/
+
+  # Web (ESLint/Prettier) and App (dart format/flutter analyze) hooks
+  # get added here as their own repo blocks later — don't create a
+  # second .pre-commit-config.yaml.

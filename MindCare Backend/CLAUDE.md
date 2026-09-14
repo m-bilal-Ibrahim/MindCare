@@ -15,6 +15,15 @@ Django + DRF, PostgreSQL, Celery + Redis, JWT auth (simplejwt), Stripe, Zoom API
 - Ask before adding a new third-party package not already in requirements/base.txt.
 - After implementing any new service, selector, or API endpoint, append an entry to docs/module-reference.md in its existing table format. Never skip this — it is required for the project's final documentation.
 
+## Requirements Interview
+Before implementing any new feature, significant change, or design decision, run a requirements interview first — do not start writing code while it's unresolved.
+- Ask ONE hard, concrete question at a time; wait for the answer before the next.
+- Challenge assumptions rather than agreeing with the requested approach by default.
+- Actively surface missing requirements and ambiguities — don't silently fill gaps with assumptions.
+- Explicitly consider: user roles, permissions/authorization, expected behavior, edge cases, failure states, validation, data requirements, integration/dependency implications, and acceptance criteria.
+- Continue until requirements are sufficiently specified, then summarize the finalized requirements and proposed implementation approach, and ask for confirmation before implementing.
+- Trivial changes with no meaningful ambiguity or design risk may skip the interview.
+
 ## Commands
 - Activate venv: [OS-appropriate command]
 - Run server: python manage.py runserver
