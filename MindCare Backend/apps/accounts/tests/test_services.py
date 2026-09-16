@@ -7,6 +7,7 @@ gets a test here before the feature is considered done.
 from django.test import TestCase
 
 from apps.accounts.models import ApprovalStatus, Role, User
+from core.audit import log_auth_event
 
 
 class UserManagerTests(TestCase):
@@ -49,3 +50,35 @@ class UserManagerTests(TestCase):
             email="root2@example.com", password="strongpass123", role=Role.PATIENT
         )
         self.assertEqual(user.role, Role.ADMIN)
+
+
+class LogAuthEventTests(TestCase):
+    def test_login_event_is_logged_as_json_with_expected_fields(self):
+        with self.assertLogs("mindcare.audit", level="INFO") as captured:
+            log_auth_event(
+                "login",
+                user_id=42,
+                email="patient@example.com",
+                role="patient",
+                ip="127.0.0.1",
+            )
+        self.assertEqual(len(captured.output), 1)
+        import json
+
+        payload = json.loads(captured.records[0].getMessage())
+        self.assertEqual(payload["event_type"], "login")
+        self.assertEqual(payload["user_id"], 42)
+        self.assertEqual(payload["email"], "patient@example.com")
+        self.assertEqual(payload["role"], "patient")
+        self.assertEqual(payload["ip"], "127.0.0.1")
+        self.assertTrue(payload["success"])
+
+    def test_failed_login_event_records_success_false(self):
+        with self.assertLogs("mindcare.audit", level="INFO") as captured:
+            log_auth_event("login_failed", email="nobody@example.com", success=False)
+        payload = __import__("json").loads(captured.records[0].getMessage())
+        self.assertFalse(payload["success"])
+
+    def test_unknown_event_type_raises(self):
+        with self.assertRaises(ValueError):
+            log_auth_event("not_a_real_event")

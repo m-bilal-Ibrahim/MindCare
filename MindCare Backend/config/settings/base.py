@@ -159,3 +159,18 @@ ZOOM_API_KEY = env("ZOOM_API_KEY", default="")
 ZOOM_API_SECRET = env("ZOOM_API_SECRET", default="")
 FCM_SERVER_KEY = env("FCM_SERVER_KEY", default="")
 FCM_CREDENTIALS_FILE = env("FCM_CREDENTIALS_FILE", default="")
+
+# Logging
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+    },
+    "loggers": {
+        "mindcare.audit": {
+            "handlers": ["console"],
+            "level": "INFO",
+        },
+    },
+}
