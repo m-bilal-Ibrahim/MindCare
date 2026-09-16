@@ -11,6 +11,8 @@ should go through here instead of `logging` directly.
 import json
 import logging
 
+from django.utils import timezone
+
 logger = logging.getLogger("mindcare.audit")
 
 AUTH_EVENT_TYPES = {"register", "login", "login_failed", "logout", "token_refresh"}
@@ -23,6 +25,7 @@ def log_auth_event(
         raise ValueError(f"Unknown auth event_type: {event_type!r}")
     payload = {
         "event_type": event_type,
+        "timestamp": timezone.now().isoformat(),
         "user_id": user_id,
         "email": email,
         "role": role,

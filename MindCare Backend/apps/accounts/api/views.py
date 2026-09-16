@@ -5,7 +5,7 @@ selectors.py (reads), then serialize the result. No business logic here.
 """
 
 from rest_framework import status
-from rest_framework.exceptions import ParseError
+from rest_framework.exceptions import ParseError, ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
@@ -21,16 +21,25 @@ from apps.accounts.api.serializers import (
     RegisterSerializer,
     UserPublicSerializer,
 )
+from apps.accounts.models import ApprovalStatus
+
+
+class RegisterRateThrottle(AnonRateThrottle):
+    scope = "register"
 
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [RegisterRateThrottle]
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = services.register_user(**serializer.validated_data)
+        try:
+            user = services.register_user(**serializer.validated_data)
+        except services.DuplicateEmailError as exc:
+            raise ValidationError({"email": str(exc)}) from exc
         return Response(UserPublicSerializer(user).data, status=status.HTTP_201_CREATED)
 
 
@@ -56,6 +65,14 @@ class RefreshView(TokenRefreshView):
             if refresh_token
             else None
         )
+
+        if user is not None and (
+            not user.is_active or user.approval_status != ApprovalStatus.APPROVED
+        ):
+            return Response(
+                {"detail": "This account is no longer authorized to refresh tokens."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         response = super().post(request, *args, **kwargs)
 

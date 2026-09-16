@@ -10,6 +10,11 @@ LOGIN_URL = "/api/v1/accounts/login/"
 
 
 class RegisterAPITests(APITestCase):
+    def setUp(self):
+        from django.core.cache import cache
+
+        cache.clear()
+
     def test_patient_can_register_and_is_approved(self):
         response = self.client.post(
             REGISTER_URL,
@@ -68,6 +73,56 @@ class RegisterAPITests(APITestCase):
             },
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_weak_password_is_rejected(self):
+        response = self.client.post(
+            REGISTER_URL,
+            {
+                "email": "weakpass@example.com",
+                "password": "password",
+                "full_name": "Weak Password",
+                "role": "patient",
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("password", response.data)
+        self.assertFalse(User.objects.filter(email="weakpass@example.com").exists())
+
+    def test_purely_numeric_weak_password_is_rejected(self):
+        response = self.client.post(
+            REGISTER_URL,
+            {
+                "email": "numericpass@example.com",
+                "password": "12345678",
+                "full_name": "Numeric Password",
+                "role": "patient",
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("password", response.data)
+
+    def test_registration_endpoint_is_throttled_after_repeated_requests(self):
+        for i in range(10):
+            response = self.client.post(
+                REGISTER_URL,
+                {
+                    "email": f"throttleuser{i}@example.com",
+                    "password": "strongpass123",
+                    "full_name": "Throttle User",
+                    "role": "patient",
+                },
+            )
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(
+            REGISTER_URL,
+            {
+                "email": "throttleuser-over-limit@example.com",
+                "password": "strongpass123",
+                "full_name": "Throttle User",
+                "role": "patient",
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
 
 
 class LoginAPITests(APITestCase):
@@ -160,6 +215,20 @@ class RefreshAndLogoutAPITests(APITestCase):
 
         reuse_response = self.client.post(REFRESH_URL, {"refresh": self.refresh})
         self.assertEqual(reuse_response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_refresh_is_rejected_after_approval_status_changes_to_pending(self):
+        self.user.approval_status = ApprovalStatus.PENDING
+        self.user.save(update_fields=["approval_status"])
+
+        response = self.client.post(REFRESH_URL, {"refresh": self.refresh})
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_refresh_is_rejected_after_account_is_rejected(self):
+        self.user.approval_status = ApprovalStatus.REJECTED
+        self.user.save(update_fields=["approval_status"])
+
+        response = self.client.post(REFRESH_URL, {"refresh": self.refresh})
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_logout_requires_authentication(self):
         response = self.client.post(LOGOUT_URL, {"refresh": self.refresh})

@@ -124,7 +124,9 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_THROTTLE_RATES": {
         "login": "5/min",
+        "register": "10/hour",
     },
+    "NUM_PROXIES": env.int("NUM_PROXIES", default=0),
 }
 
 # djangorestframework-simplejwt
@@ -148,6 +150,14 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Unified backend serving MindCare Web and MindCare App.",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+}
+
+# Cache (also backs DRF throttling — must be shared across worker processes)
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": env("REDIS_URL"),
+    }
 }
 
 # Celery
@@ -177,6 +187,7 @@ LOGGING = {
         "mindcare.audit": {
             "handlers": ["console"],
             "level": "INFO",
+            "propagate": False,
         },
     },
 }

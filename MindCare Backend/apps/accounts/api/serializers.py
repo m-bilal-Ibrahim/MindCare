@@ -19,6 +19,18 @@ class RegisterSerializer(serializers.Serializer):
             raise serializers.ValidationError("A user with this email already exists.")
         return value
 
+    def validate_password(self, value):
+        from django.contrib.auth.password_validation import (
+            validate_password as django_validate_password,
+        )
+        from django.core.exceptions import ValidationError as DjangoValidationError
+
+        try:
+            django_validate_password(value)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(list(exc.messages)) from exc
+        return value
+
 
 class UserPublicSerializer(serializers.ModelSerializer):
     class Meta:

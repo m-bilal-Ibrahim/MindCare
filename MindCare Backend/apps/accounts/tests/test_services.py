@@ -113,8 +113,8 @@ class RegisterUserTests(TestCase):
         )
         self.assertEqual(user.approval_status, ApprovalStatus.PENDING)
 
-    def test_duplicate_email_raises_integrity_error(self):
-        from django.db import IntegrityError
+    def test_duplicate_email_raises_duplicate_email_error(self):
+        from apps.accounts.services import DuplicateEmailError
 
         register_user(
             email="dup@example.com",
@@ -122,13 +122,22 @@ class RegisterUserTests(TestCase):
             full_name="First",
             role=Role.PATIENT,
         )
-        with self.assertRaises(IntegrityError):
+        with self.assertRaises(DuplicateEmailError):
             register_user(
                 email="dup@example.com",
                 password="strongpass123",
                 full_name="Second",
                 role=Role.PATIENT,
             )
+
+    def test_registration_lowercases_email(self):
+        user = register_user(
+            email="Bob@Example.COM",
+            password="strongpass123",
+            full_name="Bob",
+            role=Role.PATIENT,
+        )
+        self.assertEqual(user.email, "bob@example.com")
 
     def test_registration_logs_audit_event(self):
         with self.assertLogs("mindcare.audit", level="INFO") as captured:
@@ -175,6 +184,22 @@ class AuthenticateAndCheckApprovalTests(TestCase):
             email="patient2@example.com", password=self.password
         )
         self.assertEqual(user, self.patient)
+
+    def test_registration_and_login_are_case_insensitive_for_email(self):
+        from apps.accounts.services import authenticate_and_check_approval
+
+        registered = register_user(
+            email="Bob@Example.COM",
+            password=self.password,
+            full_name="Bob",
+            role=Role.PATIENT,
+        )
+        self.assertEqual(registered.email, "bob@example.com")
+
+        user = authenticate_and_check_approval(
+            email="BOB@example.com", password=self.password
+        )
+        self.assertEqual(user, registered)
 
     def test_wrong_password_raises_invalid_credentials(self):
         from apps.accounts.services import (
