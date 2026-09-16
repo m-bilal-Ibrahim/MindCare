@@ -79,3 +79,13 @@ def authenticate_and_check_approval(*, email, password, ip=None):
 
     log_auth_event("login", user_id=user.id, email=user.email, role=user.role, ip=ip)
     return user
+
+
+def record_token_refresh(*, user, ip=None):
+    log_auth_event(
+        "token_refresh", user_id=user.id, email=user.email, role=user.role, ip=ip
+    )
+
+
+def record_logout(*, user, ip=None):
+    log_auth_event("logout", user_id=user.id, email=user.email, role=user.role, ip=ip)

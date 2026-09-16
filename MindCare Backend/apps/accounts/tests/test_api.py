@@ -127,3 +127,45 @@ class LoginAPITests(APITestCase):
             LOGIN_URL, {"email": "loginpatient@example.com", "password": "wrongpass"}
         )
         self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
+
+
+REFRESH_URL = "/api/v1/accounts/refresh/"
+LOGOUT_URL = "/api/v1/accounts/logout/"
+
+
+class RefreshAndLogoutAPITests(APITestCase):
+    def setUp(self):
+        self.password = "strongpass123"
+        self.user = User.objects.create_user(
+            email="refreshuser@example.com",
+            password=self.password,
+            full_name="Refresh User",
+            role=Role.PATIENT,
+            approval_status=ApprovalStatus.APPROVED,
+        )
+        login = self.client.post(
+            LOGIN_URL, {"email": "refreshuser@example.com", "password": self.password}
+        )
+        self.access = login.data["access"]
+        self.refresh = login.data["refresh"]
+
+    def test_refresh_rotates_token_and_blacklists_old_one(self):
+        response = self.client.post(REFRESH_URL, {"refresh": self.refresh})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        new_refresh = response.data["refresh"]
+        self.assertNotEqual(new_refresh, self.refresh)
+
+        reuse_response = self.client.post(REFRESH_URL, {"refresh": self.refresh})
+        self.assertEqual(reuse_response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_logout_requires_authentication(self):
+        response = self.client.post(LOGOUT_URL, {"refresh": self.refresh})
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_logout_blacklists_refresh_token(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.access}")
+        response = self.client.post(LOGOUT_URL, {"refresh": self.refresh})
+        self.assertEqual(response.status_code, status.HTTP_205_RESET_CONTENT)
+
+        refresh_after_logout = self.client.post(REFRESH_URL, {"refresh": self.refresh})
+        self.assertEqual(refresh_after_logout.status_code, status.HTTP_401_UNAUTHORIZED)

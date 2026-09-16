@@ -233,3 +233,31 @@ class AuthenticateAndCheckApprovalTests(TestCase):
         payload = __import__("json").loads(captured.records[0].getMessage())
         self.assertEqual(payload["event_type"], "login_failed")
         self.assertFalse(payload["success"])
+
+
+class AuditHelperSmokeTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="smoke@example.com",
+            password="strongpass123",
+            full_name="Smoke User",
+            role=Role.PATIENT,
+        )
+
+    def test_record_token_refresh_emits_audit_event(self):
+        from apps.accounts.services import record_token_refresh
+
+        with self.assertLogs("mindcare.audit", level="INFO") as captured:
+            record_token_refresh(user=self.user, ip="127.0.0.1")
+        payload = __import__("json").loads(captured.records[0].getMessage())
+        self.assertEqual(payload["event_type"], "token_refresh")
+        self.assertEqual(payload["user_id"], self.user.id)
+
+    def test_record_logout_emits_audit_event(self):
+        from apps.accounts.services import record_logout
+
+        with self.assertLogs("mindcare.audit", level="INFO") as captured:
+            record_logout(user=self.user, ip="127.0.0.1")
+        payload = __import__("json").loads(captured.records[0].getMessage())
+        self.assertEqual(payload["event_type"], "logout")
+        self.assertEqual(payload["user_id"], self.user.id)
