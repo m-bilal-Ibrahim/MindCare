@@ -135,6 +135,9 @@ LOGOUT_URL = "/api/v1/accounts/logout/"
 
 class RefreshAndLogoutAPITests(APITestCase):
     def setUp(self):
+        from django.core.cache import cache
+
+        cache.clear()
         self.password = "strongpass123"
         self.user = User.objects.create_user(
             email="refreshuser@example.com",
@@ -169,3 +172,27 @@ class RefreshAndLogoutAPITests(APITestCase):
 
         refresh_after_logout = self.client.post(REFRESH_URL, {"refresh": self.refresh})
         self.assertEqual(refresh_after_logout.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_logout_rejects_token_from_different_user(self):
+        # Create another user and get their tokens
+        User.objects.create_user(
+            email="otheruser@example.com",
+            password=self.password,
+            full_name="Other User",
+            role=Role.PATIENT,
+            approval_status=ApprovalStatus.APPROVED,
+        )
+        other_login = self.client.post(
+            LOGIN_URL, {"email": "otheruser@example.com", "password": self.password}
+        )
+        other_refresh = other_login.data["refresh"]
+
+        # First user tries to logout with other user's refresh token
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.access}")
+        response = self.client.post(LOGOUT_URL, {"refresh": other_refresh})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("does not belong", str(response.data))
+
+        # Verify other user's token is still valid (not blacklisted)
+        refresh_result = self.client.post(REFRESH_URL, {"refresh": other_refresh})
+        self.assertEqual(refresh_result.status_code, status.HTTP_200_OK)

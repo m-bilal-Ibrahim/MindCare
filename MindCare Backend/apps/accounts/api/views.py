@@ -12,15 +12,15 @@ from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
+from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.views import TokenObtainPairView
 
-from apps.accounts import services
+from apps.accounts import selectors, services
 from apps.accounts.api.serializers import (
     MindCareTokenObtainPairSerializer,
     RegisterSerializer,
     UserPublicSerializer,
 )
-from apps.accounts.models import User
 
 
 class RegisterView(APIView):
@@ -51,13 +51,11 @@ class RefreshView(TokenRefreshView):
 
     def post(self, request, *args, **kwargs):
         refresh_token = request.data.get("refresh")
-        user = None
-        if refresh_token:
-            try:
-                token = RefreshToken(refresh_token)
-                user = User.objects.filter(pk=token["user_id"]).first()
-            except TokenError:
-                user = None
+        user = (
+            selectors.get_user_from_refresh_token(refresh_token)
+            if refresh_token
+            else None
+        )
 
         response = super().post(request, *args, **kwargs)
 
@@ -75,9 +73,17 @@ class LogoutView(APIView):
             raise ParseError("refresh token is required")
         try:
             token = RefreshToken(refresh_token)
-            token.blacklist()
         except TokenError as exc:
             raise ParseError("invalid or already-blacklisted token") from exc
 
+        try:
+            token_user_id = int(token["user_id"])
+        except (KeyError, ValueError, TypeError) as exc:
+            raise ParseError("invalid token format") from exc
+
+        if token_user_id != request.user.id:
+            raise ParseError("refresh token does not belong to the authenticated user")
+
+        token.blacklist()
         services.record_logout(user=request.user, ip=request.META.get("REMOTE_ADDR"))
         return Response(status=status.HTTP_205_RESET_CONTENT)
