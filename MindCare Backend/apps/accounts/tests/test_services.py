@@ -141,3 +141,95 @@ class RegisterUserTests(TestCase):
         payload = __import__("json").loads(captured.records[0].getMessage())
         self.assertEqual(payload["event_type"], "register")
         self.assertEqual(payload["email"], "audited@example.com")
+
+
+class AuthenticateAndCheckApprovalTests(TestCase):
+    def setUp(self):
+        self.password = "strongpass123"
+        self.patient = User.objects.create_user(
+            email="patient2@example.com",
+            password=self.password,
+            full_name="Pat Ient",
+            role=Role.PATIENT,
+            approval_status=ApprovalStatus.APPROVED,
+        )
+        self.pending_psych = User.objects.create_user(
+            email="pending@example.com",
+            password=self.password,
+            full_name="Pending Doc",
+            role=Role.PSYCHOLOGIST,
+            approval_status=ApprovalStatus.PENDING,
+        )
+        self.rejected_ngo = User.objects.create_user(
+            email="rejected@example.com",
+            password=self.password,
+            full_name="Rejected NGO",
+            role=Role.NGO,
+            approval_status=ApprovalStatus.REJECTED,
+        )
+
+    def test_approved_user_authenticates(self):
+        from apps.accounts.services import authenticate_and_check_approval
+
+        user = authenticate_and_check_approval(
+            email="patient2@example.com", password=self.password
+        )
+        self.assertEqual(user, self.patient)
+
+    def test_wrong_password_raises_invalid_credentials(self):
+        from apps.accounts.services import (
+            InvalidCredentialsError,
+            authenticate_and_check_approval,
+        )
+
+        with self.assertRaises(InvalidCredentialsError):
+            authenticate_and_check_approval(
+                email="patient2@example.com", password="wrongpass"
+            )
+
+    def test_pending_account_raises_pending_approval(self):
+        from apps.accounts.services import (
+            AccountPendingApprovalError,
+            authenticate_and_check_approval,
+        )
+
+        with self.assertRaises(AccountPendingApprovalError):
+            authenticate_and_check_approval(
+                email="pending@example.com", password=self.password
+            )
+
+    def test_rejected_account_raises_rejected(self):
+        from apps.accounts.services import (
+            AccountRejectedError,
+            authenticate_and_check_approval,
+        )
+
+        with self.assertRaises(AccountRejectedError):
+            authenticate_and_check_approval(
+                email="rejected@example.com", password=self.password
+            )
+
+    def test_successful_login_logs_audit_event(self):
+        from apps.accounts.services import authenticate_and_check_approval
+
+        with self.assertLogs("mindcare.audit", level="INFO") as captured:
+            authenticate_and_check_approval(
+                email="patient2@example.com", password=self.password
+            )
+        payload = __import__("json").loads(captured.records[0].getMessage())
+        self.assertEqual(payload["event_type"], "login")
+
+    def test_failed_login_logs_audit_event(self):
+        from apps.accounts.services import (
+            InvalidCredentialsError,
+            authenticate_and_check_approval,
+        )
+
+        with self.assertLogs("mindcare.audit", level="INFO") as captured:
+            with self.assertRaises(InvalidCredentialsError):
+                authenticate_and_check_approval(
+                    email="patient2@example.com", password="wrongpass"
+                )
+        payload = __import__("json").loads(captured.records[0].getMessage())
+        self.assertEqual(payload["event_type"], "login_failed")
+        self.assertFalse(payload["success"])

@@ -7,10 +7,16 @@ selectors.py (reads), then serialize the result. No business logic here.
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from apps.accounts import services
-from apps.accounts.api.serializers import RegisterSerializer, UserPublicSerializer
+from apps.accounts.api.serializers import (
+    MindCareTokenObtainPairSerializer,
+    RegisterSerializer,
+    UserPublicSerializer,
+)
 
 
 class RegisterView(APIView):
@@ -22,3 +28,14 @@ class RegisterView(APIView):
         serializer.is_valid(raise_exception=True)
         user = services.register_user(**serializer.validated_data)
         return Response(UserPublicSerializer(user).data, status=status.HTTP_201_CREATED)
+
+
+class LoginRateThrottle(AnonRateThrottle):
+    scope = "login"
+
+
+class LoginView(TokenObtainPairView):
+    serializer_class = MindCareTokenObtainPairSerializer
+    throttle_classes = [LoginRateThrottle]
+    permission_classes = [AllowAny]
+    authentication_classes = []

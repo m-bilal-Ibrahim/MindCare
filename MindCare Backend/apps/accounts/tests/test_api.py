@@ -6,6 +6,7 @@ from rest_framework.test import APITestCase
 from apps.accounts.models import ApprovalStatus, Role, User
 
 REGISTER_URL = "/api/v1/accounts/register/"
+LOGIN_URL = "/api/v1/accounts/login/"
 
 
 class RegisterAPITests(APITestCase):
@@ -67,3 +68,62 @@ class RegisterAPITests(APITestCase):
             },
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class LoginAPITests(APITestCase):
+    def setUp(self):
+        from django.core.cache import cache
+
+        cache.clear()
+        self.password = "strongpass123"
+        self.patient = User.objects.create_user(
+            email="loginpatient@example.com",
+            password=self.password,
+            full_name="Pat Ient",
+            role=Role.PATIENT,
+            approval_status=ApprovalStatus.APPROVED,
+        )
+        self.pending_psych = User.objects.create_user(
+            email="loginpending@example.com",
+            password=self.password,
+            full_name="Pending Doc",
+            role=Role.PSYCHOLOGIST,
+            approval_status=ApprovalStatus.PENDING,
+        )
+
+    def test_successful_login_returns_tokens_with_role_claim(self):
+        response = self.client.post(
+            LOGIN_URL, {"email": "loginpatient@example.com", "password": self.password}
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("access", response.data)
+        self.assertIn("refresh", response.data)
+
+        from rest_framework_simplejwt.tokens import AccessToken
+
+        token = AccessToken(response.data["access"])
+        self.assertEqual(token["role"], "patient")
+
+    def test_pending_account_login_is_rejected_with_clear_message(self):
+        response = self.client.post(
+            LOGIN_URL, {"email": "loginpending@example.com", "password": self.password}
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertIn("pending admin approval", str(response.data))
+
+    def test_wrong_password_rejected(self):
+        response = self.client.post(
+            LOGIN_URL, {"email": "loginpatient@example.com", "password": "wrongpass"}
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_login_endpoint_is_throttled_after_repeated_failures(self):
+        for _ in range(5):
+            self.client.post(
+                LOGIN_URL,
+                {"email": "loginpatient@example.com", "password": "wrongpass"},
+            )
+        response = self.client.post(
+            LOGIN_URL, {"email": "loginpatient@example.com", "password": "wrongpass"}
+        )
+        self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
