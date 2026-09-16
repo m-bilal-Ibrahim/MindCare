@@ -7,6 +7,7 @@ gets a test here before the feature is considered done.
 from django.test import TestCase
 
 from apps.accounts.models import ApprovalStatus, Role, User
+from apps.accounts.services import register_user
 from core.audit import log_auth_event
 
 
@@ -82,3 +83,61 @@ class LogAuthEventTests(TestCase):
     def test_unknown_event_type_raises(self):
         with self.assertRaises(ValueError):
             log_auth_event("not_a_real_event")
+
+
+class RegisterUserTests(TestCase):
+    def test_patient_registration_is_immediately_approved(self):
+        user = register_user(
+            email="newpatient@example.com",
+            password="strongpass123",
+            full_name="New Patient",
+            role=Role.PATIENT,
+        )
+        self.assertEqual(user.approval_status, ApprovalStatus.APPROVED)
+
+    def test_psychologist_registration_is_pending(self):
+        user = register_user(
+            email="newdoc@example.com",
+            password="strongpass123",
+            full_name="New Doc",
+            role=Role.PSYCHOLOGIST,
+        )
+        self.assertEqual(user.approval_status, ApprovalStatus.PENDING)
+
+    def test_ngo_registration_is_pending(self):
+        user = register_user(
+            email="newngo@example.com",
+            password="strongpass123",
+            full_name="New NGO",
+            role=Role.NGO,
+        )
+        self.assertEqual(user.approval_status, ApprovalStatus.PENDING)
+
+    def test_duplicate_email_raises_integrity_error(self):
+        from django.db import IntegrityError
+
+        register_user(
+            email="dup@example.com",
+            password="strongpass123",
+            full_name="First",
+            role=Role.PATIENT,
+        )
+        with self.assertRaises(IntegrityError):
+            register_user(
+                email="dup@example.com",
+                password="strongpass123",
+                full_name="Second",
+                role=Role.PATIENT,
+            )
+
+    def test_registration_logs_audit_event(self):
+        with self.assertLogs("mindcare.audit", level="INFO") as captured:
+            register_user(
+                email="audited@example.com",
+                password="strongpass123",
+                full_name="Audited User",
+                role=Role.PATIENT,
+            )
+        payload = __import__("json").loads(captured.records[0].getMessage())
+        self.assertEqual(payload["event_type"], "register")
+        self.assertEqual(payload["email"], "audited@example.com")
