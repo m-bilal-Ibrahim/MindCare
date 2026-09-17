@@ -130,6 +130,23 @@ class RegisterUserTests(TestCase):
                 role=Role.PATIENT,
             )
 
+    def test_unrelated_integrity_error_is_reraised_unmodified(self):
+        from unittest.mock import patch
+
+        from django.db import IntegrityError
+
+        with patch(
+            "apps.accounts.services.User.objects.create_user",
+            side_effect=IntegrityError("some other constraint violation"),
+        ):
+            with self.assertRaises(IntegrityError):
+                register_user(
+                    email="neverexisted@example.com",
+                    password="strongpass123",
+                    full_name="Nobody",
+                    role=Role.PATIENT,
+                )
+
     def test_registration_lowercases_email(self):
         user = register_user(
             email="Bob@Example.COM",

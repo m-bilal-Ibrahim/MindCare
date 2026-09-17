@@ -5,7 +5,7 @@ business rules themselves. Anything that mutates state belongs here.
 """
 
 from django.contrib.auth import authenticate
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 
 from apps.accounts.models import ApprovalStatus, Role, User
 from core.audit import log_auth_event
@@ -21,15 +21,18 @@ def register_user(*, email, password, full_name, role):
         else ApprovalStatus.APPROVED
     )
     try:
-        user = User.objects.create_user(
-            email=email,
-            password=password,
-            full_name=full_name,
-            role=role,
-            approval_status=approval_status,
-        )
+        with transaction.atomic():
+            user = User.objects.create_user(
+                email=email,
+                password=password,
+                full_name=full_name,
+                role=role,
+                approval_status=approval_status,
+            )
     except IntegrityError as exc:
-        raise DuplicateEmailError("A user with this email already exists.") from exc
+        if User.objects.filter(email__iexact=email).exists():
+            raise DuplicateEmailError("A user with this email already exists.") from exc
+        raise
     log_auth_event("register", user_id=user.id, email=user.email, role=user.role)
     return user
 
