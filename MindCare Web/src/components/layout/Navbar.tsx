@@ -59,14 +59,7 @@ const Navbar: React.FC = () => {
 
         {/* Right side */}
         <div className="hidden lg:flex items-center gap-3">
-          <span className="text-xs text-gray-500 font-medium">EN · UR</span>
-          <Link
-            to={ROUTES.SIGN_IN}
-            className="text-sm text-gray-700 hover:text-gray-900 transition-colors font-medium"
-          >
-            Sign in
-          </Link>
-          <Link to={ROUTES.ONBOARDING}>
+          <Link to={ROUTES.CLIENT_APP}>
             <Button size="sm" variant="primary" className="rounded-full px-5">
               Get started →
             </Button>
@@ -111,14 +104,7 @@ const Navbar: React.FC = () => {
             ))}
           </ul>
           <div className="mt-4 flex flex-col gap-3">
-            <Link
-              to={ROUTES.SIGN_IN}
-              onClick={() => setMobileOpen(false)}
-              className="text-sm text-gray-700 font-medium text-center py-3"
-            >
-              Sign in
-            </Link>
-            <Link to={ROUTES.ONBOARDING} onClick={() => setMobileOpen(false)}>
+            <Link to={ROUTES.CLIENT_APP} onClick={() => setMobileOpen(false)}>
               <Button variant="primary" fullWidth size="md">
                 Get started →
               </Button>
