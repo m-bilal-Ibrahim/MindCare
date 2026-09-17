@@ -61,3 +61,6 @@ MindCare Backend/.playwright-mcp/
 
 # mypy cache
 .mypy_cache/
+
+.claude/
+**/.playwright-mcp/
