@@ -62,7 +62,7 @@ MindCare consists of four major components:
                     │      MindCare AI        │
                     │ AI / ML / Predictions    │
                     │ Recommendations         │
-                    │        
+                    │
 
                     └────────────┬────────────┘
                                  │
