@@ -49,3 +49,18 @@ env/
 # Generated / temporary files
 *.tmp
 *.temp
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Playwright MCP generated artifacts
+MindCare Backend/.playwright-mcp/
+
+# Ruff cache
+.ruff_cache/
+
+# mypy cache
+.mypy_cache/
+
+.claude/
+**/.playwright-mcp/

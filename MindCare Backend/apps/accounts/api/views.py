@@ -1,0 +1,106 @@
+"""DRF views for the accounts API.
+
+Views stay thin: parse the request, delegate to services.py (writes) or
+selectors.py (reads), then serialize the result. No business logic here.
+"""
+
+from rest_framework import status
+from rest_framework.exceptions import ParseError, ValidationError
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
+from rest_framework.views import APIView
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+from apps.accounts import selectors, services
+from apps.accounts.api.serializers import (
+    MindCareTokenObtainPairSerializer,
+    RegisterSerializer,
+    UserPublicSerializer,
+)
+from apps.accounts.models import ApprovalStatus
+
+
+class RegisterRateThrottle(AnonRateThrottle):
+    scope = "register"
+
+
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    throttle_classes = [RegisterRateThrottle]
+
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            user = services.register_user(**serializer.validated_data)
+        except services.DuplicateEmailError as exc:
+            raise ValidationError({"email": str(exc)}) from exc
+        return Response(UserPublicSerializer(user).data, status=status.HTTP_201_CREATED)
+
+
+class LoginRateThrottle(AnonRateThrottle):
+    scope = "login"
+
+
+class LoginView(TokenObtainPairView):
+    serializer_class = MindCareTokenObtainPairSerializer
+    throttle_classes = [LoginRateThrottle]
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+
+class RefreshView(TokenRefreshView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.data.get("refresh")
+        user = (
+            selectors.get_user_from_refresh_token(refresh_token)
+            if refresh_token
+            else None
+        )
+
+        if user is not None and (
+            not user.is_active or user.approval_status != ApprovalStatus.APPROVED
+        ):
+            return Response(
+                {"detail": "This account is no longer authorized to refresh tokens."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        response = super().post(request, *args, **kwargs)
+
+        if response.status_code == status.HTTP_200_OK and user is not None:
+            services.record_token_refresh(user=user, ip=request.META.get("REMOTE_ADDR"))
+        return response
+
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        refresh_token = request.data.get("refresh")
+        if not refresh_token:
+            raise ParseError("refresh token is required")
+        try:
+            token = RefreshToken(refresh_token)
+        except TokenError as exc:
+            raise ParseError("invalid or already-blacklisted token") from exc
+
+        try:
+            token_user_id = int(token["user_id"])
+        except (KeyError, ValueError, TypeError) as exc:
+            raise ParseError("invalid token format") from exc
+
+        if token_user_id != request.user.id:
+            raise ParseError("refresh token does not belong to the authenticated user")
+
+        token.blacklist()
+        services.record_logout(user=request.user, ip=request.META.get("REMOTE_ADDR"))
+        return Response(status=status.HTTP_205_RESET_CONTENT)
