@@ -1,7 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
- <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- Backend API and Google Fonts. Debug builds get this automatically;
+         release builds need it declared. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- Voice input in the Aida chat (speech_to_text). -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <application
-        android:label="mindcare_mobile"
+        android:label="MindCare"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -41,6 +46,15 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- SOS screens open the dialer for crisis lines and hospitals. -->
+        <intent>
+            <action android:name="android.intent.action.DIAL"/>
+            <data android:scheme="tel"/>
+        </intent>
+        <!-- speech_to_text needs to find the device's speech recogniser. -->
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
         </intent>
     </queries>
 </manifest>
