@@ -55,8 +55,10 @@ Features from @project-vision.md that are part of the product but **not yet
 assigned to a phase**. Listed here so they aren't lost. Assign each one a phase
 when its turn comes.
 
-- **Motivation Corner** (@project-vision.md §20): motivational quotes, messages and
-  periodic reminders, plus opt-in religious content (Quran / Hadith). The religious
+- **Motivation Corner** (@project-vision.md §20): **text quotes shipped 2026-10-08**
+  (`apps/motivation`, admin-managed, `GET /motivation/quotes/` and `/random/`).
+  Still to do: periodic reminders (needs Phase 10 notifications) and opt-in
+  religious content (Quran / Hadith, with audio) in its own model. The religious
   preference is GDPR Art. 9 special-category data; see @decisions.md.
 - **AI Chat Assistant** (@project-vision.md §14): patient-side supportive chat
   (explicitly not a replacement for a psychologist) and a more advanced

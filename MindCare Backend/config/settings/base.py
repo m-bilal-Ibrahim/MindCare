@@ -27,6 +27,7 @@ LOCAL_APPS = [
     "apps.reference",
     "apps.stats",
     "apps.ai",
+    "apps.motivation",
     "apps.patients",
     "apps.psychologists",
     "apps.relationships",
@@ -139,6 +140,7 @@ REST_FRAMEWORK = {
         "directory": "60/min",
         "relationship_requests": "10/hour",
         "ai_prediction": "20/min",
+        "motivation": "60/min",
     },
     "NUM_PROXIES": env.int("NUM_PROXIES", default=0),
 }

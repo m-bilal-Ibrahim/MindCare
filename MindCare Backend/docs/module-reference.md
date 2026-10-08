@@ -61,6 +61,18 @@ new service, selector, or API endpoint. Keep entries one row per function/class.
 
 ---
 
+### apps/motivation
+
+| File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
+|------|-------------------|---------|--------------|--------------------|
+| `apps/motivation/models.py` | `MotivationalContent`, `Quote`, `QuoteCategory` | Abstract base (`is_active`, `created_at`) for Motivation Corner content; `Quote` = text, optional author, optional category (`hope`, `resilience`, `calm`, `self_care`). Religious content (Dua/Surah/Hadith with audio) will be a separate model, served only on opt-in. Migration 0002 seeds 30 non-religious quotes | — | MindCare App |
+| `apps/motivation/selectors.py` | `active_quotes()`, `random_active_quote()` | Active quotes only, newest first, optional category; random pick by count + random offset (no `ORDER BY RANDOM()`), `None` when there are none | see views | MindCare App |
+| `apps/motivation/admin.py` | `QuoteAdmin` | List, search (text, author), filter, inline `is_active` toggle and show/hide actions; changes appear in the API on the next request | `/admin/motivation/quote/` | neither (Django admin) |
+| `apps/motivation/api/serializers.py` | `QuoteSerializer`, `QuoteQuerySerializer` | `{id, text, author, category}`, blank author/category as `null`; `category` query param validated (unknown → 400) | — | MindCare App |
+| `apps/motivation/api/views.py` | `QuoteListView`, `RandomQuoteView`, `MotivationRateThrottle` | Any logged-in user; paginated active quotes with `?category=`, and one random active quote (404 `No quotes available.`); throttled (`motivation`, 60/min per user, shared by both) | `GET /api/v1/motivation/quotes/`, `GET /api/v1/motivation/quotes/random/` | MindCare App |
+
+---
+
 ### apps/ngo
 
 | File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
@@ -194,7 +206,7 @@ new service, selector, or API endpoint. Keep entries one row per function/class.
 
 | File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
 |------|-------------------|---------|--------------|--------------------|
-| `config/settings/base.py`, `dev.py`, `prod.py` | `CORS_ALLOWED_ORIGINS`, `CORS_ALLOW_CREDENTIALS`, `corsheaders.middleware.CorsMiddleware` | CORS configured via `django-cors-headers` (`requirements/base.txt`, 4.9.0). `base.py`/`prod.py` allow only the deployed MindCare Web origin (`https://mind-care-web-seven.vercel.app`; pinned explicitly in `prod.py`); `dev.py` adds the Vite dev server (`http://localhost:5173`). `CORS_ALLOW_CREDENTIALS=False` because auth is JWT bearer tokens in the `Authorization` header, not cookies. Middleware sits above `CommonMiddleware` | all `/api/v1/` endpoints | MindCare Web |
+| `config/settings/base.py`, `dev.py`, `prod.py` | `CORS_ALLOWED_ORIGINS`, `CORS_ALLOW_CREDENTIALS`, `corsheaders.middleware.CorsMiddleware` | CORS configured via `django-cors-headers` (`requirements/base.txt`, 4.9.0). `base.py`/`prod.py` allow the deployed MindCare Web origin (`https://mind-care-web-seven.vercel.app`; pinned explicitly in `prod.py`) plus any origins in the `CORS_EXTRA_ALLOWED_ORIGINS` env var (comma-separated, unset by default); `dev.py` adds the Vite dev server (`http://localhost:5173`) and the Flutter web dev server (`http://localhost:5000`). `CORS_ALLOW_CREDENTIALS=False` because auth is JWT bearer tokens in the `Authorization` header, not cookies. Middleware sits above `CommonMiddleware` | all `/api/v1/` endpoints | MindCare Web |
 | `manage.py` | `main()` | `manage.py test` forces `config.settings.test` (guarded, local-only DB) so the Django test runner can never run against the `.env` production `DATABASE_URL` | — | neither (tooling) |
 | `apps/*/api/views.py` | `extend_schema` annotations | OpenAPI request/response schema for every Phase 2 and Phase 3 endpoint (register documents the per-role `profile` shape) | `/api/schema/`, `/api/docs/` | MindCare Web, MindCare App |
 

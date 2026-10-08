@@ -43,6 +43,8 @@ docs/               This file, decisions.md, roadmap.md, deployment.md
 - **stats** — public aggregate platform counts for the marketing site (no models).
 - **ai** — gateway to the separate AI inference service for psychologists (no models;
   nothing stored). The approval workflow stays in `recommendations`.
+- **motivation** — Motivation Corner content: admin-managed text quotes today;
+  opt-in religious content later, in its own model.
 
 ## Shared modules
 
