@@ -23,7 +23,7 @@ Production backend runs on **Render**, with **Supabase** (Postgres) and
 | `DJANGO_SETTINGS_MODULE` | `config.settings.prod` |
 | `ALLOWED_HOSTS` | `.onrender.com` |
 | `CORS_EXTRA_ALLOWED_ORIGINS` | optional, comma-separated extra browser origins on top of the Vercel origin, e.g. `http://localhost:5000` for a local Flutter web demo. Unset normally; remove after a demo |
-| `AI_SERVICE_URL` | the MindCare AI service's base URL, no trailing `/predict` (e.g. `https://mindcare-api.onrender.com`). Unset → `POST /api/v1/ai/anxiety-prediction/` answers 503 |
+| `AI_SERVICE_URL` | the MindCare AI service's base URL, no trailing `/predict` (e.g. `https://mindcare-api-fysd.onrender.com`). Unset → `POST /api/v1/ai/anxiety-prediction/` answers 503 |
 
 **Local development:** the developer's local `.env` `DATABASE_URL` points at the
 local docker Postgres (switched 2026-09-30); production credentials live only in
