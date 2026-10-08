@@ -39,7 +39,7 @@ export const LoadingPanel: React.FC<{ label?: string }> = ({ label = 'Loading…
   </div>
 );
 
-export const ErrorPanel: React.FC<{ message: string; onRetry?: () => void }> = ({ message, onRetry }) => {
+export const ErrorPanel: React.FC<{ message: string; onRetry?: () => void; title?: string }> = ({ message, onRetry, title }) => {
   const pending = message === NOT_APPROVED_MESSAGE;
   const Icon = pending ? Clock : AlertCircle;
   return (
@@ -49,7 +49,7 @@ export const ErrorPanel: React.FC<{ message: string; onRetry?: () => void }> = (
     >
       <Icon size={22} className={`mx-auto mb-3 ${pending ? 'text-amber-700' : 'text-red-700'}`} aria-hidden="true" />
       <p className={`font-semibold mb-1 ${pending ? 'text-amber-900' : 'text-red-800'}`}>
-        {pending ? 'Awaiting approval' : 'Something went wrong'}
+        {title ?? (pending ? 'Awaiting approval' : 'Something went wrong')}
       </p>
       <p className={`text-sm max-w-md mx-auto ${pending ? 'text-amber-800' : 'text-red-700'}`}>{message}</p>
       {onRetry && !pending && (

@@ -51,7 +51,7 @@ export const ADMIN_ROUTES = {
 // ——— Sidebar navigation ———
 export const ADMIN_NAV_OPERATIONS: AdminNavItem[] = [
   { id: 'overview', label: 'Overview', route: ADMIN_ROUTES.OVERVIEW, icon: 'home' },
-  { id: 'verifications', label: 'Verifications', route: ADMIN_ROUTES.VERIFICATIONS, icon: 'shield', badge: 7 },
+  { id: 'verifications', label: 'Verifications', route: ADMIN_ROUTES.VERIFICATIONS, icon: 'shield' },
   { id: 'therapists', label: 'Therapists', route: ADMIN_ROUTES.THERAPISTS, icon: 'code' },
   { id: 'users', label: 'Users', route: ADMIN_ROUTES.USERS, icon: 'users' },
 ];
