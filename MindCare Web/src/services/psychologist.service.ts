@@ -193,9 +193,17 @@ export interface AnxietyPredictionInput {
   'Diet Quality (1-10)': number;
   Occupation: (typeof AI_OCCUPATIONS)[number];
   'Family History of Anxiety': 'Yes' | 'No';
+  /** Optional, recommendation wording only — the model never uses them. */
+  Gender?: 'Female' | 'Male' | 'Other';
+  'Alcohol Consumption (drinks/week)'?: number;
 }
 
+/** Optional keys an older backend (before the /patient-summary switch) rejects as unknown. */
+const OPTIONAL_AI_KEYS = ['Gender', 'Alcohol Consumption (drinks/week)'] as const;
+
 export type RiskClass = 'Low' | 'Medium' | 'High';
+
+export type SeverityTier = 'Minimal (1-2)' | 'Mild (3-4)' | 'Moderate (5-6)' | 'High (7-8)' | 'Severe (9-10)';
 
 export interface AnxietyPrediction {
   predicted_class: RiskClass;
@@ -208,16 +216,42 @@ export interface AnxietyPrediction {
   confidence_label: 'confident' | 'borderline';
   borderline_reasons: string[];
   borderline_between: string[] | null;
+  // From the AI's /patient-summary. Absent until the backend forwards them
+  // (docs/ai-recommendations-api-contract.md), so the page treats them as optional.
+  caveat?: string;
+  estimated_severity_tier?: SeverityTier;
+  severity_tier_basis?: {
+    method: string;
+    share_of_matching_patients: number | null;
+    matching_patients: number;
+  };
+  recommendation_bundle?: {
+    exercises: string;
+    sleep_schedule: string;
+    nutrition: string;
+  };
+}
+
+const post = (input: Partial<AnxietyPredictionInput>) =>
+  apiFetch<AnxietyPrediction>('/ai/anxiety-prediction/', { method: 'POST', body: JSON.stringify(input) });
+
+/** True if a 400 only complains that the optional keys "can't be set". */
+function rejectedOnlyOptionalKeys(body: unknown): boolean {
+  if (!body || typeof body !== 'object') return false;
+  const keys = Object.keys(body);
+  return keys.length > 0 && keys.every((k) => (OPTIONAL_AI_KEYS as readonly string[]).includes(k));
 }
 
 /** POST /ai/anxiety-prediction/ — 503 means the AI service is asleep. */
 export async function predictAnxiety(input: AnxietyPredictionInput) {
-  const res = explain(
-    await apiFetch<AnxietyPrediction>('/ai/anxiety-prediction/', {
-      method: 'POST',
-      body: JSON.stringify(input),
-    })
-  );
+  let res = await post(input);
+  // An older backend refuses Gender / alcohol: retry with just the model's 17 inputs.
+  if (res.status === 400 && rejectedOnlyOptionalKeys(res.errorBody)) {
+    const required: Partial<AnxietyPredictionInput> = { ...input };
+    for (const k of OPTIONAL_AI_KEYS) delete required[k];
+    res = await post(required);
+  }
+  res = explain(res);
   if (res.status === 503) return { ...res, error: AI_WAKING_MESSAGE };
   return res;
 }

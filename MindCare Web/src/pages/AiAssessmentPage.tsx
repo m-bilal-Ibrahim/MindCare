@@ -7,7 +7,7 @@
 // ============================================================
 
 import React, { useState } from 'react';
-import { AlertTriangle, Info, RotateCcw, Sparkles } from 'lucide-react';
+import { AlertTriangle, Apple, Dumbbell, Info, Moon, RotateCcw, Sparkles } from 'lucide-react';
 import TherapistLayout from '../components/therapist/TherapistLayout';
 import { ErrorPanel, WakingHint } from '../components/therapist/ApiStates';
 import {
@@ -20,7 +20,11 @@ import {
   type RiskClass,
 } from '../services/psychologist.service';
 
-type NumericKey = Exclude<keyof AnxietyPredictionInput, 'Occupation' | 'Family History of Anxiety'>;
+type OptionalKey = 'Gender' | 'Alcohol Consumption (drinks/week)';
+type NumericKey = Exclude<keyof AnxietyPredictionInput, 'Occupation' | 'Family History of Anxiety' | OptionalKey>;
+
+const GENDERS = ['Female', 'Male', 'Other'] as const;
+const ALCOHOL_KEY = 'Alcohol Consumption (drinks/week)';
 
 interface NumberField {
   key: NumericKey;
@@ -63,6 +67,8 @@ const PSS_ANSWERS = ['Never', 'Almost never', 'Sometimes', 'Fairly often', 'Very
 type FormState = Record<NumericKey, string> & {
   Occupation: string;
   'Family History of Anxiety': string;
+  Gender: string;
+  [ALCOHOL_KEY]: string;
 };
 
 const EMPTY_FORM: FormState = {
@@ -83,6 +89,8 @@ const EMPTY_FORM: FormState = {
   'Diet Quality (1-10)': '',
   Occupation: '',
   'Family History of Anxiety': '',
+  Gender: '',
+  [ALCOHOL_KEY]: '',
 };
 
 const ALL_NUMBER_FIELDS = [...BASICS, ...VITALS, ...CAFFEINE];
@@ -100,6 +108,11 @@ function validate(form: FormState): Record<string, string> {
   for (const q of PSS_QUESTIONS) if (form[q.key] === '') errors[q.key] = 'Choose an answer';
   if (!form.Occupation) errors.Occupation = 'Required';
   if (!form['Family History of Anxiety']) errors['Family History of Anxiety'] = 'Required';
+  const alcohol = form[ALCOHOL_KEY].trim();
+  if (alcohol !== '') {
+    const n = Number(alcohol);
+    if (Number.isNaN(n) || n < 0 || n > 100) errors[ALCOHOL_KEY] = 'Between 0 and 100';
+  }
   return errors;
 }
 
@@ -109,6 +122,9 @@ function toPayload(form: FormState): AnxietyPredictionInput {
   for (const q of PSS_QUESTIONS) out[q.key] = Number(form[q.key]);
   out.Occupation = form.Occupation;
   out['Family History of Anxiety'] = form['Family History of Anxiety'];
+  // Optional: only sent when filled in (they only word the recommendations).
+  if (form.Gender) out.Gender = form.Gender;
+  if (form[ALCOHOL_KEY].trim() !== '') out[ALCOHOL_KEY] = Number(form[ALCOHOL_KEY]);
   return out as unknown as AnxietyPredictionInput;
 }
 
@@ -314,6 +330,45 @@ const AiAssessmentPage: React.FC = () => {
               </div>
             </Section>
 
+            <Section
+              title="For the recommendations (optional)"
+              note="Not used by the model — only to word the lifestyle recommendations. Leave blank if unknown."
+            >
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block">
+                  <span className="block text-sm font-medium text-gray-700 mb-1.5">Gender</span>
+                  <select
+                    value={form.Gender}
+                    onChange={(e) => set('Gender', e.target.value)}
+                    className={`${inputClass} border-gray-200`}
+                  >
+                    <option value="">Not provided</option>
+                    {GENDERS.map((g) => (
+                      <option key={g} value={g}>
+                        {g}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block">
+                  <span className="block text-sm font-medium text-gray-700 mb-1.5">Alcohol (drinks/week)</span>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={form[ALCOHOL_KEY]}
+                    onChange={(e) => set(ALCOHOL_KEY, e.target.value)}
+                    aria-invalid={!!errors[ALCOHOL_KEY]}
+                    placeholder="Not provided"
+                    className={`${inputClass} ${errors[ALCOHOL_KEY] ? 'border-red-400' : 'border-gray-200'}`}
+                  />
+                  {errors[ALCOHOL_KEY] && <span className="block text-xs text-red-600 mt-1">{errors[ALCOHOL_KEY]}</span>}
+                </label>
+              </div>
+            </Section>
+
             {apiError && !notApproved && (
               <div
                 role="alert"
@@ -350,9 +405,16 @@ const AiAssessmentPage: React.FC = () => {
             {submitting && <WakingHint active />}
           </form>
 
-          <aside id="ai-result" className="xl:sticky xl:top-8 scroll-mt-8" aria-live="polite">
+          <aside
+            id="ai-result"
+            className={`space-y-5 scroll-mt-8 ${result?.recommendation_bundle ? '' : 'xl:sticky xl:top-8'}`}
+            aria-live="polite"
+          >
             {result ? (
-              <ResultCard result={result} />
+              <>
+                <ResultCard result={result} />
+                {result.recommendation_bundle && <RecommendationsCard result={result} />}
+              </>
             ) : (
               <div className="bg-white/60 border border-dashed border-gray-300 rounded-2xl p-8 text-center text-sm text-gray-500">
                 <Sparkles size={20} className="mx-auto mb-3 text-gray-400" aria-hidden="true" />
@@ -372,6 +434,12 @@ const ResultCard: React.FC<{ result: AnxietyPrediction }> = ({ result }) => {
   const classes: RiskClass[] = ['Low', 'Medium', 'High'];
   return (
     <div className={`rounded-2xl border p-6 ${style.card}`}>
+      {result.caveat && (
+        <div className="flex items-start gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-xs text-gray-700 mb-5">
+          <Info size={14} className="shrink-0 mt-0.5 text-gray-500" aria-hidden="true" />
+          <span className="whitespace-pre-line">{result.caveat}</span>
+        </div>
+      )}
       <p className="text-[11px] font-semibold tracking-widest text-gray-500 uppercase mb-1">Predicted anxiety risk</p>
       <p className={`text-5xl font-black mb-1 ${style.text}`}>{result.predicted_class}</p>
       <p className="text-sm text-gray-700 mb-5">
@@ -432,11 +500,56 @@ const ResultCard: React.FC<{ result: AnxietyPrediction }> = ({ result }) => {
           <dt className="text-xs text-gray-500">Stress level used</dt>
           <dd className="font-semibold text-gray-900">{result.estimated_stress_level} / 10</dd>
         </div>
+        {result.estimated_severity_tier && (
+          <div className="col-span-2">
+            <dt className="text-xs text-gray-500">Estimated severity tier</dt>
+            <dd className="font-semibold text-gray-900">{result.estimated_severity_tier}</dd>
+            {result.severity_tier_basis && (
+              <dd className="text-xs text-gray-500 mt-0.5">{tierBasisText(result.severity_tier_basis)}</dd>
+            )}
+          </div>
+        )}
       </dl>
       <p className="text-xs text-gray-500 mt-4">
         A “confident” result means the model is sure of its top class, not that the patient is safe.
       </p>
     </div>
+  );
+};
+
+/** Explains that the tier is estimated from similar training rows, not predicted by the model. */
+function tierBasisText(b: NonNullable<AnxietyPrediction['severity_tier_basis']>): string {
+  const share = b.share_of_matching_patients != null ? ` (${Math.round(b.share_of_matching_patients * 100)}%)` : '';
+  return `Estimated, not predicted: most common tier among ${b.matching_patients.toLocaleString()} similar patients in the training data${share}.`;
+}
+
+const RECOMMENDATION_SECTIONS = [
+  { key: 'exercises', label: 'Exercise', icon: Dumbbell },
+  { key: 'sleep_schedule', label: 'Sleep schedule', icon: Moon },
+  { key: 'nutrition', label: 'Nutrition', icon: Apple },
+] as const;
+
+const RecommendationsCard: React.FC<{ result: AnxietyPrediction }> = ({ result }) => {
+  const bundle = result.recommendation_bundle!;
+  return (
+    <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6" aria-labelledby="ai-recs-title">
+      <h2 id="ai-recs-title" className="font-bold text-gray-900">
+        Suggested recommendations
+      </h2>
+      <p className="text-xs text-gray-500 mt-0.5 mb-4">
+        For the {result.estimated_severity_tier ?? 'estimated'} tier. Review and adapt before sharing anything with the patient.
+      </p>
+      <div className="space-y-4">
+        {RECOMMENDATION_SECTIONS.map(({ key, label, icon: Icon }) => (
+          <div key={key}>
+            <p className="flex items-center gap-2 text-sm font-semibold text-gray-900 mb-1">
+              <Icon size={15} className="text-gray-500" aria-hidden="true" /> {label}
+            </p>
+            <p className="text-sm text-gray-700 whitespace-pre-line">{bundle[key] || '—'}</p>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 };
 
