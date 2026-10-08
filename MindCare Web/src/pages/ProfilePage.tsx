@@ -3,8 +3,10 @@
 // ============================================================
 
 import React, { useState } from 'react';
-import { Eye, Pencil, Download, Star, ArrowRight } from 'lucide-react';
+import { Download, Star, ArrowRight } from 'lucide-react';
 import TherapistLayout from '../components/therapist/TherapistLayout';
+import ProfileHeader from '../components/therapist/ProfileHeader';
+import AvailabilityCard from '../components/therapist/AvailabilityCard';
 import Avatar from '../components/common/Avatar';
 import {
   THERAPIST_PROFILE,
@@ -63,66 +65,12 @@ const ProfilePage: React.FC = () => {
 
   return (
     <TherapistLayout breadcrumb={['Account', 'Profile & availability']}>
-      <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6 mb-8">
-        <div className="flex items-start gap-5">
-          <div className="relative shrink-0">
-            <Avatar initials="TM" color="bg-blue-950" size="lg" />
-            <span className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-gray-900 border-2 border-[#F5F0E8] flex items-center justify-center text-white">
-              <Eye size={12} />
-            </span>
-          </div>
-          <div>
-            <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase mb-1">
-              {profile.title} · Verified {profile.verifiedDate}
-            </p>
-            <h1 className="text-4xl font-black text-gray-900 mb-2">{profile.name}</h1>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 mb-3">
-              <span>
-                {profile.yearsExperience} years · {profile.license}
-              </span>
-              <span>{profile.city}</span>
-              <span>{profile.timezone}</span>
-              <span>
-                {profile.languages.join(' · ')} · <Star size={12} className="inline -mt-0.5 fill-amber-400 text-amber-400" />{' '}
-                {profile.rating.toFixed(1)} · {profile.reviewCount} reviews
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-rose-100 text-rose-700">
-                {profile.specialtyTags[0]}
-              </span>
-              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-violet-100 text-violet-700">
-                {profile.specialtyTags[1]}
-              </span>
-              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">
-                {profile.approachTags.join(' · ')}
-              </span>
-              {profile.acceptsTrials && (
-                <span className="text-xs font-semibold px-3 py-1 rounded-full border border-gray-200 text-gray-700">
-                  Accepts trials
-                </span>
-              )}
-              <span className="text-xs font-semibold px-3 py-1 rounded-full border border-gray-200 text-gray-700">
-                {profile.inNetworkNote}
-              </span>
-            </div>
-          </div>
-        </div>
+      <div className="mb-8">
+        <ProfileHeader />
+      </div>
 
-        <div className="flex gap-2 shrink-0">
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 border border-gray-200 bg-white text-gray-700 text-sm font-semibold px-4 py-2.5 rounded-xl hover:border-gray-400 transition-colors"
-          >
-            <Eye size={15} aria-hidden="true" /> View public profile
-          </button>
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 bg-gray-900 text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-gray-800 transition-colors"
-          >
-            <Pencil size={15} aria-hidden="true" /> Edit profile
-          </button>
-        </div>
+      <div className="mb-10 max-w-2xl">
+        <AvailabilityCard />
       </div>
 
       {/* Tabs */}

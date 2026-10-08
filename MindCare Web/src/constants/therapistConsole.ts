@@ -42,6 +42,7 @@ export const CONSOLE_ROUTES = {
   WEEKLY_REPORT: '/therapist/reports/:patientId',
   CIRCLES: '/therapist/circles',
   PROFILE: '/therapist/profile',
+  AI_ASSESSMENT: '/therapist/ai-assessment',
 } as const;
 
 export const buildPatientDetailRoute = (patientId: string) => `/therapist/patients/${patientId}`;
@@ -53,11 +54,12 @@ export const THERAPIST_NAV_PRACTICE: TherapistNavItem[] = [
   { id: 'today', label: 'Today', route: CONSOLE_ROUTES.TODAY, icon: 'home' },
   { id: 'patients', label: 'Patients', route: CONSOLE_ROUTES.PATIENTS, icon: 'users' },
   { id: 'schedule', label: 'Schedule', route: CONSOLE_ROUTES.SCHEDULE, icon: 'calendar', badge: 3 },
-  { id: 'requests', label: 'Requests', route: CONSOLE_ROUTES.REQUESTS, icon: 'inbox', badge: 5 },
+  { id: 'requests', label: 'Requests', route: CONSOLE_ROUTES.REQUESTS, icon: 'inbox' },
   { id: 'messages', label: 'Messages', route: CONSOLE_ROUTES.MESSAGES, icon: 'message', badge: 2 },
 ];
 
 export const THERAPIST_NAV_CARE: TherapistNavItem[] = [
+  { id: 'ai-assessment', label: 'AI assessment', route: CONSOLE_ROUTES.AI_ASSESSMENT, icon: 'sparkles' },
   { id: 'care-plans', label: 'Care plans', route: buildCarePlanRoute('p-layla'), icon: 'clipboard' },
   { id: 'circles', label: 'Circles', route: CONSOLE_ROUTES.CIRCLES, icon: 'circle-users' },
   { id: 'reports', label: 'Reports', route: buildWeeklyReportRoute('p-layla'), icon: 'file' },

@@ -14,6 +14,7 @@ import {
   UsersRound,
   FileText,
   Sun,
+  Sparkles,
   Bell,
   Search,
   LogOut,
@@ -40,6 +41,7 @@ const ICON_MAP: Record<TherapistNavItem['icon'], LucideIcon> = {
   'circle-users': UsersRound,
   file: FileText,
   sun: Sun,
+  sparkles: Sparkles,
 };
 
 interface TherapistLayoutProps {
