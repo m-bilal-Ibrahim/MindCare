@@ -149,8 +149,12 @@ AI_SERVICE_URL = env("AI_SERVICE_URL", default="")
 
 # django-cors-headers: lets MindCare Web call this API from a browser.
 # Only the deployed web origin here; dev.py adds the local Vite dev server.
+# Extra origins (e.g. a local Flutter web build during a demo) come only from the
+# CORS_EXTRA_ALLOWED_ORIGINS env var, comma-separated; never hardcoded here.
+CORS_EXTRA_ALLOWED_ORIGINS = env.list("CORS_EXTRA_ALLOWED_ORIGINS", default=[])
 CORS_ALLOWED_ORIGINS = [
     "https://mind-care-web-seven.vercel.app",
+    *CORS_EXTRA_ALLOWED_ORIGINS,
 ]
 # Auth is JWT bearer tokens in the Authorization header, not cookies, so
 # cross-origin requests never need credentials.
