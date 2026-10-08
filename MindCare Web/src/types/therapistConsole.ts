@@ -6,7 +6,7 @@ export interface TherapistNavItem {
   id: string;
   label: string;
   route: string;
-  icon: 'home' | 'users' | 'calendar' | 'inbox' | 'message' | 'clipboard' | 'circle-users' | 'file' | 'sun';
+  icon: 'home' | 'users' | 'calendar' | 'inbox' | 'message' | 'clipboard' | 'circle-users' | 'file' | 'sun' | 'sparkles';
   badge?: number;
 }
 

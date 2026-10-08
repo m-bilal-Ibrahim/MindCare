@@ -1,230 +1,259 @@
 // ============================================================
-// MindCare — Therapist Console: Patients ("Your people.")
+// MindCare — Therapist Console: Patients ("Your people.") — live
+// Current patients (accepted relationships, real identity, age
+// only) and past patients (ended, pseudonym only).
 // ============================================================
 
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Download, Plus, SlidersHorizontal, MoreHorizontal } from 'lucide-react';
+import { Globe, Languages, MapPin, Phone, Users, X } from 'lucide-react';
 import TherapistLayout from '../components/therapist/TherapistLayout';
-import Sparkline from '../components/therapist/Sparkline';
 import Avatar from '../components/common/Avatar';
+import ConfirmSheet from '../components/therapist/ConfirmSheet';
+import { ErrorPanel, LoadingPanel, formatDate } from '../components/therapist/ApiStates';
+import { CONSOLE_ROUTES } from '../constants/therapistConsole';
 import {
-  CONSOLE_PATIENTS,
-  CONSOLE_PATIENT_SUMMARY,
-  CONSOLE_FOCUS_FILTERS,
-  buildPatientDetailRoute,
-} from '../constants/therapistConsole';
-import type { PatientStatus } from '../types/therapistConsole';
+  END_REASONS,
+  endRelationship,
+  getHistory,
+  getPatients,
+  type AssignedPatient,
+  type EndReason,
+  type HistoryItem,
+} from '../services/psychologist.service';
 
-const STATUS_STYLES: Record<PatientStatus, string> = {
-  Active: 'bg-emerald-100 text-emerald-700',
-  Trial: 'bg-orange-100 text-orange-700',
-  Paused: 'bg-gray-100 text-gray-600',
+const AVATAR_COLORS = ['bg-amber-600', 'bg-emerald-700', 'bg-sky-600', 'bg-rose-500', 'bg-violet-600', 'bg-orange-500'];
+
+const initialsOf = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join('') || '?';
+
+const capitalize = (s: string | null) => (s ? s[0].toUpperCase() + s.slice(1).replace(/_/g, ' ') : null);
+
+const END_REASON_LABELS: Record<string, string> = {
+  treatment_completed: 'Treatment completed',
+  referred_elsewhere: 'Referred elsewhere',
+  other: 'Other',
+  patient_ended: 'Ended by the patient',
+  account_unavailable: 'Account unavailable',
+  subscription_lapsed: 'Subscription lapsed',
 };
 
-const PAGE_SIZE = 8;
-
-type StatusFilter = 'All' | PatientStatus;
+type Tab = 'current' | 'past';
 
 const TherapistPatientsPage: React.FC = () => {
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('All');
-  const [focusFilter, setFocusFilter] = useState<string | null>(null);
-  const [page, setPage] = useState(0);
+  const [tab, setTab] = useState<Tab>('current');
+  const [patients, setPatients] = useState<AssignedPatient[] | null>(null);
+  const [history, setHistory] = useState<HistoryItem[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [ending, setEnding] = useState<AssignedPatient | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
-  const filtered = useMemo(() => {
-    return CONSOLE_PATIENTS.filter((p) => {
-      if (statusFilter !== 'All' && p.status !== statusFilter) return false;
-      if (focusFilter && !p.focus.includes(focusFilter)) return false;
-      return true;
-    });
-  }, [statusFilter, focusFilter]);
+  const load = useCallback(async () => {
+    setError(null);
+    setPatients(null);
+    setHistory(null);
+    const [current, past] = await Promise.all([getPatients(), getHistory()]);
+    if (current.data) setPatients(current.data);
+    else setError(current.error ?? 'Couldn’t load patients.');
+    setHistory(past.data ?? []);
+  }, []);
 
-  const pageItems = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const handleEnd = async (reason: string | null) => {
+    if (!ending || !reason) return;
+    setBusy(true);
+    setActionError(null);
+    const res = await endRelationship(ending.relationship_id, reason as EndReason);
+    setBusy(false);
+    if (!res.data) {
+      setActionError(res.error ?? 'That didn’t work. Please try again.');
+      return;
+    }
+    const ended = res.data;
+    setPatients((prev) => prev?.filter((p) => p.relationship_id !== ending.relationship_id) ?? prev);
+    setHistory((prev) => [ended, ...(prev ?? [])]);
+    setNotice(`Care with ${ending.full_name} has ended.`);
+    setEnding(null);
+  };
+
+  const tabButton = (id: Tab, label: string, count: number | undefined) => (
+    <button
+      type="button"
+      onClick={() => setTab(id)}
+      className={`text-sm font-semibold px-4 py-2 rounded-full transition-colors ${
+        tab === id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-400'
+      }`}
+    >
+      {label}
+      {count !== undefined && ` · ${count}`}
+    </button>
+  );
 
   return (
-    <TherapistLayout
-      breadcrumb={['Practice', 'Patients']}
-      headerAction={
-        <div className="flex gap-2 shrink-0">
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 border border-gray-200 bg-white text-gray-700 text-sm font-semibold px-4 py-2.5 rounded-xl hover:border-gray-400 transition-colors"
-          >
-            <Download size={15} aria-hidden="true" /> Export
-          </button>
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 bg-gray-900 text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-gray-800 transition-colors"
-          >
-            <Plus size={15} aria-hidden="true" /> Invite patient
-          </button>
-        </div>
-      }
-    >
+    <TherapistLayout breadcrumb={['Practice', 'Patients']}>
       <h1 className="text-5xl font-black text-gray-900 mb-2">
         Your <span className="italic font-serif font-normal">people.</span>
       </h1>
       <p className="text-gray-500 mb-6">
-        {CONSOLE_PATIENT_SUMMARY.active} active · {CONSOLE_PATIENT_SUMMARY.trials} trials ·{' '}
-        {CONSOLE_PATIENT_SUMMARY.paused} paused. Sort, filter, drill in.
+        Patients whose requests you accepted. New requests arrive in{' '}
+        <Link to={CONSOLE_ROUTES.REQUESTS} className="font-semibold text-gray-900 underline">
+          Requests
+        </Link>
+        .
       </p>
 
-      <div className="flex flex-wrap items-center gap-2 mb-6">
-        {(['All', 'Active', 'Trial', 'Paused'] as StatusFilter[]).map((status) => {
-          const count =
-            status === 'All'
-              ? CONSOLE_PATIENT_SUMMARY.total
-              : status === 'Active'
-              ? CONSOLE_PATIENT_SUMMARY.active
-              : status === 'Trial'
-              ? CONSOLE_PATIENT_SUMMARY.trials
-              : CONSOLE_PATIENT_SUMMARY.paused;
-          const isActive = statusFilter === status;
-          return (
-            <button
-              key={status}
-              type="button"
-              onClick={() => {
-                setStatusFilter(status);
-                setPage(0);
-              }}
-              className={`text-sm font-semibold px-4 py-2 rounded-full transition-colors ${
-                isActive ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-400'
-              }`}
-            >
-              {status} · {count}
-            </button>
-          );
-        })}
-
-        <span className="w-px h-6 bg-gray-300 mx-1" aria-hidden="true" />
-
-        {CONSOLE_FOCUS_FILTERS.slice(0, 4).map((focus) => (
-          <button
-            key={focus}
-            type="button"
-            onClick={() => {
-              setFocusFilter((prev) => (prev === focus ? null : focus));
-              setPage(0);
-            }}
-            className={`text-sm font-medium px-4 py-2 rounded-full transition-colors ${
-              focusFilter === focus ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-400'
-            }`}
-          >
-            {focus}
-          </button>
-        ))}
-        <span className="text-sm text-gray-400 px-2">+{CONSOLE_FOCUS_FILTERS.length - 4} more</span>
-
-        <button
-          type="button"
-          className="ml-auto inline-flex items-center gap-2 border border-gray-200 bg-white text-gray-700 text-sm font-semibold px-4 py-2 rounded-xl hover:border-gray-400"
+      {notice && (
+        <div
+          role="status"
+          className="flex items-start justify-between gap-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-xl px-4 py-3 mb-6"
         >
-          <SlidersHorizontal size={14} aria-hidden="true" /> Filters
-        </button>
-      </div>
-
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-xs font-semibold tracking-widest text-gray-500 uppercase border-b border-gray-100">
-              <th className="px-6 py-4">Patient</th>
-              <th className="px-6 py-4">Focus</th>
-              <th className="px-6 py-4">Plan</th>
-              <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4">Mood (30d)</th>
-              <th className="px-6 py-4">Streak</th>
-              <th className="px-6 py-4">Last seen</th>
-              <th className="px-6 py-4" />
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {pageItems.map((patient) => (
-              <tr key={patient.id} className="hover:bg-gray-50/60">
-                <td className="px-6 py-4">
-                  <Link to={buildPatientDetailRoute(patient.id)} className="flex items-center gap-3">
-                    <Avatar initials={patient.initials} color={patient.avatarColor} />
-                    <div>
-                      <p className="font-bold text-gray-900">{patient.name}</p>
-                      <p className="text-xs text-gray-500">
-                        {patient.age} · {patient.city}
-                      </p>
-                    </div>
-                  </Link>
-                </td>
-                <td className="px-6 py-4 text-gray-700">{patient.focus.join(' · ')}</td>
-                <td className="px-6 py-4">
-                  <span className="border border-gray-200 rounded-full px-3 py-1 text-xs font-semibold text-gray-700">
-                    {patient.plan}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${STATUS_STYLES[patient.status]}`}>
-                    ● {patient.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-gray-900">{patient.mood30d.toFixed(1)}</span>
-                    <Sparkline
-                      data={patient.moodTrend}
-                      color={patient.moodTrend[patient.moodTrend.length - 1] >= patient.moodTrend[0] ? '#15803d' : '#dc2626'}
-                      height={24}
-                    />
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-gray-700">{patient.streakDays}d</td>
-                <td className="px-6 py-4">
-                  <p className="text-gray-700">{patient.lastSeen}</p>
-                  {patient.flag && (
-                    <span
-                      className={`inline-block mt-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                        patient.flagTone === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
-                      }`}
-                    >
-                      {patient.flag}
-                    </span>
-                  )}
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <button
-                    type="button"
-                    aria-label={`More actions for ${patient.name}`}
-                    className="w-8 h-8 rounded-lg border border-gray-200 inline-flex items-center justify-center text-gray-500 hover:border-gray-400"
-                  >
-                    <MoreHorizontal size={15} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="flex items-center justify-between mt-4">
-        <p className="text-sm text-gray-500">
-          Showing {pageItems.length} of {filtered.length}
-        </p>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            disabled={page === 0}
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            className="text-sm font-semibold px-4 py-2 rounded-lg border border-gray-200 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:border-gray-400"
-          >
-            ‹ Prev
-          </button>
-          <button
-            type="button"
-            disabled={page >= totalPages - 1}
-            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-            className="text-sm font-semibold px-4 py-2 rounded-lg border border-gray-200 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:border-gray-400"
-          >
-            Next ›
+          <span>{notice}</span>
+          <button type="button" onClick={() => setNotice(null)} aria-label="Dismiss" className="shrink-0">
+            <X size={14} />
           </button>
         </div>
-      </div>
+      )}
+
+      {error ? (
+        <ErrorPanel message={error} onRetry={load} />
+      ) : !patients ? (
+        <LoadingPanel label="Loading patients…" />
+      ) : (
+        <>
+          <div className="flex flex-wrap gap-2 mb-6">
+            {tabButton('current', 'Current', patients.length)}
+            {tabButton('past', 'Past', history?.length)}
+          </div>
+
+          {tab === 'current' ? (
+            patients.length === 0 ? (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
+                <Users size={22} className="mx-auto mb-3 text-gray-400" aria-hidden="true" />
+                <p className="text-gray-900 font-semibold">No current patients.</p>
+                <p className="text-sm text-gray-500">Accepted requests show up here.</p>
+              </div>
+            ) : (
+              <div className="grid gap-4 lg:grid-cols-2">
+                {patients.map((p, i) => {
+                  const facts = [p.age != null ? `${p.age} yrs` : null, capitalize(p.gender)].filter(Boolean).join(' · ');
+                  const place = [p.city?.name, p.country?.name].filter(Boolean).join(', ');
+                  return (
+                    <div key={p.relationship_id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col">
+                      <div className="flex items-start gap-4 mb-4">
+                        <Avatar initials={initialsOf(p.full_name)} color={AVATAR_COLORS[i % AVATAR_COLORS.length]} />
+                        <div className="min-w-0">
+                          <p className="font-bold text-gray-900 truncate">{p.full_name}</p>
+                          <p className="text-sm text-gray-500">
+                            {facts}
+                            {facts && ' · '}
+                            <span className="text-gray-400">aka {p.pseudonym}</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <dl className="space-y-2 text-sm text-gray-600 mb-5">
+                        {place && (
+                          <div className="flex items-center gap-2">
+                            <MapPin size={14} aria-hidden="true" className="text-gray-400" />
+                            <dt className="sr-only">Location</dt>
+                            <dd>{place}</dd>
+                          </div>
+                        )}
+                        {p.phone_number && (
+                          <div className="flex items-center gap-2">
+                            <Phone size={14} aria-hidden="true" className="text-gray-400" />
+                            <dt className="sr-only">Phone</dt>
+                            <dd>{p.phone_number}</dd>
+                          </div>
+                        )}
+                        {p.preferred_language && (
+                          <div className="flex items-center gap-2">
+                            <Languages size={14} aria-hidden="true" className="text-gray-400" />
+                            <dt className="sr-only">Preferred language</dt>
+                            <dd>{p.preferred_language.name}</dd>
+                          </div>
+                        )}
+                        {p.timezone && (
+                          <div className="flex items-center gap-2">
+                            <Globe size={14} aria-hidden="true" className="text-gray-400" />
+                            <dt className="sr-only">Time zone</dt>
+                            <dd>{p.timezone}</dd>
+                          </div>
+                        )}
+                      </dl>
+
+                      <div className="mt-auto flex items-center justify-between gap-3 pt-4 border-t border-gray-100">
+                        <span className="text-xs text-gray-400">Patient since {formatDate(p.accepted_at)}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActionError(null);
+                            setEnding(p);
+                          }}
+                          className="text-sm font-semibold text-red-700 border border-red-200 bg-red-50 px-4 py-2 rounded-xl hover:bg-red-100"
+                        >
+                          End care
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )
+          ) : !history || history.length === 0 ? (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center text-gray-500">
+              No past patients yet.
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-[11px] font-semibold tracking-widest text-gray-500 uppercase border-b border-gray-100">
+                    <th className="px-6 py-3">Patient</th>
+                    <th className="px-6 py-3">Accepted</th>
+                    <th className="px-6 py-3">Ended</th>
+                    <th className="px-6 py-3">Reason</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {history.map((h) => (
+                    <tr key={h.relationship_id} className="border-b border-gray-50 last:border-0">
+                      <td className="px-6 py-3 font-semibold text-gray-900">{h.pseudonym}</td>
+                      <td className="px-6 py-3 text-gray-600">{formatDate(h.accepted_at)}</td>
+                      <td className="px-6 py-3 text-gray-600">{formatDate(h.ended_at)}</td>
+                      <td className="px-6 py-3 text-gray-600">{END_REASON_LABELS[h.end_reason] ?? capitalize(h.end_reason)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      )}
+
+      <ConfirmSheet
+        open={!!ending}
+        title={`End care with ${ending?.full_name ?? ''}?`}
+        body="The patient is told the relationship has ended and can choose a new psychologist. This can’t be undone."
+        confirmLabel="End care"
+        tone="danger"
+        reasons={END_REASONS}
+        reasonRequired
+        busy={busy}
+        error={actionError}
+        onConfirm={handleEnd}
+        onClose={() => !busy && setEnding(null)}
+      />
     </TherapistLayout>
   );
 };

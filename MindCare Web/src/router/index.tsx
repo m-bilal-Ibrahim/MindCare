@@ -48,6 +48,7 @@ const TherapistsPage = lazy(() => import('../pages/TherapistsPage'));
 const NgoPartnersPage = lazy(() => import('../pages/NgoPartnersPage'));
 const BillingPage = lazy(() => import('../pages/BillingPage'));
 const SettingsPage = lazy(() => import('../pages/SettingsPage'));
+const AiAssessmentPage = lazy(() => import('../pages/AiAssessmentPage'));
 
 const PageLoader: React.FC = () => (
   <div className="min-h-screen bg-[#F5F0E8] flex items-center justify-center" aria-live="polite" aria-label="Loading page">
@@ -90,6 +91,7 @@ const AppRouter: React.FC = () => (
             <Route path={CONSOLE_ROUTES.WEEKLY_REPORT} element={<RequireTherapistAuth><WeeklyReportPage /></RequireTherapistAuth>} />
             <Route path={CONSOLE_ROUTES.PROFILE} element={<RequireTherapistAuth><ProfilePage /></RequireTherapistAuth>} />
             <Route path={CONSOLE_ROUTES.CIRCLES} element={<RequireTherapistAuth><CirclesPage /></RequireTherapistAuth>} />
+            <Route path={CONSOLE_ROUTES.AI_ASSESSMENT} element={<RequireTherapistAuth><AiAssessmentPage /></RequireTherapistAuth>} />
 
             <Route path={ADMIN_ROUTES.SIGN_IN} element={<AdminLoginPage />} />
             <Route path={ADMIN_ROUTES.OVERVIEW} element={<RequireAdminAuth><AdminOverviewPage /></RequireAdminAuth>} />

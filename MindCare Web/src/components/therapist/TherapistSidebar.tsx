@@ -14,6 +14,7 @@ import {
   UsersRound,
   FileText,
   Sun,
+  Sparkles,
   LogOut,
   type LucideIcon,
 } from 'lucide-react';
@@ -37,6 +38,7 @@ const ICON_MAP: Record<TherapistNavItem['icon'], LucideIcon> = {
   'circle-users': UsersRound,
   file: FileText,
   sun: Sun,
+  sparkles: Sparkles,
 };
 
 const NavGroup: React.FC<{ title: string; items: TherapistNavItem[]; currentPath: string }> = ({
