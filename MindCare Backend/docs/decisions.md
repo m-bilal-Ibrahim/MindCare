@@ -836,3 +836,37 @@ the AI's response unchanged.
 **Alternatives considered:** any logged-in user (patients would see raw model
 output); storing requests for later analysis (health data before the audit trail);
 `requests`/`httpx` (a new dependency for one call).
+
+## 2026-10-08 - Motivation Corner: text quotes now, religious content later in its own table; extra CORS origins only from env
+**Decision:**
+- New `apps/motivation` with `Quote` (text, optional author, optional category
+  `hope` / `resilience` / `calm` / `self_care`, `is_active`, `created_at`) on an
+  abstract `MotivationalContent` base. Migration 0002 seeds 30 short,
+  non-religious quotes (classical or public-domain authors and proverbs). Admins
+  add, edit and hide quotes in Django admin; the API reads the database on every
+  request, so a change shows up immediately.
+- `GET /api/v1/motivation/quotes/` (paginated, `?category=`) and
+  `/quotes/random/` for **any logged-in user**, active quotes only, throttle
+  `motivation` 60/min per user. Quotes aren't health data or personal data, so
+  no ownership check applies.
+- **Religious content (Dua / Surah / Hadith, with audio) will be a separate
+  model and table**, not a `kind` field on `Quote`. It needs fields quotes don't
+  (an audio reference through `integrations/storage_client/`, a source
+  reference, a translation), and it may only be shown to patients who opted in.
+  That opt-in is GDPR Art. 9 special-category data (2026-09-26). With a separate
+  table and separate endpoints, the quotes endpoints can't leak it, and the
+  opt-in check lives in one place.
+- **CORS:** `CORS_EXTRA_ALLOWED_ORIGINS` (comma-separated env var, unset by
+  default) adds origins on top of the pinned Vercel origin in `base.py` and
+  `prod.py`. Used to let a local Flutter web build (`http://localhost:5000`) call
+  production during a demo. `dev.py` lists `http://localhost:5000` directly
+  (local only). No localhost origin is hardcoded for production.
+**Why:** a "live from the database" demo needs admin edits to appear at once;
+keeping religious content apart makes the opt-in rule structural, not a filter
+someone must remember. Credentials aren't sent cross-origin
+(`CORS_ALLOW_CREDENTIALS=False`, bearer tokens), so an extra localhost origin
+exposes no cookies, but it should still be removed after the demo.
+**Alternatives considered:** one content table with a `kind` field (every query
+would need an opt-in filter, and audio fields would be empty on most rows);
+hardcoding `http://localhost:5000` in `prod.py` (a development origin allowed in
+production for good).

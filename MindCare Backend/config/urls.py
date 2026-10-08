@@ -16,6 +16,7 @@ API_V1_APPS = [
     "reference",
     "stats",
     "ai",
+    "motivation",
     "patients",
     "psychologists",
     "relationships",

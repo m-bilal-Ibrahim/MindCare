@@ -22,6 +22,7 @@ Production backend runs on **Render**, with **Supabase** (Postgres) and
 | `SECRET_KEY` | generated fresh for production; not shared with any dev `.env` |
 | `DJANGO_SETTINGS_MODULE` | `config.settings.prod` |
 | `ALLOWED_HOSTS` | `.onrender.com` |
+| `CORS_EXTRA_ALLOWED_ORIGINS` | optional, comma-separated extra browser origins on top of the Vercel origin, e.g. `http://localhost:5000` for a local Flutter web demo. Unset normally; remove after a demo |
 | `AI_SERVICE_URL` | the MindCare AI service's base URL, no trailing `/predict` (e.g. `https://mindcare-api.onrender.com`). Unset → `POST /api/v1/ai/anxiety-prediction/` answers 503 |
 
 **Local development:** the developer's local `.env` `DATABASE_URL` points at the
@@ -40,8 +41,10 @@ code). It was fixed by updating the variable on Render.
 
 ### CORS
 
-`config/settings/prod.py` allows exactly one browser origin, the MindCare Web
-frontend: `https://mind-care-web-seven.vercel.app`. `CORS_ALLOW_CREDENTIALS=False`
+`config/settings/prod.py` allows the MindCare Web frontend,
+`https://mind-care-web-seven.vercel.app`, plus any origins in the optional
+`CORS_EXTRA_ALLOWED_ORIGINS` env var (unset normally; e.g. `http://localhost:5000`
+for a local Flutter web demo, removed afterwards). `CORS_ALLOW_CREDENTIALS=False`
 (JWT bearer auth, no cookies). The local Vite origin is allowed only in `dev.py`.
 
 **Status:** shipped to `main` in PR #17 (`backend-cors-and-prod-pins`). Before it
