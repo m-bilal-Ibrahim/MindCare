@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/security/secure_storage_service.dart';
+import '../core/services/auth_api.dart';
 
 /// Holds the signed-in person's identity for display across the app —
 /// greeting text, avatar initials, and the Profile header.
@@ -39,15 +40,13 @@ class UserSessionProvider extends ChangeNotifier {
     }
   }
 
-  /// Signs the person out: clears the display name and, critically,
-  /// removes the stored auth token so the next launch of the app
-  /// doesn't silently resume the old session.
-  ///
-  /// NOTE: in production this should also call the backend to
-  /// invalidate the session/refresh token server-side, not just
-  /// delete it locally — otherwise a copied token would remain valid.
+  /// Signs the person out: asks the backend to blacklist the refresh
+  /// token (so a copied token stops working), then clears the display
+  /// name and the stored tokens so the next launch doesn't silently
+  /// resume the old session.
   Future<void> signOut() async {
     _fullName = null;
+    await AuthApi.instance.logout();
     await SecureStorageService.instance.clearAll();
     notifyListeners();
   }

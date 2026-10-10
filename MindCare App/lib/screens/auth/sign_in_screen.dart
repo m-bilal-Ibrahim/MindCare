@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/security/secure_storage_service.dart';
+import '../../core/services/auth_api.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/utils/validators.dart';
@@ -32,14 +32,25 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   Future<void> _onSignIn() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (_loading || !_formKey.currentState!.validate()) return;
 
     setState(() => _loading = true);
-
-    await Future.delayed(const Duration(milliseconds: 800));
-    await SecureStorageService.instance.saveAuthToken('demo-session-token');
+    try {
+      // Stores the access/refresh tokens in secure storage on success.
+      await AuthApi.instance.login(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      final text = e.fieldErrors.isNotEmpty ? e.fieldErrors.values.first : e.message;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+      return;
+    }
 
     if (!mounted) return;
+    _passwordController.clear();
 
     context.read<UserSessionProvider>().setNameFromEmailIfUnset(_emailController.text.trim());
 

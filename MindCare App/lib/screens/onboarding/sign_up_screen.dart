@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import '../../core/services/auth_api.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/utils/validators.dart';
@@ -25,23 +25,28 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _cnicController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  DateTime? _dob;
   String _gender = 'Woman';
   File? _photo;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isAdultConfirmed = false;
+  bool _submitting = false;
+
+  /// Set once the account exists, so a retry after a failed sign-in
+  /// doesn't try to register the same email again.
+  bool _registered = false;
+
+  /// Field errors from the backend (keys are its field names), shown under
+  /// the matching input until that input is edited.
+  Map<String, String> _serverErrors = const {};
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
-    _phoneController.dispose();
-    _cnicController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -77,48 +82,67 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
-  Future<void> _pickDob() async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime(now.year - 25),
-      firstDate: DateTime(now.year - 100),
-      lastDate: now,
-    );
-    if (picked != null) setState(() => _dob = picked);
-  }
-
-  String _formatDob(DateTime date) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return '${date.day.toString().padLeft(2, '0')} · ${months[date.month - 1]} · ${date.year}';
-  }
-
   String? _validateConfirmPassword(String? value) {
     if (value == null || value.isEmpty) return 'Please confirm your password';
     if (value != _passwordController.text) return 'Passwords do not match';
     return null;
   }
 
-  void _onContinue() {
-    final isValid = _formKey.currentState!.validate();
-    if (_dob == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select your date of birth')),
-      );
+  void _clearServerError(String field) {
+    if (!_serverErrors.containsKey(field)) return;
+    setState(() => _serverErrors = Map.of(_serverErrors)..remove(field));
+  }
+
+  /// Creates the account, signs in, then moves on to the check-in step.
+  /// Date of birth is not asked here; the backend asks for it later.
+  Future<void> _onContinue() async {
+    if (_submitting) return;
+    setState(() => _serverErrors = const {});
+    if (!_formKey.currentState!.validate()) return;
+
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    setState(() => _submitting = true);
+    try {
+      if (!_registered) {
+        await AuthApi.instance.registerPatient(
+          email: email,
+          password: password,
+          fullName: name,
+          isAdultConfirmed: _isAdultConfirmed,
+        );
+        _registered = true;
+      }
+      await AuthApi.instance.login(email: email, password: password);
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _submitting = false;
+        _serverErrors = e.fieldErrors;
+      });
+      // Errors without a visible field (e.g. profile.timezone) go in a toast.
+      const shown = {'full_name', 'email', 'password', 'is_adult_confirmed'};
+      final hidden = e.fieldErrors.entries.where((f) => !shown.contains(f.key));
+      final text = hidden.isNotEmpty ? hidden.first.value : (e.fieldErrors.isEmpty ? e.message : null);
+      if (text != null) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+      }
       return;
     }
-    if (!isValid) return;
+    if (!mounted) return;
 
     final provider = context.read<OnboardingProvider>();
-    provider.setFullName(_nameController.text.trim());
-    provider.setDateOfBirth(_dob!);
+    provider.setFullName(name);
     provider.setGender(_gender);
-    provider.setEmail(_emailController.text.trim());
-    provider.setPhone(_phoneController.text.trim());
-    provider.setCnic(_cnicController.text.trim());
-    provider.setPassword(_passwordController.text);
+    provider.setEmail(email);
+    context.read<UserSessionProvider>().setName(name);
 
-    context.read<UserSessionProvider>().setName(_nameController.text.trim());
+    // The password has done its job; don't keep it around in the form.
+    _passwordController.clear();
+    _confirmPasswordController.clear();
+    setState(() => _submitting = false);
 
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const MobileFrame(child: FeelingCheckinScreen())),
@@ -209,58 +233,29 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   controller: _nameController,
                   textCapitalization: TextCapitalization.words,
                   validator: Validators.fullName,
-                  onChanged: (_) => setState(() {}),
+                  forceErrorText: _serverErrors['full_name'],
+                  onChanged: (_) {
+                    _clearServerError('full_name');
+                    setState(() {});
+                  },
                   decoration: const InputDecoration(hintText: 'Your full name'),
                 ),
                 const SizedBox(height: 18),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('DATE OF BIRTH', style: AppTextStyles.label()),
-                          const SizedBox(height: 8),
-                          GestureDetector(
-                            onTap: _pickDob,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-                              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-                              child: Text(
-                                _dob != null ? _formatDob(_dob!) : 'Select date',
-                                style: TextStyle(color: _dob != null ? AppColors.textDark : AppColors.textMuted),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                Text('GENDER', style: AppTextStyles.label()),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _gender,
+                      isExpanded: true,
+                      items: const ['Woman', 'Man', 'Non-binary', 'Prefer not to say']
+                          .map((g) => DropdownMenuItem(value: g, child: Text(g)))
+                          .toList(),
+                      onChanged: (value) => setState(() => _gender = value ?? _gender),
                     ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('GENDER', style: AppTextStyles.label()),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
-                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                value: _gender,
-                                isExpanded: true,
-                                items: const ['Woman', 'Man', 'Non-binary', 'Prefer not to say']
-                                    .map((g) => DropdownMenuItem(value: g, child: Text(g)))
-                                    .toList(),
-                                onChanged: (value) => setState(() => _gender = value ?? _gender),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
                 const SizedBox(height: 18),
                 Text('EMAIL', style: AppTextStyles.label()),
@@ -270,35 +265,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   keyboardType: TextInputType.emailAddress,
                   autocorrect: false,
                   validator: Validators.email,
+                  forceErrorText: _serverErrors['email'],
+                  onChanged: (_) {
+                    _clearServerError('email');
+                    // A different email means a different account to create.
+                    _registered = false;
+                  },
                   decoration: const InputDecoration(hintText: 'you@example.com'),
                 ),
-                const SizedBox(height: 18),
-                Text('PHONE', style: AppTextStyles.label()),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  validator: Validators.phone,
-                  decoration: const InputDecoration(hintText: '+92 333 4521 887', prefixText: 'PK   '),
-                ),
-                const SizedBox(height: 18),
-                Text('CNIC', style: AppTextStyles.label()),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _cnicController,
-                  keyboardType: TextInputType.number,
-                  validator: Validators.cnic,
-                  maxLength: 15,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9-]')),
-                  ],
-                  decoration: const InputDecoration(
-                    hintText: '12345-1234567-1',
-                    counterText: '',
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text('For verification only — never shown publicly.', style: AppTextStyles.body(size: 12)),
                 const SizedBox(height: 22),
                 Text('PASSWORD', style: AppTextStyles.label()),
                 const SizedBox(height: 8),
@@ -306,6 +280,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   validator: Validators.password,
+                  forceErrorText: _serverErrors['password'],
+                  onChanged: (_) => _clearServerError('password'),
                   decoration: InputDecoration(
                     hintText: 'Create a password',
                     suffixIcon: IconButton(
@@ -331,10 +307,62 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 26),
+                const SizedBox(height: 18),
+                FormField<bool>(
+                  initialValue: _isAdultConfirmed,
+                  forceErrorText: _serverErrors['is_adult_confirmed'],
+                  validator: (_) => _isAdultConfirmed ? null : 'Please confirm you are 18 or older',
+                  builder: (field) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () {
+                          setState(() => _isAdultConfirmed = !_isAdultConfirmed);
+                          field.didChange(_isAdultConfirmed);
+                          _clearServerError('is_adult_confirmed');
+                        },
+                        child: Row(
+                          children: [
+                            Checkbox(
+                              value: _isAdultConfirmed,
+                              activeColor: AppColors.primaryDark,
+                              onChanged: (value) {
+                                setState(() => _isAdultConfirmed = value ?? false);
+                                field.didChange(_isAdultConfirmed);
+                                _clearServerError('is_adult_confirmed');
+                              },
+                            ),
+                            Expanded(
+                              child: Text(
+                                'I confirm I am 18 or older',
+                                style: AppTextStyles.body(size: 15, color: AppColors.textDark),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (field.hasError)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 12, top: 2),
+                          child: Text(
+                            field.errorText!,
+                            style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 22),
                 Row(
                   children: [
-                    Expanded(child: PrimaryButton(label: 'Continue', onPressed: _onContinue)),
+                    Expanded(
+                      child: PrimaryButton(
+                        label: 'Continue',
+                        loading: _submitting,
+                        onPressed: _onContinue,
+                      ),
+                    ),
                     const SizedBox(width: 12),
                     const SosButton(),
                   ],
