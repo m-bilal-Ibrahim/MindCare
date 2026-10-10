@@ -15,6 +15,48 @@ Django + DRF, PostgreSQL, Celery + Redis, JWT auth (simplejwt), Stripe, Zoom API
 - Ask before adding a new third-party package not already in requirements/base.txt.
 - After implementing any new service, selector, or API endpoint, append an entry to docs/module-reference.md in its existing table format. Never skip this — it is required for the project's final documentation.
 
+## Hard rule: validate every input field
+A psychologist name once accepted digits. That must never happen again, on any field,
+anywhere.
+1. **One source of truth:** @docs/validation-rules.md lists every field type with its
+   rule and its exact error message. The backend and both frontends match it exactly.
+2. **The backend is the authority:** reusable validators live in `core/validators.py`
+   and are applied on the MODEL fields, so the API, Django admin and management
+   commands are all covered. Minimum rules:
+   - Person and organisation names: letters (including Unicode/Urdu), spaces, hyphens,
+     apostrophes and dots only; no digits or symbols; 2–100 characters; trimmed; no
+     repeated spaces.
+   - Email: valid format, lowercased, unique where it should be.
+   - Phone: E.164; Pakistan numbers also accepted in local form and normalised.
+   - Dates: no future dates where that makes no sense; date of birth means 18+ and a
+     realistic age (max 120).
+   - Numbers: explicit min/max (years of experience 0–60, fees > 0, ratings in range);
+     no negatives unless meaningful.
+   - Free text (bio, qualifications, reasons, complaints, notes): min and max length,
+     trimmed, control characters stripped, HTML/script rejected or escaped, not just
+     whitespace or symbols.
+   - Licence numbers, codes, IDs: an allowed character set and length.
+   - URLs (video links etc.): https only, with allowed domains where relevant
+     (zoom.us, meet.google.com).
+   - Choices and enums: only the listed values (DRF already does this; keep it).
+   - Passwords: Django's validators (length, common, numeric, similar to user details).
+   - File uploads: an allowlist of types checked by real content (magic bytes), not
+     the extension; a max size; filenames sanitised/renamed.
+   - Unknown fields are rejected (`RejectUnknownFieldsMixin`; keep it).
+3. **Frontends mirror the same rules (Web and App):** inline error under the field as
+   the user types or leaves it, the same message text as validation-rules.md, sensible
+   input types (numeric keyboard for phone, date pickers, max lengths), and the submit
+   button disabled until the form is valid. Still show the backend's error if it rejects
+   something.
+4. **Tests:** every validated field gets at least one valid case and several invalid
+   ones (digits in names, too long, only spaces, script tags, wrong file type, out of
+   range). The frontends' form validators get unit tests where the project has a test
+   setup.
+5. **Every module follows this rule:** a module isn't done until every one of its
+   fields is validated on both sides.
+If tightening a rule could reject existing production data, put it in the question list
+with options (clean up the data / allow old values / migrate).
+
 ## Requirements Interview
 Before implementing any new feature, significant change, or design decision, run a requirements interview first — do not start writing code while it's unresolved.
 - Ask the questions in ONE batch per phase (see "Working agreement" below), not one at a time.
