@@ -12,8 +12,9 @@ role in the bullet).
 The Web is the psychologist/admin client; the App is the patient client. "Branch"
 means the work sits on an unmerged branch.
 
-Last updated: 2026-10-10 (input-validation-hardening, backend part). Re-checked against
-`origin` on 2026-10-10: no frontend changes have been pushed since 2026-10-08.
+Last updated: 2026-10-11 (6.10 backend). Re-checked against `origin` on
+2026-10-11: the partner merged Web PRs #38 (city search), #40 (name validation), #44
+(pricing) and App PRs #39, #41; her App backend wiring is not on GitHub yet.
 
 ## 6.1 User Onboarding and Profile
 
@@ -27,7 +28,7 @@ Last updated: 2026-10-10 (input-validation-hardening, backend part). Re-checked 
 
 | Bullet | Backend | Web | App | Notes |
 |---|---|---|---|---|
-| Register with personal and professional info, certifications, background, specializations | done | done | — | Text credentials at registration (Phase 2) |
+| Register with personal and professional info, certifications, background, specializations | done | done | — | Text credentials at registration (Phase 2). Web: searchable city field (PR #38) and the name rule (PR #40) merged 2026-10-11; the other signup fields don't follow validation-rules.md yet (see the partner message) |
 | Upload credentials and licences for verification | done (PR 6.2) | not started | — | Multipart registration with license, degree and up to 3 more; private storage. Files **optional** until `REQUIRE_CREDENTIAL_DOCS=true`, so the live JSON signup keeps working. The Web upload step is the partner's |
 | Set availability, manage session bookings, video conferencing (Zoom / Meet) | partial | partial | — | Only the "accepting new patients" switch exists. **Deferred to Phase 2** (Q21): working hours, booking and video links are designed together |
 
@@ -91,9 +92,9 @@ Last updated: 2026-10-10 (input-validation-hardening, backend part). Re-checked 
 
 | Bullet | Backend | Web | App | Notes |
 |---|---|---|---|---|
-| Duas (audio + text) | not started | — | mock only | Own table, opt-in (decisions.md 2026-10-08) |
-| Quotes | done | — | mock only | `GET /motivation/quotes/`, `/random/` |
-| Surahs (audio + text) | not started | — | mock only | Own table, opt-in |
+| Duas (audio + text) | done (PR 6.10) | — | mock only | 10 Quranic duas seeded (Tanzil text + Pickthall); admin-uploaded audio; patients who opted in only. App screens are the partner's |
+| Quotes | done | — | mock only | `GET /motivation/quotes/`, `/random/`. App wiring is the partner's (not on GitHub yet) |
+| Surahs (audio + text) | done (PR 6.10) | — | mock only | 5 short surahs seeded, verse per line; admin-uploaded audio; opt-in deleted on opt-out. App screens are the partner's |
 
 ## 6.11 Payments
 
@@ -135,4 +136,4 @@ Last updated: 2026-10-10 (input-validation-hardening, backend part). Re-checked 
 | File storage (`integrations/storage_client`) | backend done (PR foundations) | Private Supabase bucket, signed URLs, magic-byte checks, EXIF removal. Used by 6.1, 6.2, 6.10 |
 | DB-backed PHI access audit trail | backend done (PR foundations) | `apps/audit`, append-only, fail closed; field encryption for health data ready too |
 | Web lint / typecheck / tests | missing | `package.json` has only `dev`, `build`, `preview` |
-| Input validation (docs/validation-rules.md) | Backend done; Web and App not started | Backend enforces every rule on models and serializers. The Web/App part waits for the frontend partner's branches |
+| Input validation (docs/validation-rules.md) | Backend done; Web partial (full name in therapist signup, PR #40); App not started | Frontend work is the partner's; open gaps listed in the 2026-10-11 partner message |

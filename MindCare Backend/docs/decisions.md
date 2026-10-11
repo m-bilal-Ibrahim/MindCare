@@ -1132,3 +1132,35 @@ reveal private identities without an audited reveal).
 **Alternatives considered:** per-field visibility switches (re-identification risk);
 storing concerns as a relation (fast to query, but readable in plain form);
 auditing the patient's own reads (noise without a privacy benefit).
+
+
+## 2026-10-11 - 6.10: duas and surahs in their own tables, behind a deletable opt-in
+**Decision (Q24–Q26):**
+- **`Dua` and `Surah` are separate tables** from `Quote` (2026-10-08). Each has
+  Arabic text, an optional transliteration, a translation, a source reference (duas) or
+  number, names and ayah count (surahs), and an optional recitation (`audio_key`) in
+  private storage served through 5-minute signed URLs. **Hadith is out of scope**
+  (Q26: the official module list names only duas and surahs).
+- **Seeded text is fetched, not typed** (Q25): 10 Quranic duas and 5 short surahs (Al-Fatiha,
+  Al-Kawthar, Al-Ikhlas, Al-Falaq, An-Nas) come from the alquran.cloud API into
+  `apps/motivation/data/religious_content.json`. The Arabic is the **Tanzil Quran Text
+  (Simple), CC BY 3.0, copied verbatim with attribution**; the English is **Pickthall
+  (1930), public domain**. As the API returns it, verse 1 of each surah except
+  Al-Fatiha starts with the Bismillah. Transliteration is left empty for admins to add.
+  **No audio is seeded:** admins upload recitations they hold the rights to in Django
+  admin (MP3, M4A or OGG, 15 MB, checked by content). **Someone knowledgeable must check
+  the text before launch.**
+- **The opt-in** (`ReligiousContentPreference`, patients only, Q24) is special-category
+  data under GDPR Art. 9. It's minimal: the row exists only while the patient is opted in,
+  and **opting out deletes it**. It's never logged, never in profile serializers, and
+  **deliberately not registered in Django admin**: admins have no need to see who is
+  religious. `GET`/`PUT /motivation/religious/preference/`.
+- **Access:** `/motivation/duas/`, `/duas/{id}/`, `/surahs/`, `/surahs/{number}/` for
+  patients who opted in only (403 with a message explaining how to turn it on
+  otherwise). Psychologists and admins get 403; admins manage the content in Django
+  admin. The quotes endpoints can't return this content, because it's a different table.
+- Demo: the fictional demo patient 1 is opted in.
+**Alternatives considered:** a `kind` field on `Quote` (rejected 2026-10-08); an
+external Quran API called at runtime (an outside dependency, and unclear audio
+licensing); keeping a `false` row on opt-out (stores belief data that isn't needed);
+showing the opt-in in Django admin (no purpose that needs it).

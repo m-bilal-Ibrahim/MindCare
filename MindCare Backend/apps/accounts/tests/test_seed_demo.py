@@ -258,3 +258,6 @@ class SeedDemoAdminDataTests(TestCase):
         self.assertTrue(hina.photo_key)
         history = MentalHealthHistory.objects.get(profile=hina)
         self.assertTrue(history.notes.startswith("Demo history (fictional)"))
+        from apps.motivation.selectors import has_opted_in_to_religious_content
+
+        self.assertTrue(has_opted_in_to_religious_content(user=hina.user))

@@ -21,3 +21,24 @@ def random_active_quote(*, category=None):
     if not count:
         return None
     return qs[random.randrange(count)]
+
+
+# --- Religious content (6.10) -------------------------------------------------
+
+
+def has_opted_in_to_religious_content(*, user):
+    from apps.motivation.models import ReligiousContentPreference
+
+    return ReligiousContentPreference.objects.filter(user=user).exists()
+
+
+def active_duas():
+    from apps.motivation.models import Dua
+
+    return Dua.objects.filter(is_active=True)
+
+
+def active_surahs():
+    from apps.motivation.models import Surah
+
+    return Surah.objects.filter(is_active=True)

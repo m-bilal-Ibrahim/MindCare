@@ -145,3 +145,13 @@ def check_photo(upload):
         max_mb=PHOTO_MAX_MB,
         max_image_side=PHOTO_MAX_SIDE,
     )
+
+
+# --- Recitation audio (6.10) --------------------------------------------------
+AUDIO_KINDS = (MP3, M4A, OGG)
+AUDIO_MAX_MB = 15
+
+
+def check_audio(upload, *, label="Recitation"):
+    """A recitation: MP3, M4A or OGG, 15 MB, checked by content."""
+    return check_upload(upload, label=label, allowed=AUDIO_KINDS, max_mb=AUDIO_MAX_MB)

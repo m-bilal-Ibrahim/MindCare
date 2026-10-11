@@ -1,0 +1,117 @@
+{
+  "attribution": {
+    "arabic": "Tanzil Quran Text (Simple), Copyright (C) 2007-2021 Tanzil Project, CC BY 3.0, https://tanzil.net. Copied verbatim.",
+    "translation": "Marmaduke Pickthall, The Meaning of the Glorious Koran (1930), public domain.",
+    "retrieved_via": "https://api.alquran.cloud (editions quran-simple, en.pickthall)",
+    "review": "Must be checked by someone knowledgeable before launch (docs/decisions.md, 2026-10-11)."
+  },
+  "duas": [
+    {
+      "title": "For good in this life and the next",
+      "reference": "Quran 2:201",
+      "arabic": "وَمِنْهُمْ مَنْ يَقُولُ رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ",
+      "translation": "And of them (also) is he who saith: \"Our Lord! Give unto us in the world that which is good and in the Hereafter that which is good, and guard us from the doom of Fire.\""
+    },
+    {
+      "title": "When feeling burdened",
+      "reference": "Quran 2:286",
+      "arabic": "لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا ۚ لَهَا مَا كَسَبَتْ وَعَلَيْهَا مَا اكْتَسَبَتْ ۗ رَبَّنَا لَا تُؤَاخِذْنَا إِنْ نَسِينَا أَوْ أَخْطَأْنَا ۚ رَبَّنَا وَلَا تَحْمِلْ عَلَيْنَا إِصْرًا كَمَا حَمَلْتَهُ عَلَى الَّذِينَ مِنْ قَبْلِنَا ۚ رَبَّنَا وَلَا تُحَمِّلْنَا مَا لَا طَاقَةَ لَنَا بِهِ ۖ وَاعْفُ عَنَّا وَاغْفِرْ لَنَا وَارْحَمْنَا ۚ أَنْتَ مَوْلَانَا فَانْصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ",
+      "translation": "Allah tasketh not a soul beyond its scope. For it (is only) that which it hath earned, and against it (only) that which it hath deserved. Our Lord! Condemn us not if we forget, or miss the mark! Our Lord! Lay not on us such a burden as thou didst lay on those before us! Our Lord! Impose not on us that which we have not the strength to bear! Pardon us, absolve us and have mercy on us, Thou, our Protector, and give us victory over the disbelieving folk."
+    },
+    {
+      "title": "For a steady heart",
+      "reference": "Quran 3:8",
+      "arabic": "رَبَّنَا لَا تُزِغْ قُلُوبَنَا بَعْدَ إِذْ هَدَيْتَنَا وَهَبْ لَنَا مِنْ لَدُنْكَ رَحْمَةً ۚ إِنَّكَ أَنْتَ الْوَهَّابُ",
+      "translation": "Our Lord! Cause not our hearts to stray after Thou hast guided us, and bestow upon us mercy from Thy Presence. Lo! Thou, only Thou, art the Bestower."
+    },
+    {
+      "title": "For ease and clear speech (Prophet Musa)",
+      "reference": "Quran 20:25-28",
+      "arabic": "قَالَ رَبِّ اشْرَحْ لِي صَدْرِي\nوَيَسِّرْ لِي أَمْرِي\nوَاحْلُلْ عُقْدَةً مِنْ لِسَانِي\nيَفْقَهُوا قَوْلِي",
+      "translation": "(Moses) said: My Lord! relieve my mind And ease my task for me; And loose a knot from my tongue, That they may understand my saying."
+    },
+    {
+      "title": "For more knowledge",
+      "reference": "Quran 20:114",
+      "arabic": "فَتَعَالَى اللَّهُ الْمَلِكُ الْحَقُّ ۗ وَلَا تَعْجَلْ بِالْقُرْآنِ مِنْ قَبْلِ أَنْ يُقْضَىٰ إِلَيْكَ وَحْيُهُ ۖ وَقُلْ رَبِّ زِدْنِي عِلْمًا",
+      "translation": "Then exalted be Allah, the True King! And hasten not (O Muhammad) with the Qur'an ere its revelation hath been perfected unto thee, and say: My Lord! Increase me in knowledge."
+    },
+    {
+      "title": "In distress (Prophet Yunus)",
+      "reference": "Quran 21:87",
+      "arabic": "وَذَا النُّونِ إِذْ ذَهَبَ مُغَاضِبًا فَظَنَّ أَنْ لَنْ نَقْدِرَ عَلَيْهِ فَنَادَىٰ فِي الظُّلُمَاتِ أَنْ لَا إِلَٰهَ إِلَّا أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ",
+      "translation": "And (mention) Dhu'n-Nun, when he went off in anger and deemed that We had no power over him, but he cried out in the darkness, saying: There is no Allah save Thee. Be Thou Glorified! Lo! I have been a wrong-doer."
+    },
+    {
+      "title": "For forgiveness and mercy",
+      "reference": "Quran 23:118",
+      "arabic": "وَقُلْ رَبِّ اغْفِرْ وَارْحَمْ وَأَنْتَ خَيْرُ الرَّاحِمِينَ",
+      "translation": "And (O Muhammad) say: My Lord! Forgive and have mercy, for Thou art Best of all who show mercy."
+    },
+    {
+      "title": "For family and loved ones",
+      "reference": "Quran 25:74",
+      "arabic": "وَالَّذِينَ يَقُولُونَ رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا",
+      "translation": "And who say: Our Lord! Vouchsafe us comfort of our wives and of our offspring, and make us patterns for (all) those who ward off (evil)."
+    },
+    {
+      "title": "For parents and believers",
+      "reference": "Quran 14:41",
+      "arabic": "رَبَّنَا اغْفِرْ لِي وَلِوَالِدَيَّ وَلِلْمُؤْمِنِينَ يَوْمَ يَقُومُ الْحِسَابُ",
+      "translation": "Our Lord! Forgive me and my parents and believers on the day when the account is cast."
+    },
+    {
+      "title": "Trusting in Allah",
+      "reference": "Quran 9:129",
+      "arabic": "فَإِنْ تَوَلَّوْا فَقُلْ حَسْبِيَ اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ ۖ عَلَيْهِ تَوَكَّلْتُ ۖ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ",
+      "translation": "Now, if they turn away (O Muhammad) say: Allah sufficeth me. There is no Allah save Him. In Him have I put my trust, and He is Lord of the Tremendous Throne."
+    }
+  ],
+  "surahs": [
+    {
+      "number": 1,
+      "name_arabic": "سُورَةُ ٱلْفَاتِحَةِ",
+      "name_english": "Al-Faatiha",
+      "name_meaning": "The Opening",
+      "ayah_count": 7,
+      "arabic": "﻿بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\nالْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ\nالرَّحْمَٰنِ الرَّحِيمِ\nمَالِكِ يَوْمِ الدِّينِ\nإِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ\nاهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ\nصِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ",
+      "translation": "In the name of Allah, the Beneficent, the Merciful.\nPraise be to Allah, Lord of the Worlds,\nThe Beneficent, the Merciful.\nMaster of the Day of Judgment,\nThee (alone) we worship; Thee (alone) we ask for help.\nShow us the straight path,\nThe path of those whom Thou hast favoured; Not the (path) of those who earn Thine anger nor of those who go astray."
+    },
+    {
+      "number": 112,
+      "name_arabic": "سُورَةُ الإِخۡلَاصِ",
+      "name_english": "Al-Ikhlaas",
+      "name_meaning": "Sincerity",
+      "ayah_count": 4,
+      "arabic": "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ قُلْ هُوَ اللَّهُ أَحَدٌ\nاللَّهُ الصَّمَدُ\nلَمْ يَلِدْ وَلَمْ يُولَدْ\nوَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ",
+      "translation": "Say: He is Allah, the One!\nAllah, the eternally Besought of all!\nHe begetteth not nor was begotten.\nAnd there is none comparable unto Him."
+    },
+    {
+      "number": 113,
+      "name_arabic": "سُورَةُ الفَلَقِ",
+      "name_english": "Al-Falaq",
+      "name_meaning": "The Dawn",
+      "ayah_count": 5,
+      "arabic": "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ\nمِنْ شَرِّ مَا خَلَقَ\nوَمِنْ شَرِّ غَاسِقٍ إِذَا وَقَبَ\nوَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ\nوَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ",
+      "translation": "Say: I seek refuge in the Lord of the Daybreak\nFrom the evil of that which He created;\nFrom the evil of the darkness when it is intense,\nAnd from the evil of malignant witchcraft,\nAnd from the evil of the envier when he envieth."
+    },
+    {
+      "number": 114,
+      "name_arabic": "سُورَةُ النَّاسِ",
+      "name_english": "An-Naas",
+      "name_meaning": "Mankind",
+      "ayah_count": 6,
+      "arabic": "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ قُلْ أَعُوذُ بِرَبِّ النَّاسِ\nمَلِكِ النَّاسِ\nإِلَٰهِ النَّاسِ\nمِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِ\nالَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ\nمِنَ الْجِنَّةِ وَالنَّاسِ",
+      "translation": "Say: I seek refuge in the Lord of mankind,\nThe King of mankind,\nThe god of mankind,\nFrom the evil of the sneaking whisperer,\nWho whispereth in the hearts of mankind,\nOf the jinn and of mankind."
+    },
+    {
+      "number": 108,
+      "name_arabic": "سُورَةُ الكَوۡثَرِ",
+      "name_english": "Al-Kawthar",
+      "name_meaning": "Abundance",
+      "ayah_count": 3,
+      "arabic": "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ إِنَّا أَعْطَيْنَاكَ الْكَوْثَرَ\nفَصَلِّ لِرَبِّكَ وَانْحَرْ\nإِنَّ شَانِئَكَ هُوَ الْأَبْتَرُ",
+      "translation": "Lo! We have given thee Abundance;\nSo pray unto thy Lord, and sacrifice.\nLo! it is thy insulter (and not thou) who is without posterity."
+    }
+  ]
+}
