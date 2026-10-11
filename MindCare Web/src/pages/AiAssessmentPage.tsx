@@ -10,6 +10,7 @@ import React, { useState } from 'react';
 import { AlertTriangle, Apple, Dumbbell, Info, Moon, RotateCcw, Sparkles } from 'lucide-react';
 import TherapistLayout from '../components/therapist/TherapistLayout';
 import { ErrorPanel, WakingHint } from '../components/therapist/ApiStates';
+import AlertSummary from '../components/therapist/AlertSummary';
 import {
   AI_OCCUPATIONS,
   AI_WAKING_MESSAGE,
@@ -440,6 +441,7 @@ const ResultCard: React.FC<{ result: AnxietyPrediction }> = ({ result }) => {
           <span className="whitespace-pre-line">{result.caveat}</span>
         </div>
       )}
+      <AlertSummary result={result} />
       <p className="text-[11px] font-semibold tracking-widest text-gray-500 uppercase mb-1">Predicted anxiety risk</p>
       <p className={`text-5xl font-black mb-1 ${style.text}`}>{result.predicted_class}</p>
       <p className="text-sm text-gray-700 mb-5">
