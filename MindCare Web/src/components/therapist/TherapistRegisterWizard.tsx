@@ -15,6 +15,7 @@ import { Check, ArrowRight, ArrowLeft, Eye, EyeOff, CheckCircle2, Pencil } from 
 import Button from '../common/Button';
 import PasswordStrengthMeter from '../common/PasswordStrengthMeter';
 import { AdultConfirm, ChipGroup, SelectField, TextAreaField, TextField } from '../forms/Fields';
+import CityField from '../forms/CityField';
 import {
   ROUTES,
   THERAPIST_ONBOARDING_STEPS,
@@ -547,18 +548,22 @@ const TherapistRegisterWizard: React.FC = () => {
                   label="Country"
                   required
                   value={form.country}
-                  onValue={setProfile('country')}
+                  onValue={(code) => {
+                    // A city belongs to one country, so a new country clears it.
+                    if (code !== form.country) set('city', '', 'profile.city');
+                    setProfile('country')(code);
+                  }}
                   options={countries}
                   error={e('profile.country')}
                 />
-                <TextField
+                <CityField
                   label="City"
                   required
+                  country={form.country}
                   value={form.city}
                   onValue={setProfile('city')}
                   error={e('profile.city')}
-                  autoComplete="address-level2"
-                  maxLength={MAX_LENGTHS.shortText}
+                  maxLength={LIMITS.city}
                   placeholder="Lahore"
                 />
                 <SelectField
