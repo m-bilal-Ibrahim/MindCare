@@ -449,6 +449,24 @@ preprocessing (Phase 10) is shared between the two targets.
       slight improvement." **This is exactly the kind of finding a disclosed second test-set use
       is for** — checking whether a validation-only result holds up, not chasing a better number.
 
+### TEST SET USED — 2026-10-11 (THIRD use, disclosed, 3-class target, 11-feature v3 balanced XGBoost — NOT the served model)
+- [x] **The 3-class test set was used a third time, on 2026-10-11, at the project owner's explicit
+      request**, overriding the "fully spent" note above for this one evaluation. Model: the
+      11-feature v2 feature set retrained as **v3** - untuned XGBoost (library defaults) with balanced
+      sample weights and a freshly fitted preprocessor (`src/models/train_11feature_v3_balanced.py`;
+      split re-derived and asserted identical to `mindcare_processed_splits.npz`). Scored once, as is,
+      by `src/evaluation/final_test_evaluation_11feature_v3.py`, which refuses to run twice
+      (`reports/final_test_evaluation_11feature_v3.md`). Nothing was refitted or tuned afterwards.
+      **Result (test, n = 1,650):** balanced accuracy 0.8030, macro-F1 0.8088, accuracy 0.7703, High
+      recall 0.8994 (152/169), High precision 0.9441. Validation for the same model: 0.7960 / 0.8060 /
+      0.7612 / 0.8970 - test within +0.01 of validation on every headline metric. Requested sanity
+      check (about 0.81 balanced accuracy) passed (gap -0.007).
+      **The served model is unchanged** (tuned, unweighted v2; its validation balanced accuracy 0.8055
+      is about one point above v3's 0.7960 on the same rows). v3 artifacts
+      (`*_11feature_v3*.pkl`) are not in git; rebuild with the training script.
+      **Consequence:** the test set has now been seen three times. Any further use needs its own
+      explicit, documented justification; treat it as spent again.
+
 ### FEATURE SET CHANGE — 2026-09-22 (THIRD change, 3-class target, Age restored, 12-feature model — VALIDATION ONLY, test set NOT used)
 - [x] **Age was restored as a model input, on top of the 11-feature set, producing the
       12-feature model (canonical until 2026-10-02).** (`src/models/adopt_12feature_model.py`,

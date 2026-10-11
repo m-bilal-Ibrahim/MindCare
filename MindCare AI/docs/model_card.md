@@ -540,6 +540,15 @@ scope).
 
 ---
 
+## Third Disclosed Test-Set Use — 11-Feature v3, Balanced Weights (2026-10-11, NOT the served model)
+
+An untuned XGBoost with balanced sample weights on the current 11 features, with a freshly fitted
+preprocessor, scored once on the 3-class test set at the project owner's request
+(`reports/final_test_evaluation_11feature_v3.md`). Test: balanced accuracy 0.8030, macro-F1 0.8088,
+accuracy 0.7703, High recall 0.8994, High precision 0.9441; within 0.01 of its validation numbers. The
+served tuned v2 model was not changed and still has no test-set number. This was the test set's third
+use; it should be treated as spent.
+
 ## Final Test-Set Evaluation — 17- and 11-Feature Models (Two Disclosed Uses)
 
 The test set has now been used **twice**, both disclosed and justified in `CLAUDE.md` ("TEST SET
