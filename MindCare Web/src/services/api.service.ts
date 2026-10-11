@@ -140,6 +140,31 @@ export async function getReferenceList(
     .filter((o) => o.value);
 }
 
+export interface CityOption {
+  id: number;
+  name: string;
+}
+
+const cityCache = new Map<string, CityOption[]>();
+
+/**
+ * GET /reference/cities/?country=PK&search=lah — public, verified cities only,
+ * names starting with `search`, at most 20. Returns null on failure (the
+ * field then just works as free text).
+ */
+export async function searchCities(country: string, search: string): Promise<CityOption[] | null> {
+  const key = `${country.toUpperCase()}|${search.trim().toLowerCase()}`;
+  const hit = cityCache.get(key);
+  if (hit) return hit;
+  const params = new URLSearchParams({ country: country.toUpperCase() });
+  if (search.trim()) params.set('search', search.trim());
+  const res = await apiFetch<{ id: number; name: string }[]>(`/reference/cities/?${params}`, { method: 'GET', skipAuth: true });
+  if (!Array.isArray(res.data)) return null;
+  const rows = res.data.map((c) => ({ id: c.id, name: c.name }));
+  cityCache.set(key, rows);
+  return rows;
+}
+
 /**
  * POST /accounts/register/ — JSON body per the backend contract.
  * 201 on success (no tokens: sign in afterwards). Psychologist and NGO
