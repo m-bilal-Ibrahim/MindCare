@@ -51,8 +51,40 @@ class NearbyHospitalsScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text('Help, close by.', style: AppTextStyles.heading(size: 26)),
             const SizedBox(height: 6),
-            Text('${hospitals.length} hospitals within 5 km, closest first.', style: AppTextStyles.body()),
+            Text(
+              hospitals.isEmpty
+                  ? "We don't have hospitals for your area yet."
+                  : '${hospitals.length} ${hospitals.length == 1 ? 'hospital' : 'hospitals'} near you, closest first.',
+              style: AppTextStyles.body(),
+            ),
             const SizedBox(height: 20),
+            if (hospitals.isEmpty)
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('In an emergency', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                    const SizedBox(height: 4),
+                    Text('Call Rescue 1122 for an ambulance, any time.', style: AppTextStyles.body(size: 13)),
+                    const SizedBox(height: 14),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _callHospital(context, '1122'),
+                        icon: const Icon(Icons.call, color: Colors.white, size: 18),
+                        label: const Text('Call 1122', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.sos,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ...hospitals.map((hospital) {
               return HospitalTile(
                 hospital: hospital,

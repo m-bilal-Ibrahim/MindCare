@@ -53,7 +53,7 @@ class _CancelSessionScreenState extends State<CancelSessionScreen> {
                 child: ListView(
                   children: [
                     const SizedBox(height: 8),
-                    Text('Cancel ${provider.nextConfirmedLabel}?', style: AppTextStyles.heading(size: 24)),
+                    Text('Cancel ${provider.nextConfirmedLabel ?? 'this session'}?', style: AppTextStyles.heading(size: 24)),
                     const SizedBox(height: 8),
                     Text('A short note helps your therapist plan around it — totally optional.', style: AppTextStyles.body()),
                     const SizedBox(height: 20),

@@ -11,8 +11,10 @@ class StreakSummaryRow extends StatelessWidget {
   });
 
   final int streakDays;
-  final double avgMood;
-  final double avgMoodDelta;
+
+  /// Null until there are mood check-ins to average.
+  final double? avgMood;
+  final double? avgMoodDelta;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +40,7 @@ class StreakSummaryRow extends StatelessWidget {
                         child: const Icon(Icons.local_fire_department, color: Colors.white, size: 18),
                       ),
                       const SizedBox(width: 10),
-                      Text('$streakDays days', style: AppTextStyles.heading(size: 20)),
+                      Text('$streakDays ${streakDays == 1 ? 'day' : 'days'}', style: AppTextStyles.heading(size: 20)),
                     ],
                   ),
                   const SizedBox(height: 2),
@@ -79,12 +81,19 @@ class StreakSummaryRow extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.baseline,
                     textBaseline: TextBaseline.alphabetic,
                     children: [
-                      Text(avgMood.toStringAsFixed(1), style: AppTextStyles.heading(size: 26)),
+                      Text(avgMood == null ? '—' : avgMood!.toStringAsFixed(1), style: AppTextStyles.heading(size: 26)),
                       Text(' /5', style: AppTextStyles.body(size: 13)),
                     ],
                   ),
                   const SizedBox(height: 6),
-                  Text('↑ ${avgMoodDelta.toStringAsFixed(1)} vs last month', style: AppTextStyles.body(size: 12)),
+                  Text(
+                    avgMood == null
+                        ? 'No check-ins yet'
+                        : avgMoodDelta == null
+                            ? 'this month'
+                            : '${avgMoodDelta! >= 0 ? '↑' : '↓'} ${avgMoodDelta!.abs().toStringAsFixed(1)} vs last month',
+                    style: AppTextStyles.body(size: 12),
+                  ),
                 ],
               ),
             ),

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../core/services/share_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../providers/account_provider.dart';
 import '../../widgets/common/sos_button.dart';
-import '../../widgets/wallet/amount_sheet.dart';
 import '../../widgets/wallet/balance_card.dart';
 import '../../widgets/wallet/payment_method_card.dart';
 import '../../widgets/wallet/transaction_tile.dart';
@@ -32,8 +32,14 @@ class WalletScreen extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     SwitchListTile(
-                      title: const Text('Auto-renewal', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark)),
-                      subtitle: const Text('Automatically renew your plan each cycle.', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                      title: const Text(
+                        'Auto-renewal',
+                        style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark),
+                      ),
+                      subtitle: const Text(
+                        'Automatically renew your plan each cycle.',
+                        style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                      ),
                       value: provider.autoRenewEnabled,
                       activeThumbColor: AppColors.primaryDark,
                       onChanged: (value) {
@@ -43,25 +49,37 @@ class WalletScreen extends StatelessWidget {
                     ),
                     ListTile(
                       leading: const Icon(Icons.description_outlined, color: AppColors.textDark),
-                      title: const Text('Download statement', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark)),
+                      title: const Text(
+                        'Download statement',
+                        style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark),
+                      ),
                       onTap: () {
                         Navigator.of(sheetContext).pop();
+                        if (provider.transactions.isEmpty) {
+                          ScaffoldMessenger.of(context)
+                              .showSnackBar(const SnackBar(content: Text('No transactions yet, so there is no statement to download.')));
+                          return;
+                        }
                         final summary = provider.transactions.take(5).map((t) => '${t.title}: ${t.amount}').join('\n');
                         ShareService.instance.shareText(
-                          'MindCare wallet statement\nBalance: Rs ${provider.walletBalance}\n\n$summary',
+                          'MindCare wallet statement\nBalance: Rs ${provider.walletBalance ?? 0}\n\n$summary',
                           subject: 'MindCare wallet statement',
                         );
                       },
                     ),
                     ListTile(
                       leading: const Icon(Icons.attach_money, color: AppColors.textDark),
-                      title: const Text('Currency', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark)),
-                      trailing: const Text('PKR', style: TextStyle(color: AppColors.textMuted, fontWeight: FontWeight.w600)),
+                      title: const Text(
+                        'Currency',
+                        style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark),
+                      ),
+                      trailing: const Text(
+                        'PKR',
+                        style: TextStyle(color: AppColors.textMuted, fontWeight: FontWeight.w600),
+                      ),
                       onTap: () {
                         Navigator.of(sheetContext).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('MindCare currently only supports PKR.')),
-                        );
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('MindCare currently only supports PKR.')));
                       },
                     ),
                   ],
@@ -89,7 +107,10 @@ class WalletScreen extends StatelessWidget {
                 if (!isDefault)
                   ListTile(
                     leading: const Icon(Icons.check_circle_outline, color: AppColors.textDark),
-                    title: const Text('Set as default', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark)),
+                    title: const Text(
+                      'Set as default',
+                      style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark),
+                    ),
                     onTap: () {
                       context.read<AccountProvider>().setDefaultPaymentMethod(id);
                       Navigator.of(sheetContext).pop();
@@ -97,15 +118,13 @@ class WalletScreen extends StatelessWidget {
                   ),
                 ListTile(
                   leading: const Icon(Icons.delete_outline, color: AppColors.sos),
-                  title: const Text('Remove card', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.sos)),
+                  title: const Text(
+                    'Remove card',
+                    style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.sos),
+                  ),
                   onTap: () {
-                    final removed = context.read<AccountProvider>().removePaymentMethod(id);
+                    context.read<AccountProvider>().removePaymentMethod(id);
                     Navigator.of(sheetContext).pop();
-                    if (!removed) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Can't remove your only payment method.")),
-                      );
-                    }
                   },
                 ),
               ],
@@ -151,33 +170,15 @@ class WalletScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 BalanceCard(
                   balance: provider.walletBalance,
-                  note: provider.walletBalanceNote,
-                  onTopUp: () async {
-                    final amount = await showAmountSheet(context, title: 'Top up your wallet', actionLabel: 'Add funds');
-                    if (amount == null || !context.mounted) return;
-                    await context.read<AccountProvider>().topUp(amount);
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Rs $amount added.')));
-                    }
-                  },
-                  onWithdraw: () async {
-                    final amount = await showAmountSheet(
-                      context,
-                      title: 'Withdraw funds',
-                      actionLabel: 'Withdraw',
-                      maxAmount: provider.walletBalance,
-                    );
-                    if (amount == null || !context.mounted) return;
-                    final success = await context.read<AccountProvider>().withdraw(amount);
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(success ? 'Rs $amount withdrawn.' : "Couldn't complete withdrawal.")),
-                      );
-                    }
-                  },
-                  onHistory: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const TransactionHistoryScreen()),
-                  ),
+                  note: null,
+                  // Moving money needs the payment gateway; until it exists we say so rather than fake a balance.
+                  onTopUp: () =>
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(const SnackBar(content: Text('Top-ups open once payments are connected.'))),
+                  onWithdraw: () =>
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(const SnackBar(content: Text('Withdrawals open once payments are connected.'))),
+                  onHistory: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TransactionHistoryScreen())),
                 ),
                 const SizedBox(height: 22),
                 Text('UPCOMING CHARGE', style: AppTextStyles.label()),
@@ -189,39 +190,54 @@ class WalletScreen extends StatelessWidget {
                   children: [
                     Text('PAYMENT METHODS', style: AppTextStyles.label()),
                     GestureDetector(
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const AddPaymentMethodScreen()),
+                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AddPaymentMethodScreen())),
+                      child: const Text(
+                        '+ Add',
+                        style: TextStyle(color: AppColors.progressActive, fontWeight: FontWeight.w700, fontSize: 13),
                       ),
-                      child: const Text('+ Add', style: TextStyle(color: AppColors.progressActive, fontWeight: FontWeight.w700, fontSize: 13)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                SizedBox(
-                  height: 108,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: provider.paymentMethods.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
-                    itemBuilder: (context, index) {
-                      final method = provider.paymentMethods[index];
-                      return GestureDetector(
-                        onTap: () => _showPaymentMethodOptions(context, method.id, method.isDefault),
-                        child: PaymentMethodCard(method: method),
-                      );
-                    },
+                if (provider.paymentMethods.isEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.credit_card_off_outlined, size: 20, color: AppColors.textMuted),
+                        const SizedBox(width: 12),
+                        Expanded(child: Text('No saved cards yet.', style: AppTextStyles.body(size: 13))),
+                      ],
+                    ),
+                  )
+                else
+                  SizedBox(
+                    height: 108,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: provider.paymentMethods.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 12),
+                      itemBuilder: (context, index) {
+                        final method = provider.paymentMethods[index];
+                        return GestureDetector(
+                          onTap: () => _showPaymentMethodOptions(context, method.id, method.isDefault),
+                          child: PaymentMethodCard(method: method),
+                        );
+                      },
+                    ),
                   ),
-                ),
                 const SizedBox(height: 22),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('RECENT', style: AppTextStyles.label()),
                     GestureDetector(
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const TransactionHistoryScreen()),
+                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TransactionHistoryScreen())),
+                      child: const Text(
+                        'see all',
+                        style: TextStyle(color: AppColors.progressActive, fontWeight: FontWeight.w700, fontSize: 13),
                       ),
-                      child: const Text('see all', style: TextStyle(color: AppColors.progressActive, fontWeight: FontWeight.w700, fontSize: 13)),
                     ),
                   ],
                 ),
@@ -229,11 +245,22 @@ class WalletScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-                  child: Column(
-                    children: List.generate(recentTransactions.length, (i) {
-                      return TransactionTile(transaction: recentTransactions[i], showDivider: i != recentTransactions.length - 1);
-                    }),
-                  ),
+                  child: recentTransactions.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.receipt_long_outlined, size: 20, color: AppColors.textMuted),
+                              const SizedBox(width: 12),
+                              Expanded(child: Text('No transactions yet.', style: AppTextStyles.body(size: 13))),
+                            ],
+                          ),
+                        )
+                      : Column(
+                          children: List.generate(recentTransactions.length, (i) {
+                            return TransactionTile(transaction: recentTransactions[i], showDivider: i != recentTransactions.length - 1);
+                          }),
+                        ),
                 ),
               ],
             ),

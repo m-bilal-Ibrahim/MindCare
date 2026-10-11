@@ -47,6 +47,24 @@ class MoodTimelineChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (values.length < 2) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+        child: const Column(
+          children: [
+            Icon(Icons.show_chart, color: AppColors.textLabel, size: 28),
+            SizedBox(height: 10),
+            Text(
+              'Your mood timeline builds up as you check in each day.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, color: AppColors.textMuted, height: 1.4),
+            ),
+          ],
+        ),
+      );
+    }
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),

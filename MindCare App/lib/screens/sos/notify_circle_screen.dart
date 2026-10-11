@@ -67,6 +67,23 @@ class _NotifyCircleScreenState extends State<NotifyCircleScreen> {
                 style: TextStyle(color: Color(0xFFC17A63), fontSize: 14, height: 1.4),
               ),
               const SizedBox(height: 24),
+              if (provider.circleContacts.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.group_add_outlined, color: Color(0xFFB0503C)),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'No trusted contacts added yet. People you add to your circle will appear here.',
+                          style: TextStyle(color: AppColors.textDark, fontSize: 13, height: 1.4),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ...provider.circleContacts.map(
                 (contact) => CircleContactTile(
                   contact: contact,

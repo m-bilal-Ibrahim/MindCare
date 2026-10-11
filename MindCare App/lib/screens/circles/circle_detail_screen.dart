@@ -55,7 +55,7 @@ class CircleDetailScreen extends StatelessWidget {
                   child: Text(tag.name, style: const TextStyle(color: Colors.white, fontSize: 26, fontFamily: 'serif')),
                 ),
                 const SizedBox(height: 10),
-                Text('${tag.memberCount} members', style: AppTextStyles.body(size: 13)),
+                if (tag.memberCount != null) Text('${tag.memberCount} members', style: AppTextStyles.body(size: 13)),
                 const SizedBox(height: 20),
                 Text('${posts.length} POSTS', style: AppTextStyles.label()),
                 const SizedBox(height: 12),

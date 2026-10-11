@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../main.dart';
+import '../../models/account_data.dart';
 import '../../providers/account_provider.dart';
 import '../../providers/therapy_provider.dart';
 import '../../widgets/common/primary_button.dart';
@@ -18,6 +19,7 @@ class TherapistDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final therapist = context.watch<AccountProvider>().therapistProfile;
     final hasActiveTherapist = context.watch<TherapyProvider>().selectedTherapist != null;
+    if (therapist == null) return const _NoTherapist();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -49,7 +51,7 @@ class TherapistDetailScreen extends StatelessWidget {
                     radius: 42,
                     backgroundColor: AppColors.moodStressed,
                     child: Text(
-                      therapist.name.split(' ').where((w) => w.isNotEmpty && w != 'Dr.').take(2).map((w) => w[0]).join(),
+                      therapist.initials,
                       style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w700),
                     ),
                   ),
@@ -143,6 +145,64 @@ class TherapistDetailScreen extends StatelessWidget {
             PrimaryButton(
               label: 'Book another session',
               icon: null,
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const MobileFrame(child: BrowseTherapistsScreen())),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+/// Shown when the patient has no psychologist yet.
+class _NoTherapist extends StatelessWidget {
+  const _NoTherapist();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 30),
+          children: [
+            Row(
+              children: [
+                IconButton(
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  icon: const Icon(Icons.chevron_left, color: AppColors.textDark),
+                ),
+                const Expanded(
+                  child: Text(
+                    'YOUR THERAPIST',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(letterSpacing: 1, color: AppColors.textLabel, fontWeight: FontWeight.w600, fontSize: 12),
+                  ),
+                ),
+                const SizedBox(width: 48),
+              ],
+            ),
+            const SizedBox(height: 40),
+            Center(
+              child: Container(
+                width: 84,
+                height: 84,
+                decoration: const BoxDecoration(color: AppColors.chipUnselected, shape: BoxShape.circle),
+                child: const Icon(Icons.person_search_outlined, size: 36, color: AppColors.primaryDark),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text('No therapist yet', textAlign: TextAlign.center, style: AppTextStyles.heading(size: 26)),
+            const SizedBox(height: 10),
+            Text(
+              'Once a psychologist accepts your request, their details, messages and sessions will appear here.',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.body(),
+            ),
+            const SizedBox(height: 28),
+            PrimaryButton(
+              label: 'Find a therapist',
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const MobileFrame(child: BrowseTherapistsScreen())),
               ),

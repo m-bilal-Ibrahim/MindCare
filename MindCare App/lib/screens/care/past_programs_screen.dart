@@ -69,9 +69,9 @@ class PastProgramsScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(program['title'] ?? '', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.textDark)),
+                            Text(program.title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.textDark)),
                             const SizedBox(height: 2),
-                            Text('${program['period']} · set by ${program['setBy']}', style: AppTextStyles.body(size: 12)),
+                            Text('${program.period} · set by ${program.setBy}', style: AppTextStyles.body(size: 12)),
                           ],
                         ),
                       ),

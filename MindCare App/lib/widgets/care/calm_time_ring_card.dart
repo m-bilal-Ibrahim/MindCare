@@ -2,14 +2,23 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 
+/// Calm time today, worked out from sensor readings. Shows an empty
+/// state when there are no readings today.
 class CalmTimeRingCard extends StatelessWidget {
-  const CalmTimeRingCard({super.key, required this.percent, required this.label, required this.subtitle});
-  final double percent;
-  final String label;
-  final String subtitle;
+  const CalmTimeRingCard({super.key, required this.calmToday});
+  final ({Duration calm, double share})? calmToday;
+
+  String _duration(Duration d) {
+    final h = d.inHours;
+    final m = d.inMinutes % 60;
+    if (h == 0) return '${m}m today';
+    return '${h}h ${m}m today';
+  }
 
   @override
   Widget build(BuildContext context) {
+    final data = calmToday;
+    final percent = data?.share ?? 0;
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(color: const Color(0xFFDCEAE2), borderRadius: BorderRadius.circular(20)),
@@ -22,7 +31,10 @@ class CalmTimeRingCard extends StatelessWidget {
               alignment: Alignment.center,
               children: [
                 CustomPaint(size: const Size(64, 64), painter: _RingPainter(percent)),
-                Text('${(percent * 100).round()}%', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.textDark)),
+                Text(
+                  data == null ? '—' : '${(percent * 100).round()}%',
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.textDark),
+                ),
               ],
             ),
           ),
@@ -33,9 +45,14 @@ class CalmTimeRingCard extends StatelessWidget {
               children: [
                 Text('CALM TIME', style: AppTextStyles.label()),
                 const SizedBox(height: 4),
-                Text(label, style: AppTextStyles.heading(size: 20)),
+                Text(data == null ? 'No readings today' : _duration(data.calm), style: AppTextStyles.heading(size: 20)),
                 const SizedBox(height: 4),
-                Text(subtitle, style: AppTextStyles.body(size: 12)),
+                Text(
+                  data == null
+                      ? 'Appears once your sensor shares heart rate and breathing.'
+                      : 'Sensor-detected · steady heart rate & breath',
+                  style: AppTextStyles.body(size: 12),
+                ),
               ],
             ),
           ),
@@ -61,6 +78,7 @@ class _RingPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
     canvas.drawCircle(center, radius, trackPaint);
 
+    if (percent <= 0) return;
     final progressPaint = Paint()
       ..color = AppColors.progressActive
       ..style = PaintingStyle.stroke

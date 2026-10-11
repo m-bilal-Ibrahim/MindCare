@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../providers/account_provider.dart';
 import '../../widgets/common/primary_button.dart';
 
 class RequestChangeScreen extends StatefulWidget {
@@ -29,6 +31,8 @@ class _RequestChangeScreenState extends State<RequestChangeScreen> {
     super.dispose();
   }
 
+  String _therapistName(BuildContext context) => context.watch<AccountProvider>().therapistProfile?.name ?? 'your therapist';
+
   @override
   Widget build(BuildContext context) {
     if (_sent) {
@@ -47,10 +51,10 @@ class _RequestChangeScreenState extends State<RequestChangeScreen> {
                   child: const Icon(Icons.check, color: Colors.white, size: 36),
                 ),
                 const SizedBox(height: 24),
-                Text('Sent to Dr. Tariq.', style: AppTextStyles.heading(size: 24)),
+                Text('Sent to ${_therapistName(context)}.', textAlign: TextAlign.center, style: AppTextStyles.heading(size: 24)),
                 const SizedBox(height: 8),
                 Text(
-                  'He usually reviews program change requests within a day or two, and any update will show up right here.',
+                  'Any update to your program will show up in your care plan.',
                   textAlign: TextAlign.center,
                   style: AppTextStyles.body(),
                 ),
@@ -92,7 +96,7 @@ class _RequestChangeScreenState extends State<RequestChangeScreen> {
                   Text('What would you like to change?', style: AppTextStyles.heading(size: 22)),
                   const SizedBox(height: 8),
                   Text(
-                    'Your program stays set by Dr. Tariq, but he wants your input. This goes straight to him, not Aida.',
+                    'Your program stays set by ${_therapistName(context)}, who wants your input. This goes straight to them, not Aida.',
                     style: AppTextStyles.body(),
                   ),
                   const SizedBox(height: 22),

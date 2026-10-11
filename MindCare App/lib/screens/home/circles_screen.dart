@@ -128,6 +128,24 @@ class CirclesScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 14),
+            if (provider.visiblePosts.isEmpty)
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 24),
+                decoration: BoxDecoration(color: AppColors.cardBackground, borderRadius: BorderRadius.circular(22)),
+                child: Column(
+                  children: [
+                    const Icon(Icons.forum_outlined, size: 30, color: AppColors.textMuted),
+                    const SizedBox(height: 12),
+                    Text('No posts yet', style: AppTextStyles.heading(size: 20)),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Posts from your circles will appear here. You can be the first to share.',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.body(size: 13),
+                    ),
+                  ],
+                ),
+              ),
             ...provider.visiblePosts.map(
               (post) => PostCard(
                 post: post,

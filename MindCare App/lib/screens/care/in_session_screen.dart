@@ -222,7 +222,7 @@ class _InSessionScreenState extends State<InSessionScreen> {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(color: Colors.black.withOpacity(0.35), borderRadius: BorderRadius.circular(20)),
+                      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.35), borderRadius: BorderRadius.circular(20)),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -231,18 +231,6 @@ class _InSessionScreenState extends State<InSessionScreen> {
                           const Text('MEET · LIVE', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700)),
                           const SizedBox(width: 8),
                           Text(_formattedTime, style: const TextStyle(color: Colors.white70, fontSize: 11)),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(color: Colors.black.withOpacity(0.35), borderRadius: BorderRadius.circular(20)),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.auto_awesome, size: 13, color: Colors.white),
-                          SizedBox(width: 6),
-                          Text('Aida is taking notes', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
                         ],
                       ),
                     ),
@@ -287,12 +275,12 @@ class _InSessionScreenState extends State<InSessionScreen> {
                     Container(
                       width: 130,
                       height: 130,
-                      decoration: BoxDecoration(color: Colors.white.withOpacity(0.12), shape: BoxShape.circle),
+                      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.12), shape: BoxShape.circle),
                     ),
                     const SizedBox(height: 34),
                     Text(name, style: const TextStyle(color: Colors.white, fontSize: 26, fontFamily: 'serif')),
                     const SizedBox(height: 6),
-                    const Text('Speaking...', style: TextStyle(color: Colors.white60, fontSize: 14)),
+                    const Text('Waiting to connect…', style: TextStyle(color: Colors.white60, fontSize: 14)),
                   ],
                 ),
               ),
@@ -303,10 +291,10 @@ class _InSessionScreenState extends State<InSessionScreen> {
                   bottom: 128,
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.4), borderRadius: BorderRadius.circular(16)),
+                    decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(16)),
                     child: const Text(
-                      '"Let\'s stay with that thought a moment — what does it sound like in your head?"',
-                      style: TextStyle(color: Colors.white, fontSize: 14, height: 1.4),
+                      'Captions will appear here while your therapist speaks.',
+                      style: TextStyle(color: Colors.white70, fontSize: 14, height: 1.4),
                     ),
                   ),
                 ),
@@ -360,7 +348,7 @@ class _ControlButton extends StatelessWidget {
           Container(
             width: 52,
             height: 52,
-            decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), shape: BoxShape.circle),
+            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), shape: BoxShape.circle),
             child: Icon(icon, color: Colors.white, size: 20),
           ),
           if (badgeCount > 0)

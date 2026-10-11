@@ -84,35 +84,19 @@ class SettingsProvider extends ChangeNotifier {
   }
 
   // ----- Wearables -----
-  WearableDevice wearable = const WearableDevice(
-    name: 'MindBand',
-    model: 'MindBand 2',
-    batteryPercent: 68,
-    lastSynced: '2 minutes ago',
-    connected: true,
-  );
+  /// The paired sensor, reported by the sensor integration. Null when no
+  /// device has been paired.
+  WearableDevice? wearable;
 
-  Future<void> disconnectWearable() async {
-    await Future.delayed(const Duration(milliseconds: 400));
-    wearable = WearableDevice(
-      name: wearable.name,
-      model: wearable.model,
-      batteryPercent: wearable.batteryPercent,
-      lastSynced: wearable.lastSynced,
-      connected: false,
-    );
+  void setWearable(WearableDevice? device) {
+    wearable = device;
     notifyListeners();
   }
 
-  Future<void> reconnectWearable() async {
-    await Future.delayed(const Duration(milliseconds: 700));
-    wearable = WearableDevice(
-      name: wearable.name,
-      model: wearable.model,
-      batteryPercent: wearable.batteryPercent,
-      lastSynced: 'just now',
-      connected: true,
-    );
+  Future<void> disconnectWearable() async {
+    final d = wearable;
+    if (d == null) return;
+    wearable = WearableDevice(name: d.name, model: d.model, batteryPercent: d.batteryPercent, lastSynced: d.lastSynced, connected: false);
     notifyListeners();
   }
 

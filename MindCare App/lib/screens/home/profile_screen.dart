@@ -57,10 +57,15 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<AccountProvider>();
     final session = context.watch<UserSessionProvider>();
-    final displayName = session.fullName ?? provider.userName;
+    final displayName = session.fullName ?? 'You';
+    final therapist = provider.therapistProfile;
 
     final careItems = [
-      ProfileListItem(icon: Icons.terrain, title: 'Your therapist', subtitle: '${provider.therapistName} · ${provider.therapistSince}'),
+      ProfileListItem(
+        icon: Icons.terrain,
+        title: 'Your therapist',
+        subtitle: therapist == null ? 'Not matched yet · find a therapist' : '${therapist.name} · ${therapist.since}',
+      ),
       ProfileListItem(icon: Icons.auto_awesome, title: 'Aida personality', trailing: provider.aidaPersonality),
       ProfileListItem(icon: Icons.bookmark_border, title: 'Past sessions & notes', trailing: '${provider.pastSessionsCount}', showDivider: false),
     ];
@@ -111,7 +116,11 @@ class ProfileScreen extends StatelessWidget {
       ProfileListItem(icon: Icons.watch_outlined, title: 'Wearables', subtitle: provider.wearableConnected ? 'MindBand · connected' : 'Not connected'),
       const ProfileListItem(icon: Icons.shield_outlined, title: 'Privacy & data', subtitle: 'What your therapist sees'),
       ProfileListItem(icon: Icons.notifications_none, title: 'Notifications', trailing: provider.notificationsOn ? 'On' : 'Off'),
-      ProfileListItem(icon: Icons.credit_card, title: 'Billing & wallet', trailing: 'Rs ${provider.walletBalance}'),
+      ProfileListItem(
+        icon: Icons.credit_card,
+        title: 'Billing & wallet',
+        trailing: provider.walletBalance == null ? null : 'Rs ${provider.walletBalance}',
+      ),
     ];
 
     return Scaffold(
@@ -146,7 +155,7 @@ class ProfileScreen extends StatelessWidget {
                     name: displayName,
                     initials: session.fullName != null ? session.initials : null,
                     joinedInfo: provider.joinedInfo,
-                    levelBadge: 'Level ${provider.levelNumber} · Centered',
+                    levelBadge: 'Level ${provider.levelNumber}',
                     streak: provider.checkinStreak,
                     sessions: provider.statsSessions,
                     exercises: provider.statsExercises,

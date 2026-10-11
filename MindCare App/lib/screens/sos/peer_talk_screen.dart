@@ -187,6 +187,7 @@ class _PeerTalkScreenState extends State<PeerTalkScreen> {
                 maxLines: 3,
                 maxLength: 300,
                 decoration: const InputDecoration(
+                  hintText: 'A few words about what you need (optional)',
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.all(16),
                   counterText: '',
@@ -217,7 +218,7 @@ class _PeerTalkScreenState extends State<PeerTalkScreen> {
               ],
             ),
             const SizedBox(height: 10),
-            Text('Usually matched within 4 minutes.', textAlign: TextAlign.center, style: AppTextStyles.body(size: 12)),
+            Text("We'll let you know as soon as a listener is free.", textAlign: TextAlign.center, style: AppTextStyles.body(size: 12)),
           ],
         ),
       ),

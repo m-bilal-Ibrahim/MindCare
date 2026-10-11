@@ -44,7 +44,7 @@ class _MessageTherapistScreenState extends State<MessageTherapistScreen> {
                 Text('Sent.', style: AppTextStyles.heading(size: 26)),
                 const SizedBox(height: 8),
                 Text(
-                  '${widget.therapistName} usually replies within 48 hours on weekdays.',
+                  '${widget.therapistName} will reply as soon as they can.',
                   textAlign: TextAlign.center,
                   style: AppTextStyles.body(),
                 ),
