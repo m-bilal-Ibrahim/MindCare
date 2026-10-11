@@ -60,7 +60,7 @@ class FeelingCheckinScreen extends StatelessWidget {
                   crossAxisCount: 3,
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,
-                  childAspectRatio: 0.82,
+                  childAspectRatio: 0.95,
                 ),
                 itemBuilder: (context, index) {
                   final mood = _moods[index];
