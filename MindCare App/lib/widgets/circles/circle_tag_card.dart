@@ -25,7 +25,7 @@ class CircleTagCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(tag.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-            Text(tag.memberCount, style: const TextStyle(fontSize: 12, color: Color(0xFF7A7A70))),
+            if (tag.memberCount != null) Text(tag.memberCount!, style: const TextStyle(fontSize: 12, color: Color(0xFF7A7A70))),
           ],
         ),
       ),

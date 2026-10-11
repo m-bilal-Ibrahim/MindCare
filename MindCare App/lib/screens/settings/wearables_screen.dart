@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../providers/settings_provider.dart';
@@ -43,80 +44,127 @@ class _WearablesScreenState extends State<WearablesScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            Text('Your connected device.', style: AppTextStyles.heading(size: 26)),
+            Text(device == null ? 'No device paired yet.' : 'Your connected device.', style: AppTextStyles.heading(size: 26)),
             const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [Color(0xFF2B453C), Color(0xFF162622)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 46,
-                        height: 46,
-                        decoration: BoxDecoration(color: Colors.white.withOpacity(0.14), shape: BoxShape.circle),
-                        child: const Icon(Icons.watch, color: Colors.white, size: 22),
+            if (device == null)
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 46,
+                      height: 46,
+                      decoration: const BoxDecoration(color: AppColors.chipUnselected, shape: BoxShape.circle),
+                      child: const Icon(Icons.watch_outlined, color: AppColors.primaryDark, size: 22),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        'When you pair your MindCare sensor, its battery, sync status and readings will show here, and Pulse will update from it.',
+                        style: AppTextStyles.body(size: 13),
                       ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(device.name, style: const TextStyle(color: Colors.white, fontSize: 18, fontFamily: 'serif')),
-                            Text(device.model, style: const TextStyle(color: Colors.white54, fontSize: 12)),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: device.connected ? Colors.white.withOpacity(0.16) : Colors.white.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(width: 6, height: 6, decoration: BoxDecoration(color: device.connected ? AppColors.progressActive : Colors.white38, shape: BoxShape.circle)),
-                            const SizedBox(width: 5),
-                            Text(device.connected ? 'Connected' : 'Disconnected', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
-                          ],
-                        ),
-                      ),
-                    ],
+                    ),
+                  ],
+                ),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF2B453C), Color(0xFF162622)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('BATTERY', style: TextStyle(color: Colors.white54, fontSize: 10, letterSpacing: 1)),
-                            const SizedBox(height: 6),
-                            Text('${device.batteryPercent}%', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600)),
-                          ],
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 46,
+                          height: 46,
+                          decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.14), shape: BoxShape.circle),
+                          child: const Icon(Icons.watch, color: Colors.white, size: 22),
                         ),
-                      ),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('LAST SYNCED', style: TextStyle(color: Colors.white54, fontSize: 10, letterSpacing: 1)),
-                            const SizedBox(height: 6),
-                            Text(device.lastSynced, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
-                          ],
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                device.name,
+                                style: const TextStyle(color: Colors.white, fontSize: 18, fontFamily: 'serif'),
+                              ),
+                              Text(device.model, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: device.connected ? Colors.white.withValues(alpha: 0.16) : Colors.white.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: device.connected ? AppColors.progressActive : Colors.white38,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                device.connected ? 'Connected' : 'Disconnected',
+                                style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('BATTERY', style: TextStyle(color: Colors.white54, fontSize: 10, letterSpacing: 1)),
+                              const SizedBox(height: 6),
+                              Text(
+                                '${device.batteryPercent}%',
+                                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('LAST SYNCED', style: TextStyle(color: Colors.white54, fontSize: 10, letterSpacing: 1)),
+                              const SizedBox(height: 6),
+                              Text(
+                                device.lastSynced,
+                                style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
             const SizedBox(height: 22),
             Text('WHAT IT SHARES', style: AppTextStyles.label()),
             const SizedBox(height: 12),
@@ -130,22 +178,20 @@ class _WearablesScreenState extends State<WearablesScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 26),
-            PrimaryButton(
-              label: device.connected ? 'Disconnect device' : 'Reconnect device',
-              icon: null,
-              loading: _loading,
-              onPressed: () async {
-                setState(() => _loading = true);
-                if (device.connected) {
+            if (device != null && device.connected) ...[
+              const SizedBox(height: 26),
+              PrimaryButton(
+                label: 'Disconnect device',
+                icon: null,
+                loading: _loading,
+                onPressed: () async {
+                  setState(() => _loading = true);
                   await context.read<SettingsProvider>().disconnectWearable();
-                } else {
-                  await context.read<SettingsProvider>().reconnectWearable();
-                }
-                if (!mounted) return;
-                setState(() => _loading = false);
-              },
-            ),
+                  if (!mounted) return;
+                  setState(() => _loading = false);
+                },
+              ),
+            ],
           ],
         ),
       ),
@@ -169,7 +215,10 @@ class _DataRow extends StatelessWidget {
             children: [
               Icon(icon, size: 18, color: AppColors.textDark),
               const SizedBox(width: 14),
-              Text(label, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark, fontSize: 14)),
+              Text(
+                label,
+                style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark, fontSize: 14),
+              ),
             ],
           ),
         ),

@@ -145,3 +145,31 @@ class TherapistProfile {
   final double rating;
   final int sessionsWithYou;
 }
+extension TherapistInitials on TherapistProfile {
+  /// "Dr. Sara Ahmed" -> "SA"
+  String get initials {
+    final words = name.replaceAll(RegExp(r'^(Dr\.?|Mr\.?|Ms\.?|Mrs\.?)\s+', caseSensitive: false), '').trim().split(RegExp(r'\s+'));
+    if (words.isEmpty || words.first.isEmpty) return '?';
+    if (words.length == 1) return words.first[0].toUpperCase();
+    return (words.first[0] + words.last[0]).toUpperCase();
+  }
+}
+
+/// The next scheduled charge on the patient's account.
+class WalletCharge {
+  const WalletCharge({required this.title, required this.subtitle, required this.amount, this.note, this.initials, this.color});
+  final String title; // e.g. "Session · Dr. Sara Ahmed"
+  final String subtitle; // e.g. "Fri, 17 Oct · 5:00 PM"
+  final String amount; // e.g. "Rs 4,500"
+  final String? note; // e.g. "auto · Visa"
+  final String? initials;
+  final Color? color;
+}
+
+/// A care plan the patient had before the current one.
+class PastProgram {
+  const PastProgram({required this.title, required this.period, required this.setBy});
+  final String title;
+  final String period;
+  final String setBy;
+}

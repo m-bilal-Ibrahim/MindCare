@@ -42,11 +42,26 @@ class ScheduleSlot {
   final String status; // 'free', 'booked', 'off'
 }
 
+/// One day in the booking strip.
 class WeekDay {
-  const WeekDay(this.label, this.date);
-  final String label;
-  final int date;
+  const WeekDay(this.day);
+  final DateTime day;
+
+  static const _labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  String get label => _labels[day.weekday - 1];
+  int get date => day.day;
 }
+
+/// A session time the patient asked for, waiting for the psychologist.
+class SessionRequest {
+  const SessionRequest({required this.day, required this.time, required this.requestedAt, this.isReschedule = false});
+  final DateTime day;
+  final String time; // e.g. "5:00 PM"
+  final DateTime requestedAt;
+  final bool isReschedule;
+}
+
 /// The patient's next booked session, as supplied by the backend.
 class UpcomingSession {
   const UpcomingSession({required this.startsAt, required this.therapistName, required this.mode});

@@ -3,12 +3,15 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 
 class WaterCard extends StatelessWidget {
-  const WaterCard({super.key, required this.filled, required this.total});
-  final int filled;
-  final int total;
+  const WaterCard({super.key, required this.filled, required this.goal});
+
+  /// Glasses today and the daily goal; null until known.
+  final int? filled;
+  final int? goal;
 
   @override
   Widget build(BuildContext context) {
+    final known = filled != null && goal != null && goal! > 0;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
@@ -28,23 +31,25 @@ class WaterCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: List.generate(total, (i) {
-              final isFilled = i < filled;
-              return Container(
-                width: 20,
-                height: 26,
-                decoration: BoxDecoration(
-                  color: isFilled ? AppColors.progressActive : AppColors.background,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-              );
-            }),
-          ),
+          if (known)
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: List.generate(goal!, (i) {
+                return Container(
+                  width: 20,
+                  height: 26,
+                  decoration: BoxDecoration(
+                    color: i < filled! ? AppColors.progressActive : AppColors.background,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                );
+              }),
+            )
+          else
+            Text('—', style: AppTextStyles.heading(size: 24).copyWith(color: AppColors.textLabel)),
           const SizedBox(height: 10),
-          Text('$filled / $total glasses', style: AppTextStyles.body(size: 12)),
+          Text(known ? '$filled / $goal glasses' : 'Nothing logged yet', style: AppTextStyles.body(size: 12)),
         ],
       ),
     );

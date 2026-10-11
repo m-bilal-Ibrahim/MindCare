@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/utils/date_labels.dart';
 import '../../main.dart';
 import '../../providers/therapy_provider.dart';
 import '../../widgets/care/day_chip.dart';
@@ -47,9 +49,8 @@ class ScheduleScreen extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const MobileFrame(child: YourProgramScreen())),
-                      ),
+                      onPressed: () =>
+                          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const MobileFrame(child: YourProgramScreen()))),
                       icon: const Icon(Icons.more_horiz, color: AppColors.textDark),
                     ),
                   ],
@@ -60,7 +61,10 @@ class ScheduleScreen extends StatelessWidget {
                     CircleAvatar(
                       radius: 24,
                       backgroundColor: therapist.avatarColor,
-                      child: Text(therapist.initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                      child: Text(
+                        therapist.initials,
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -70,7 +74,9 @@ class ScheduleScreen extends StatelessWidget {
                           Text("${therapist.name.replaceFirst('Dr. ', '')}'s week", style: AppTextStyles.heading(size: 22)),
                           const SizedBox(height: 2),
                           Text(
-                            "You're on the monthly plan · ${provider.sessionsUsed} of ${provider.sessionsTotal} sessions used",
+                            provider.sessionsUsed != null && provider.sessionsTotal != null
+                                ? "You're on the monthly plan · ${provider.sessionsUsed} of ${provider.sessionsTotal} sessions used"
+                                : 'Pick a time that works for you.',
                             style: AppTextStyles.body(size: 12),
                           ),
                         ],
@@ -79,7 +85,31 @@ class ScheduleScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 20),
-                if (provider.nextConfirmedCancelled)
+                if (provider.upcomingSession == null && !provider.nextConfirmedCancelled)
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.event_available_outlined, color: AppColors.textMuted),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'No session booked yet',
+                                style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.textDark),
+                              ),
+                              const SizedBox(height: 2),
+                              Text('Request a time below. It shows here once it is confirmed.', style: AppTextStyles.body(size: 12)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (provider.nextConfirmedCancelled)
                   Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
@@ -91,7 +121,10 @@ class ScheduleScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('No confirmed session', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                              const Text(
+                                'No confirmed session',
+                                style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.textDark),
+                              ),
                               const SizedBox(height: 2),
                               Text('Your last session was cancelled. Request a new time below.', style: AppTextStyles.body(size: 12)),
                             ],
@@ -116,16 +149,19 @@ class ScheduleScreen extends StatelessWidget {
                                 children: [
                                   Text('NEXT CONFIRMED', style: AppTextStyles.label()),
                                   const SizedBox(height: 6),
-                                  Text(provider.nextConfirmedLabel, style: AppTextStyles.heading(size: 22)),
+                                  Text(provider.nextConfirmedLabel ?? '', style: AppTextStyles.heading(size: 22)),
                                 ],
                               ),
                             ),
                             ElevatedButton.icon(
-                              onPressed: () => Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => const MobileFrame(child: InSessionScreen())),
-                              ),
+                              onPressed: () =>
+                                  Navigator.of(context)
+                                      .push(MaterialPageRoute(builder: (_) => const MobileFrame(child: InSessionScreen()))),
                               icon: const Icon(Icons.videocam_outlined, size: 16, color: Colors.white),
-                              label: const Text('Join Meet', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
+                              label: const Text(
+                                'Join Meet',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+                              ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.progressActive,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -135,37 +171,46 @@ class ScheduleScreen extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Text('50 min · Meet link sent to both', style: AppTextStyles.body(size: 12)),
+                        Text(
+                          '${provider.upcomingSession?.mode ?? 'Session'} · ${provider.upcomingSession?.therapistName ?? therapist.name}',
+                          style: AppTextStyles.body(size: 12),
+                        ),
                         const SizedBox(height: 16),
                         Row(
                           children: [
                             Expanded(
                               child: OutlinedButton(
-                                onPressed: () => Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (_) => const MobileFrame(child: RescheduleScreen())),
-                                ),
+                                onPressed: () =>
+                                    Navigator.of(context)
+                                        .push(MaterialPageRoute(builder: (_) => const MobileFrame(child: RescheduleScreen()))),
                                 style: OutlinedButton.styleFrom(
                                   backgroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                                   side: BorderSide.none,
                                   padding: const EdgeInsets.symmetric(vertical: 14),
                                 ),
-                                child: const Text('Reschedule', style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w600, fontSize: 13)),
+                                child: const Text(
+                                  'Reschedule',
+                                  style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w600, fontSize: 13),
+                                ),
                               ),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
                               child: OutlinedButton(
-                                onPressed: () => Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (_) => const MobileFrame(child: CancelSessionScreen())),
-                                ),
+                                onPressed: () =>
+                                    Navigator.of(context)
+                                        .push(MaterialPageRoute(builder: (_) => const MobileFrame(child: CancelSessionScreen()))),
                                 style: OutlinedButton.styleFrom(
                                   backgroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                                   side: BorderSide.none,
                                   padding: const EdgeInsets.symmetric(vertical: 14),
                                 ),
-                                child: const Text('Cancel · with note', style: TextStyle(color: AppColors.sos, fontWeight: FontWeight.w600, fontSize: 13)),
+                                child: const Text(
+                                  'Cancel · with note',
+                                  style: TextStyle(color: AppColors.sos, fontWeight: FontWeight.w600, fontSize: 13),
+                                ),
                               ),
                             ),
                           ],
@@ -173,36 +218,47 @@ class ScheduleScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                const SizedBox(height: 14),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(color: const Color(0xFFF0DEB9), borderRadius: BorderRadius.circular(10)),
-                        child: const Icon(Icons.schedule, size: 17, color: AppColors.textDark),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Tue 3:30 PM · awaiting confirmation', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.textDark)),
-                            const SizedBox(height: 4),
-                            Text('Requested 2 hours ago · ${therapist.name} usually replies the same day.', style: AppTextStyles.body(size: 12)),
-                          ],
+                for (final request in provider.pendingRequests) ...[
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(color: const Color(0xFFF0DEB9), borderRadius: BorderRadius.circular(10)),
+                          child: const Icon(Icons.schedule, size: 17, color: AppColors.textDark),
                         ),
-                      ),
-                      const Text('pending', style: TextStyle(color: AppColors.amberSegment, fontWeight: FontWeight.w600, fontSize: 12)),
-                    ],
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${DateLabels.weekdayShort(request.day)} ${request.time} · awaiting confirmation',
+                                style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.textDark),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${request.isReschedule ? 'Reschedule requested' : 'Requested'} ${DateLabels.ago(request.requestedAt)}',
+                                style: AppTextStyles.body(size: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Text(
+                          'pending',
+                          style: TextStyle(color: AppColors.amberSegment, fontWeight: FontWeight.w600, fontSize: 12),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                ],
                 const SizedBox(height: 22),
-                Text('REQUEST ANOTHER · MAY', style: AppTextStyles.label()),
+                Text('REQUEST A TIME · ${DateLabels.monthShort(selectedDay.day).toUpperCase()}', style: AppTextStyles.label()),
                 const SizedBox(height: 12),
                 SizedBox(
                   height: 74,
@@ -237,21 +293,31 @@ class ScheduleScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                GridView.count(
-                  crossAxisCount: 2,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  mainAxisSpacing: 10,
-                  crossAxisSpacing: 10,
-                  childAspectRatio: 2.6,
-                  children: provider.availabilityForSelectedDay.map((slot) {
-                    return SlotTile(
-                      slot: slot,
-                      selected: provider.selectedSlotTime == slot.time,
-                      onTap: () => context.read<TherapyProvider>().selectSlot(slot.time, slot.status),
-                    );
-                  }).toList(),
-                ),
+                if (provider.availabilityForSelectedDay.isEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(color: AppColors.cardBackground, borderRadius: BorderRadius.circular(18)),
+                    child: Text(
+                      "No open times shown for this day. ${therapist.name}'s availability appears here once they publish it.",
+                      style: AppTextStyles.body(size: 13),
+                    ),
+                  )
+                else
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                    childAspectRatio: 2.6,
+                    children: provider.availabilityForSelectedDay.map((slot) {
+                      return SlotTile(
+                        slot: slot,
+                        selected: provider.selectedSlotTime == slot.time,
+                        onTap: () => context.read<TherapyProvider>().selectSlot(slot.time, slot.status),
+                      );
+                    }).toList(),
+                  ),
               ],
             ),
             if (provider.selectedSlotTime != null)
@@ -272,11 +338,16 @@ class ScheduleScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Requesting · ${selectedDay.label}, May ${selectedDay.date} · ${provider.selectedSlotTime}',
+                              'Requesting · ${selectedDay.label}, ${DateLabels.monthShort(selectedDay.day)} ${selectedDay.date} · ${provider.selectedSlotTime}',
                               style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark, fontSize: 13),
                             ),
-                            const SizedBox(height: 2),
-                            Text('Counts as session ${provider.sessionsUsed + 1} of ${provider.sessionsTotal}', style: AppTextStyles.body(size: 12)),
+                            if (provider.sessionsUsed != null && provider.sessionsTotal != null) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                'Counts as session ${provider.sessionsUsed! + 1} of ${provider.sessionsTotal}',
+                                style: AppTextStyles.body(size: 12),
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -288,7 +359,10 @@ class ScheduleScreen extends StatelessWidget {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
                         ),
-                        child: const Text('Send request', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                        child: const Text(
+                          'Send request',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                        ),
                       ),
                       const SizedBox(width: 8),
                       const SosButton(),

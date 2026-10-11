@@ -36,8 +36,30 @@ class PastSessionsScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text('Your sessions & notes.', style: AppTextStyles.heading(size: 26)),
             const SizedBox(height: 6),
-            Text('${provider.pastSessions.length} sessions on record.', style: AppTextStyles.body()),
+            Text(
+              provider.pastSessions.isEmpty
+                  ? 'No sessions on record yet.'
+                  : '${provider.pastSessions.length} ${provider.pastSessions.length == 1 ? 'session' : 'sessions'} on record.',
+              style: AppTextStyles.body(),
+            ),
             const SizedBox(height: 20),
+            if (provider.pastSessions.isEmpty)
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(color: AppColors.cardBackground, borderRadius: BorderRadius.circular(18)),
+                child: Row(
+                  children: [
+                    const Icon(Icons.history, size: 20, color: AppColors.textMuted),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'After each session, its date and any notes your therapist shares will appear here.',
+                        style: AppTextStyles.body(size: 13),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ...provider.pastSessions.map((session) {
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),

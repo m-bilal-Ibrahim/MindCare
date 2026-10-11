@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class CircleTag {
-  const CircleTag({required this.name, required this.memberCount, required this.gradientColors});
+  const CircleTag({required this.name, this.memberCount, required this.gradientColors});
   final String name;
-  final String memberCount;
+  final String? memberCount; // e.g. "1.2k", from the backend
   final List<Color> gradientColors;
 }
 

@@ -40,20 +40,21 @@ class RewardsScreen extends StatelessWidget {
                         style: TextStyle(letterSpacing: 1, color: AppColors.textLabel, fontWeight: FontWeight.w600, fontSize: 12),
                       ),
                     ),
-                    IconButton(
-                      onPressed: () => ShareService.instance.shareText(
-                        "I'm on a ${provider.checkinStreak}-day check-in streak on MindCare — Level ${provider.levelNumber} · ${provider.levelName}!",
-                        subject: 'My MindCare progress',
-                      ),
-                      icon: const Icon(Icons.ios_share, size: 18, color: AppColors.textDark),
-                    ),
+                    if (provider.checkinStreak > 0)
+                      IconButton(
+                        onPressed: () => ShareService.instance.shareText(
+                          "I'm on a ${provider.checkinStreak}-day check-in streak on MindCare, level ${provider.levelNumber}!",
+                          subject: 'My MindCare progress',
+                        ),
+                        icon: const Icon(Icons.ios_share, size: 18, color: AppColors.textDark),
+                      )
+                    else
+                      const SizedBox(width: 48),
                   ],
                 ),
                 const SizedBox(height: 8),
                 LevelProgressCard(
                   levelNumber: provider.levelNumber,
-                  levelName: provider.levelName,
-                  nextLevelName: provider.nextLevelName,
                   currentPoints: provider.currentPoints,
                   nextLevelPoints: provider.nextLevelPoints,
                 ),
@@ -96,20 +97,8 @@ class RewardsScreen extends StatelessWidget {
                 const SizedBox(height: 22),
                 Text('EARN TODAY', style: AppTextStyles.label()),
                 const SizedBox(height: 12),
-                ...List.generate(provider.earnTasks.length, (index) {
-                  final task = provider.earnTasks[index];
-                  return GestureDetector(
-                    onTap: task.done
-                        ? null
-                        : () {
-                            context.read<AccountProvider>().completeEarnTask(index);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('+${task.points} points · ${task.title} done!')),
-                            );
-                          },
-                    child: EarnTodayTile(task: task),
-                  );
-                }),
+                // Ticked off automatically when the activity really happens.
+                ...provider.earnTasks.map((task) => EarnTodayTile(task: task)),
               ],
             ),
             const Positioned(right: 0, bottom: 24, child: SosButton()),

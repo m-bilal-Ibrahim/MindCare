@@ -179,29 +179,26 @@ class BrowseTherapistsScreen extends StatelessWidget {
                     },
                   ),
                 ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(color: AppColors.infoBoxBackground, borderRadius: BorderRadius.circular(18)),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.auto_awesome, size: 18, color: AppColors.infoBoxText),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text("Aida's matches for you", style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.infoBoxText)),
-                            const SizedBox(height: 2),
-                            Text('Based on your intake — Anxiety, Burnout, Sleep', style: TextStyle(fontSize: 12, color: AppColors.infoBoxText)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
                 const SizedBox(height: 18),
-                if (provider.filteredTherapists.isEmpty)
+                if (provider.therapists.isEmpty)
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+                    decoration: BoxDecoration(color: AppColors.cardBackground, borderRadius: BorderRadius.circular(22)),
+                    child: Column(
+                      children: [
+                        const Icon(Icons.person_search_outlined, size: 32, color: AppColors.textMuted),
+                        const SizedBox(height: 12),
+                        Text('No psychologists listed yet', style: AppTextStyles.heading(size: 20)),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Verified psychologists will appear here as they join MindCare.',
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.body(size: 13),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (provider.filteredTherapists.isEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 40),
                     child: Column(

@@ -5,12 +5,19 @@ import '../models/hospital_data.dart';
 
 class CommunityProvider extends ChangeNotifier {
   // ----- Circles feed -----
-  final List<CircleTag> circleTags = const [
-    CircleTag(name: 'Anxiety', memberCount: '1.2k', gradientColors: [Color(0xFFD98B7A), Color(0xFFB85E4E)]),
-    CircleTag(name: 'New parents', memberCount: '480', gradientColors: [Color(0xFFCBB36B), Color(0xFFA88E45)]),
-    CircleTag(name: 'Sober walk', memberCount: '230', gradientColors: [Color(0xFF3FA79A), Color(0xFF1F6E63)]),
-    CircleTag(name: 'After loss', memberCount: '75', gradientColors: [Color(0xFF8B90D9), Color(0xFF5C61B0)]),
+  // The circle topics are part of the app's design; member counts and
+  // posts come from the backend, so they start empty.
+  List<CircleTag> circleTags = const [
+    CircleTag(name: 'Anxiety', gradientColors: [Color(0xFFD98B7A), Color(0xFFB85E4E)]),
+    CircleTag(name: 'New parents', gradientColors: [Color(0xFFCBB36B), Color(0xFFA88E45)]),
+    CircleTag(name: 'Sober walk', gradientColors: [Color(0xFF3FA79A), Color(0xFF1F6E63)]),
+    CircleTag(name: 'After loss', gradientColors: [Color(0xFF8B90D9), Color(0xFF5C61B0)]),
   ];
+
+  void setCircleTags(List<CircleTag> tags) {
+    circleTags = tags;
+    notifyListeners();
+  }
 
   static const List<String> feedFilters = ['Today', 'Anxiety', 'Wins'];
   String selectedFeedFilter = 'Today';
@@ -20,45 +27,12 @@ class CommunityProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<CommunityPost> _posts = [
-    const CommunityPost(
-      id: 'p1',
-      authorName: 'Anonymous',
-      handle: '@warm-thistle',
-      avatarColor: Color(0xFF6FBE3E),
-      circleName: 'Anxiety',
-      timeAgo: '2h',
-      content: 'Made it through the meeting without spiraling. Sat with the racing heart instead of fighting it. Tiny win, but I\'ll take it.',
-      hearts: 47,
-      hugs: 22,
-      comments: 8,
-      isAnonymous: true,
-    ),
-    const CommunityPost(
-      id: 'p2',
-      authorName: 'Ammar S.',
-      handle: '@ammar.s',
-      avatarColor: Color(0xFF2497D9),
-      circleName: 'Sober walk',
-      timeAgo: '5h',
-      content: 'Day 90. The walks really do help. If anyone in Islamabad wants company tomorrow morning, drop a 🌿.',
-      hearts: 63,
-      hugs: 19,
-      comments: 14,
-    ),
-    const CommunityPost(
-      id: 'p3',
-      authorName: 'Sana K.',
-      handle: '@sana.k',
-      avatarColor: Color(0xFFCBB36B),
-      circleName: 'New parents',
-      timeAgo: '8h',
-      content: "3 AM feed, and for once I wasn't dreading it. Small thing, but I noticed it.",
-      hearts: 31,
-      hugs: 12,
-      comments: 4,
-    ),
-  ];
+  List<CommunityPost> _posts = const [];
+
+  void setPosts(List<CommunityPost> posts) {
+    _posts = posts;
+    notifyListeners();
+  }
 
   final Set<String> _hiddenPostIds = {};
   final Set<String> _blockedHandles = {};
@@ -115,7 +89,7 @@ class CommunityProvider extends ChangeNotifier {
 
   // ----- Peer talk request -----
   static const List<String> feelingOptions = ['Lonely', 'Anxious', 'Low', 'Overwhelmed'];
-  String? selectedFeeling = 'Anxious';
+  String? selectedFeeling;
 
   void selectFeeling(String feeling) {
     selectedFeeling = feeling;
@@ -125,7 +99,7 @@ class CommunityProvider extends ChangeNotifier {
   static const List<String> topicOptions = [
     'Anxiety', 'Loneliness', 'Family', 'Work', 'Relationship', 'Grief', 'Faith', 'Other',
   ];
-  Set<String> selectedTopics = {'Anxiety'};
+  Set<String> selectedTopics = {};
 
   void toggleTopic(String topic) {
     if (selectedTopics.contains(topic)) {
@@ -136,7 +110,7 @@ class CommunityProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  String noteText = "Just had a rough morning. Don't need advice, just a kind voice for a few minutes.";
+  String noteText = '';
   void setNoteText(String text) => noteText = text;
 
   bool postingRequest = false;
@@ -144,7 +118,8 @@ class CommunityProvider extends ChangeNotifier {
   Future<void> postPeerTalkRequest() async {
     postingRequest = true;
     notifyListeners();
-    await Future.delayed(const Duration(milliseconds: 900));
+    // The backend request that matches a peer listener goes here.
+    await Future.delayed(const Duration(milliseconds: 300));
     postingRequest = false;
     notifyListeners();
   }
@@ -161,25 +136,27 @@ class CommunityProvider extends ChangeNotifier {
       icon: Icons.auto_awesome,
       iconBackground: AppColors.primaryDark,
       title: 'Talk to Aida, with crisis mode',
-      subtitle: 'Slow conversation. She can stay as long as you need.',
+      subtitle: 'A slow, gentle conversation while you wait for help.',
     ),
     SosResource(
       icon: Icons.groups,
       iconBackground: Color(0xFF4A7A67),
       title: 'Notify your circle',
-      subtitle: "Ammi, Hira, Zoya · they'll get a gentle ping.",
+      subtitle: 'People you trust get a gentle ping.',
     ),
     SosResource(
       icon: Icons.local_hospital,
       iconBackground: AppColors.textDark,
       title: 'Nearby hospitals',
-      subtitle: '3 within 5 km · Shifa, Quaid-e-Azam, KRL',
+      subtitle: 'Hospitals near you, closest first.',
     ),
   ];
 
-   final List<Hospital> nearbyHospitals = const [
-    Hospital(name: 'Shifa International Hospital', address: 'Pitras Bukhari Rd, H-8/4, Islamabad', distanceKm: 1.8, isOpen24h: true, phoneNumber: '+925184444'),
-    Hospital(name: 'Quaid-e-Azam International Hospital', address: 'Rawal Rd, Chak Shahzad, Islamabad', distanceKm: 3.2, isOpen24h: true, phoneNumber: '+92519106666'),
-    Hospital(name: 'KRL Hospital', address: 'G-9/4, Islamabad', distanceKm: 4.5, isOpen24h: false, phoneNumber: '+925191051190'),
-  ];
+  /// Hospitals near the patient's location, closest first, from the backend.
+  List<Hospital> nearbyHospitals = const [];
+
+  void setNearbyHospitals(List<Hospital> hospitals) {
+    nearbyHospitals = hospitals;
+    notifyListeners();
+  }
 }

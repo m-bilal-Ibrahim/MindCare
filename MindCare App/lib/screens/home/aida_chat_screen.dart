@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/services/voice_input_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/utils/date_labels.dart';
 import '../../models/checkin_data.dart';
 import '../../providers/checkin_provider.dart';
 import '../../widgets/chat/breathing_prompt_card.dart';
@@ -110,7 +111,6 @@ class _AidaChatScreenState extends State<AidaChatScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<CheckinProvider>();
     final firstName = context.watch<UserSessionProvider>().firstName;
-    provider.personalizeGreeting(firstName);
     _scrollToBottom();
 
     return Scaffold(
@@ -141,9 +141,16 @@ class _AidaChatScreenState extends State<AidaChatScreen> {
                         Text('Aida', style: AppTextStyles.heading(size: 18)),
                         Row(
                           children: [
-                            Container(width: 6, height: 6, decoration: const BoxDecoration(color: AppColors.progressActive, shape: BoxShape.circle)),
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: provider.aidaConnected ? AppColors.progressActive : AppColors.textLabel,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
                             const SizedBox(width: 4),
-                            Text('always here', style: AppTextStyles.body(size: 11)),
+                            Text(provider.aidaConnected ? 'always here' : 'getting ready', style: AppTextStyles.body(size: 11)),
                           ],
                         ),
                       ],
@@ -166,14 +173,20 @@ class _AidaChatScreenState extends State<AidaChatScreen> {
                 controller: _scrollController,
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                 children: [
-                  Center(
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                      decoration: BoxDecoration(color: AppColors.cardBackground, borderRadius: BorderRadius.circular(20)),
-                      child: Text('Today · 7:42 AM', style: AppTextStyles.body(size: 11)),
+                  if (provider.messages.isEmpty)
+                    _AidaIntro(firstName: firstName, connected: provider.aidaConnected)
+                  else
+                    Center(
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(color: AppColors.cardBackground, borderRadius: BorderRadius.circular(20)),
+                        child: Text(
+                          '${DateLabels.day(provider.messages.first.timestamp)} · ${DateLabels.time(provider.messages.first.timestamp)}',
+                          style: AppTextStyles.body(size: 11),
+                        ),
+                      ),
                     ),
-                  ),
                   ...provider.messages.map((message) {
                     if (message.exercise != null) {
                       return BreathingPromptCard(
@@ -254,6 +267,39 @@ class _AidaChatScreenState extends State<AidaChatScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+/// Shown before the first message.
+class _AidaIntro extends StatelessWidget {
+  const _AidaIntro({required this.firstName, required this.connected});
+  final String firstName;
+  final bool connected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 24, 8, 16),
+      child: Column(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: const BoxDecoration(color: AppColors.infoBoxBackground, shape: BoxShape.circle),
+            child: const Icon(Icons.auto_awesome, color: AppColors.infoBoxText, size: 28),
+          ),
+          const SizedBox(height: 16),
+          Text('Hi $firstName, I\'m Aida.', textAlign: TextAlign.center, style: AppTextStyles.heading(size: 22)),
+          const SizedBox(height: 8),
+          Text(
+            connected
+                ? "Tell me what's on your mind. I'll listen, and help you find a small next step."
+                : "I'm still being set up, so I can't chat yet. Your therapist and SOS are always available.",
+            textAlign: TextAlign.center,
+            style: AppTextStyles.body(size: 14),
+          ),
+        ],
       ),
     );
   }

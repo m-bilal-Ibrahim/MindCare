@@ -3,14 +3,17 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 
 class MealsCard extends StatelessWidget {
-  const MealsCard({super.key, required this.mealsDone, required this.dinnerTime});
-  final List<bool> mealsDone;
-  final String dinnerTime;
+  const MealsCard({super.key, required this.mealsDone, this.note});
+
+  /// Breakfast, lunch, snack, dinner; null when nothing is logged today.
+  final List<bool>? mealsDone;
+  final String? note;
 
   static const _labels = ['B', 'L', 'S', 'D'];
 
   @override
   Widget build(BuildContext context) {
+    final meals = mealsDone;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
@@ -32,7 +35,7 @@ class MealsCard extends StatelessWidget {
           const SizedBox(height: 14),
           Row(
             children: List.generate(_labels.length, (i) {
-              final done = mealsDone[i];
+              final done = meals != null && i < meals.length && meals[i];
               return Expanded(
                 child: Padding(
                   padding: EdgeInsets.only(right: i == _labels.length - 1 ? 0 : 6),
@@ -55,7 +58,10 @@ class MealsCard extends StatelessWidget {
             }),
           ),
           const SizedBox(height: 10),
-          Text(dinnerTime, style: AppTextStyles.body(size: 12)),
+          Text(
+            meals == null ? 'Nothing logged yet' : (note ?? '${meals.where((m) => m).length} of 4 logged'),
+            style: AppTextStyles.body(size: 12),
+          ),
         ],
       ),
     );

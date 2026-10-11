@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_text_styles.dart';
+
 
 class BalanceCard extends StatelessWidget {
   const BalanceCard({
@@ -11,8 +11,8 @@ class BalanceCard extends StatelessWidget {
     required this.onHistory,
   });
 
-  final int balance;
-  final String note;
+  final int? balance; // null until payments are connected
+  final String? note;
   final VoidCallback onTopUp;
   final VoidCallback onWithdraw;
   final VoidCallback onHistory;
@@ -46,11 +46,11 @@ class BalanceCard extends StatelessWidget {
             textBaseline: TextBaseline.alphabetic,
             children: [
               const Text('Rs ', style: TextStyle(color: Colors.white70, fontSize: 20)),
-              Text(_formatAmount(balance), style: const TextStyle(color: Colors.white, fontSize: 40, fontFamily: 'serif')),
+              Text(balance == null ? '—' : _formatAmount(balance!), style: const TextStyle(color: Colors.white, fontSize: 40, fontFamily: 'serif')),
             ],
           ),
           const SizedBox(height: 4),
-          Text(note, style: const TextStyle(color: Colors.white54, fontSize: 13)),
+          Text(note ?? (balance == null ? 'Wallet opens once payments are connected' : ''), style: const TextStyle(color: Colors.white54, fontSize: 13)),
           const SizedBox(height: 20),
           Row(
             children: [
@@ -79,7 +79,7 @@ class _ActionButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(color: Colors.white.withOpacity(0.12), borderRadius: BorderRadius.circular(14)),
+        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(14)),
         child: Column(
           children: [
             Icon(icon, color: Colors.white, size: 16),

@@ -7,7 +7,7 @@ class ProfileHeader extends StatelessWidget {
     super.key,
     required this.name,
     this.initials,
-    required this.joinedInfo,
+    this.joinedInfo,
     required this.levelBadge,
     required this.streak,
     required this.sessions,
@@ -16,7 +16,7 @@ class ProfileHeader extends StatelessWidget {
 
   final String name;
   final String? initials;
-  final String joinedInfo;
+  final String? joinedInfo;
   final String levelBadge;
   final int streak;
   final int sessions;
@@ -40,7 +40,7 @@ class ProfileHeader extends StatelessWidget {
                 children: [
                   Text(name, style: AppTextStyles.heading(size: 24)),
                   const SizedBox(height: 4),
-                  Text(joinedInfo, style: AppTextStyles.body(size: 13)),
+                  if (joinedInfo != null) Text(joinedInfo!, style: AppTextStyles.body(size: 13)),
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),

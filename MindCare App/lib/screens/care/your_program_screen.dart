@@ -4,6 +4,8 @@ import '../../core/services/share_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../main.dart';
+import '../../models/account_data.dart';
+import '../../providers/account_provider.dart';
 import '../../providers/program_provider.dart';
 import '../../widgets/care/program_task_tile.dart';
 import '../../widgets/common/sos_button.dart';
@@ -68,6 +70,7 @@ class YourProgramScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ProgramProvider>();
+    final therapist = context.watch<AccountProvider>().therapistProfile;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -121,15 +124,29 @@ class YourProgramScreen extends StatelessWidget {
                   decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
                   child: Row(
                     children: [
-                      const CircleAvatar(radius: 24, backgroundColor: AppColors.moodStressed, child: Text('TM', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor: therapist == null ? AppColors.chipUnselected : AppColors.progressActive,
+                        child: therapist == null
+                            ? const Icon(Icons.person_outline, color: AppColors.primaryDark)
+                            : Text(therapist.initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                      ),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Set by Dr. Tariq', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                            Text(
+                              therapist == null ? 'No plan yet' : 'Set by ${therapist.name}',
+                              style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.textDark),
+                            ),
                             const SizedBox(height: 2),
-                            Text("Updated 3 days ago · next review on Friday's session", style: AppTextStyles.body(size: 12)),
+                            Text(
+                              therapist == null
+                                  ? 'Your therapist builds your weekly plan after your first session.'
+                                  : 'Your therapist reviews it with you in sessions.',
+                              style: AppTextStyles.body(size: 12),
+                            ),
                           ],
                         ),
                       ),
@@ -153,10 +170,23 @@ class YourProgramScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('THIS WEEK', style: AppTextStyles.label()),
-                    Text('${provider.totalDone} of ${provider.totalTasks} done', style: AppTextStyles.body(size: 13)),
+                    if (provider.weeklyTasks.isNotEmpty)
+                      Text('${provider.totalDone} of ${provider.totalTasks} done', style: AppTextStyles.body(size: 13)),
                   ],
                 ),
                 const SizedBox(height: 12),
+                if (provider.weeklyTasks.isEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(color: AppColors.cardBackground, borderRadius: BorderRadius.circular(18)),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.event_note_outlined, size: 20, color: AppColors.textMuted),
+                        const SizedBox(width: 12),
+                        Expanded(child: Text('No tasks this week yet.', style: AppTextStyles.body(size: 13))),
+                      ],
+                    ),
+                  ),
                 ...provider.weeklyTasks.map((task) => ProgramTaskTile(task: task)),
                 const SizedBox(height: 8),
                 GestureDetector(
@@ -171,9 +201,9 @@ class YourProgramScreen extends StatelessWidget {
                         child: RichText(
                           text: TextSpan(
                             style: AppTextStyles.body(size: 12),
-                            children: const [
-                              TextSpan(text: 'Only Dr. Tariq can change your program. '),
-                              TextSpan(text: 'Request a change →', style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w600)),
+                            children: [
+                              TextSpan(text: 'Only ${therapist?.name ?? 'your therapist'} can change your program. '),
+                              const TextSpan(text: 'Request a change →', style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w600)),
                             ],
                           ),
                         ),
