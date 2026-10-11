@@ -15,7 +15,7 @@ class FeelingCheckinScreen extends StatelessWidget {
 
   static const List<MoodOption> _moods = [
     MoodOption('Calm', AppColors.moodCalm),
-    MoodOption('Content', AppColors.moodContent),
+    MoodOption('Happy', AppColors.moodContent),
     MoodOption('Stressed', AppColors.moodStressed),
     MoodOption('Anxious', AppColors.moodAnxious),
     MoodOption('Low', AppColors.moodLow),
