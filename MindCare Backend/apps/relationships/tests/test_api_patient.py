@@ -41,6 +41,7 @@ EXPECTED_CARD_KEYS = {
     "timezone",
     "is_accepting_patients",
     "last_active",
+    "photo_url",
 }
 
 

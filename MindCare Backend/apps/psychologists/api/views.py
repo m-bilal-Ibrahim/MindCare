@@ -9,6 +9,7 @@ from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
+from rest_framework.parsers import MultiPartParser
 from rest_framework.views import APIView
 
 from apps.psychologists import selectors, services
@@ -22,6 +23,7 @@ from apps.psychologists.api.serializers import (
 from apps.relationships import services as relationship_services
 from core.exceptions import DomainValidationError
 from core.pagination import StandardPagination
+from core.serializers import PhotoUploadSerializer
 from core.permissions import IsApprovedPsychologist, IsPatient, IsPsychologist
 
 
@@ -126,3 +128,40 @@ class AvailabilityView(APIView):
         except DomainValidationError as exc:
             raise ValidationError(exc.errors, code=exc.code) from exc
         return Response(self._payload(profile))
+
+
+class UploadRateThrottle(UserRateThrottle):
+    scope = "uploads"
+
+
+class MyPsychologistPhotoView(MyPsychologistProfileView):
+    """PUT the photo patients see in the directory (multipart, field `photo`),
+    or DELETE it. Pending psychologists may set it too, like /me/."""
+
+    http_method_names = ["put", "delete", "options"]
+    parser_classes = [MultiPartParser]
+
+    def get_throttles(self):
+        return [UploadRateThrottle()] if self.request.method == "PUT" else []
+
+    @extend_schema(
+        request={"multipart/form-data": PhotoUploadSerializer},
+        responses={200: PsychologistProfileOwnerSerializer},
+        description=(
+            "JPG, PNG or WEBP, max 5 MB. Re-encoded on the server (EXIF removed) "
+            "and shrunk to at most 1024 px."
+        ),
+    )
+    def put(self, request):
+        profile = self._profile(request)
+        body = PhotoUploadSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        profile = services.set_psychologist_photo(
+            profile=profile, checked=body.validated_data["photo"]
+        )
+        return Response(PsychologistProfileOwnerSerializer(profile).data)
+
+    @extend_schema(request=None, responses={200: PsychologistProfileOwnerSerializer})
+    def delete(self, request):
+        profile = services.remove_psychologist_photo(profile=self._profile(request))
+        return Response(PsychologistProfileOwnerSerializer(profile).data)

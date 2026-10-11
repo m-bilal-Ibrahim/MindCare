@@ -19,9 +19,9 @@ Last updated: 2026-10-10 (input-validation-hardening, backend part). Re-checked 
 
 | Bullet | Backend | Web | App | Notes |
 |---|---|---|---|---|
-| Register with name, age, gender, contact details; optional mental health history | partial | — | partial (branch `mobile/patient-signup-api`) | Register takes name, email, password, 18+ declaration, timezone. DOB, gender and phone are set later through `PATCH /patients/me/`. No mental health history (decisions.md: no health data before the PHI audit trail) |
-| Profile photo upload; view and edit profile any time | partial | — | mock only | `GET/PATCH /patients/me/` done; no photo (needs file storage) |
-| Choose which information is public and which is private | partial | — | mock only | One `is_profile_public` flag (decisions.md 2026-09-26), not per-field |
+| Register with name, age, gender, contact details; optional mental health history | done (PR 6.1) | — | partial (branch `mobile/patient-signup-api`) | Quick signup unchanged (Q13); `profile_completion.missing` drives a skippable 'complete your profile' step (DOB, gender, phone, history). Encrypted, audited history at `/patients/me/history/`. App screens wait for the partner's branches |
+| Profile photo upload; view and edit profile any time | done (PR 6.1) | — | mock only | `PUT/DELETE /patients/me/photo/` (EXIF removed, 1024 px, signed URLs); psychologists too (directory) |
+| Choose which information is public and which is private | done (PR 6.1) | — | mock only | One switch covering name and photo (Q14); `privacy` lists what it reveals and what is always private |
 
 ## 6.2 Psychologist Onboarding
 

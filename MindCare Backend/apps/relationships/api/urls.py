@@ -11,6 +11,7 @@ from apps.relationships.api.views import (
     HistoryView,
     InboxView,
     PatientDetailView,
+    PatientHistoryView,
     PatientEndView,
     PatientListView,
     RecentPsychologistsView,
@@ -40,5 +41,10 @@ urlpatterns = [
     path("patients/", PatientListView.as_view(), name="patients"),
     path("patients/<int:pk>/", PatientDetailView.as_view(), name="patient-detail"),
     path("patients/<int:pk>/end/", PatientEndView.as_view(), name="patient-end"),
+    path(
+        "patients/<int:pk>/history/",
+        PatientHistoryView.as_view(),
+        name="patient-history",
+    ),
     path("history/", HistoryView.as_view(), name="history"),
 ]

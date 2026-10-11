@@ -160,7 +160,12 @@ as GPS location. Audio types: MP3, M4A, OGG. Documents: PDF.
 | `gender` | patient/psychologist profile | Gender | Choice | no | |
 | `phone_number` | patient profile | Phone number | Phone | no | |
 | `preferred_language` | patient profile | Preferred language | Choice | no | |
-| `is_profile_public` | patient profile | — | Choice (true/false) | no | |
+| `is_profile_public` | patient profile | — | Choice (true/false) | no | covers the real name and the photo |
+| `photo` | patient / psychologist `me/photo/` (multipart) | Photo | File: JPG, PNG, WEBP; 5 MB; shrunk to 1024 px | yes (on PUT) | missing → `Choose a photo to upload.` |
+| history `concerns` | patient `me/history/` | — | Choice (active specialization slugs), any number | no | |
+| history `previous_diagnosis`, `current_medication` | patient `me/history/` | — | Choice (`yes`, `no`, `prefer_not_to_say`) | no | |
+| history `previous_therapy` | patient `me/history/` | — | Choice (`yes`, `no`) | no | |
+| history `notes` | patient `me/history/` | Notes | Free text 10–1000 | no | |
 | `license_number` | psychologist register | License number | Identifier | yes | unique per issuing country; locked after registration |
 | `license_issuing_country` | psychologist register | Issuing country | Choice | yes | locked |
 | `license_issuing_authority` | psychologist register | Issuing authority | Organisation name | yes | locked |

@@ -282,6 +282,7 @@ def seed_demo_accounts(*, password):
         )
 
     _ensure_demo_relationships()
+    _ensure_demo_photos_and_history()
     applicant = User.objects.filter(email=DEMO_APPLICANT["email"]).first()
     if applicant is not None:
         existing += 1
@@ -299,6 +300,71 @@ def seed_demo_accounts(*, password):
         created += 1
     _ensure_demo_report()
     return {"created": created, "existing": existing}
+
+
+# 6.1 demo data: initials avatars (generated, clearly not real photos) and a
+# fictional mental health history for demo patient 1.
+DEMO_HISTORY = {
+    "concerns": ["anxiety", "sleep-issues"],
+    "previous_diagnosis": "no",
+    "current_medication": "no",
+    "previous_therapy": "yes",
+    "notes": "Demo history (fictional): trouble sleeping before exams.",
+}
+AVATAR_COLOURS = ["#2F6F73", "#7A5C99", "#B5654A", "#3D6FA8", "#5F8A3E", "#A8486E"]
+
+
+def _initials_avatar(full_name, colour):
+    """A 256 px square with the person's initials: obviously an avatar, never a
+    real face."""
+    import io
+
+    from django.core.files.uploadedfile import SimpleUploadedFile
+    from PIL import Image, ImageDraw
+
+    from core.files import check_photo
+
+    words = [w for w in full_name.replace("Dr.", "").split() if w]
+    initials = "".join(w[0] for w in words[:2]).upper()
+    image = Image.new("RGB", (256, 256), colour)
+    draw = ImageDraw.Draw(image)
+    draw.text((128, 128), initials, fill="white", anchor="mm", font_size=110)
+    out = io.BytesIO()
+    image.save(out, format="PNG")
+    return check_photo(SimpleUploadedFile("avatar.png", out.getvalue()))
+
+
+def _ensure_demo_photos_and_history():
+    from apps.patients.models import MentalHealthHistory
+    from apps.patients.services import save_mental_health_history, set_patient_photo
+    from apps.psychologists.services import set_psychologist_photo
+    from apps.reference.models import Specialization
+
+    for index, spec in enumerate(DEMO_PSYCHOLOGISTS):
+        profile = User.objects.get(email=spec["email"]).psychologist_profile
+        if not profile.photo_key:
+            set_psychologist_photo(
+                profile=profile,
+                checked=_initials_avatar(
+                    spec["full_name"], AVATAR_COLOURS[index % len(AVATAR_COLOURS)]
+                ),
+            )
+    hina = User.objects.get(email=DEMO_PATIENT_EMAILS[0])
+    if not hina.patient_profile.photo_key:
+        set_patient_photo(
+            profile=hina.patient_profile,
+            checked=_initials_avatar(hina.full_name, "#4A7C59"),
+        )
+    if not MentalHealthHistory.objects.filter(profile=hina.patient_profile).exists():
+        save_mental_health_history(
+            profile=hina.patient_profile,
+            actor=hina,
+            concerns=Specialization.objects.filter(slug__in=DEMO_HISTORY["concerns"]),
+            previous_diagnosis=DEMO_HISTORY["previous_diagnosis"],
+            current_medication=DEMO_HISTORY["current_medication"],
+            previous_therapy=DEMO_HISTORY["previous_therapy"],
+            notes=DEMO_HISTORY["notes"],
+        )
 
 
 def _demo_documents():
@@ -387,11 +453,22 @@ def remove_demo_accounts():
 
     users = User.objects.filter(email__in=DEMO_EMAILS)
     Report.objects.filter(Q(reporter__in=users) | Q(reported_user__in=users)).delete()
+    from apps.patients.models import PatientProfile
+    from apps.psychologists.models import PsychologistProfile
+
     keys = list(
         CredentialDocument.objects.filter(profile__user__in=users).values_list(
             "storage_key", flat=True
         )
     )
+    keys += [
+        key
+        for model in (PatientProfile, PsychologistProfile)
+        for key in model.objects.filter(user__in=users).values_list(
+            "photo_key", flat=True
+        )
+        if key
+    ]
     transaction.on_commit(lambda: [delete_file(key) for key in keys])
     rels = CareRelationship.objects.filter(
         Q(patient__user__in=users) | Q(psychologist__user__in=users)

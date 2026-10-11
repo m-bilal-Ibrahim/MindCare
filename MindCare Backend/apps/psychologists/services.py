@@ -274,3 +274,34 @@ def open_credential_document(*, admin, document_id, ip=None):
         expires = settings.SIGNED_URL_EXPIRY_SECONDS
         url = storage.signed_url(document.storage_key, expires=expires)
     return document, url, expires
+
+
+# --- Profile photo (6.1, Q16) -------------------------------------------------
+
+
+def set_psychologist_photo(*, profile, checked):
+    """Replace the photo shown to patients in the directory with an upload
+    already checked by core.files.check_photo."""
+    with transaction.atomic():
+        key = storage.replace_file(
+            old_key=profile.photo_key,
+            checked=checked,
+            folder=f"photos/psychologists/{profile.pk}",
+        )
+        try:
+            profile.photo_key = key
+            profile.save(update_fields=["photo_key", "updated_at"])
+        except Exception:
+            storage.delete_file(key)
+            raise
+    return profile
+
+
+def remove_psychologist_photo(*, profile):
+    old_key = profile.photo_key
+    with transaction.atomic():
+        profile.photo_key = ""
+        profile.save(update_fields=["photo_key", "updated_at"])
+        if old_key:
+            transaction.on_commit(lambda: storage.delete_file(old_key))
+    return profile

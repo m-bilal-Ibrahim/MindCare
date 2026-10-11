@@ -133,3 +133,27 @@ def number_field(label, minimum, maximum, **kwargs):
         error_messages={"invalid": message, "min_value": message, "max_value": message},
         **kwargs,
     )
+
+
+class PhotoUploadSerializer(RejectUnknownFieldsMixin, serializers.Serializer):
+    """multipart/form-data with one `photo` file (6.1). Validated by content;
+    the validated value is a core.files.CheckedUpload, re-encoded and shrunk."""
+
+    photo = serializers.FileField(
+        error_messages={
+            "required": "Choose a photo to upload.",
+            "null": "Choose a photo to upload.",
+            "invalid": "Choose a photo to upload.",
+            "empty": "Photo is empty.",
+        }
+    )
+
+    def validate_photo(self, value):
+        from django.core.exceptions import ValidationError as DjangoValidationError
+
+        from core.files import check_photo
+
+        try:
+            return check_photo(value)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(list(exc.messages)) from exc
