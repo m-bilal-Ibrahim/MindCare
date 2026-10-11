@@ -43,6 +43,8 @@ docs/               This file, decisions.md, roadmap.md, deployment.md
 - **stats** — public aggregate platform counts for the marketing site (no models).
 - **ai** — gateway to the separate AI inference service for psychologists (no models;
   nothing stored). The approval workflow stays in `recommendations`.
+- **audit** — the database-backed access audit trail (`AccessLog`, append-only):
+  every access to health data, credential documents and private identities.
 - **motivation** — Motivation Corner content: admin-managed text quotes today;
   opt-in religious content later, in its own model.
 
@@ -50,7 +52,8 @@ docs/               This file, decisions.md, roadmap.md, deployment.md
 
 - **core/** — not a Django app; cross-cutting code every app may import:
   `exceptions.py`, `permissions.py`, `audit.py`, `encryption.py`, `pagination.py`,
-  `validators.py`, `choices.py`, `serializers.py`, `testing.py` (test factories only).
+  `validators.py`, `choices.py`, `serializers.py`, `fields.py`, `models.py` (mixins only),
+  `files.py`, `checks.py`, `testing.py` (test factories only).
 - **integrations/** — outbound API clients, one subpackage per third-party service:
   `ai_service/` (the separate FastAPI inference service), `stripe_client/`,
   `zoom_client/`, `fcm_client/`, `storage_client/`.

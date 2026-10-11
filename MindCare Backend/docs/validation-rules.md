@@ -139,6 +139,11 @@ the original filename is never used as a path.
 - Wrong type → `{Label} must be one of: {types}.`
 - Too big → `{Label} must be {max} MB or smaller.`
 - Empty → `{Label} is empty.`
+- Image that can't be decoded → `{Label} isn't a readable image.`
+- Image with too many pixels (over 40 million) → `{Label} is too large in pixels.`
+
+Images (JPG, PNG, WEBP) are re-encoded on the server, which removes EXIF data such
+as GPS location. Audio types: MP3, M4A, OGG. Documents: PDF.
 
 ## Field table
 

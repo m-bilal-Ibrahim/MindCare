@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 .env
 db.sqlite3
+
+# Uploaded files in local development and tests (production uses a private bucket)
+media/
+.test-media/

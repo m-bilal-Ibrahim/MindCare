@@ -8,3 +8,7 @@ redis==8.1.0
 django-environ==0.14.0
 drf-spectacular==0.30.0
 python-dotenv==1.2.3
+django-storages==1.14.6
+boto3==1.43.111
+Pillow==12.3.0
+cryptography==50.0.2

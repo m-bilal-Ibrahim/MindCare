@@ -25,6 +25,12 @@ if (DATABASES["default"].get("HOST") or "localhost") not in _LOCAL_TEST_DB_HOSTS
         "`docker compose up -d db` in MindCare Backend/."
     )
 
+# Fixed test-only key and a throwaway media folder (test settings never touch
+# real storage or real keys).
+FIELD_ENCRYPTION_KEY = "dGVzdC1vbmx5LW5vdC1hLXNlY3JldC1rZXktMDAwMDA="
+FIELD_ENCRYPTION_PREVIOUS_KEYS = []
+MEDIA_ROOT = BASE_DIR / ".test-media"  # noqa: F405
+
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.MD5PasswordHasher",
 ]

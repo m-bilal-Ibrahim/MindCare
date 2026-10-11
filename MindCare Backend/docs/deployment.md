@@ -23,6 +23,12 @@ Production backend runs on **Render**, with **Supabase** (Postgres) and
 | `DJANGO_SETTINGS_MODULE` | `config.settings.prod` |
 | `ALLOWED_HOSTS` | `.onrender.com` |
 | `CORS_EXTRA_ALLOWED_ORIGINS` | optional, comma-separated extra browser origins on top of the Vercel origin, e.g. `http://localhost:5000` for a local Flutter web demo. Unset normally; remove after a demo |
+| `FIELD_ENCRYPTION_KEY` | Fernet key for health data at rest. Generate with `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`. **Save a copy in a password manager first**: losing it makes encrypted data unreadable. Missing or invalid → the deploy's system check fails (`mindcare.E001`) |
+| `FIELD_ENCRYPTION_PREVIOUS_KEYS` | optional, comma-separated old keys during a rotation; unset normally |
+| `SUPABASE_S3_BUCKET` | name of the **private** Supabase Storage bucket for uploads (e.g. `mindcare-private`) |
+| `SUPABASE_S3_ENDPOINT` | `https://<project-ref>.supabase.co/storage/v1/s3` (Supabase → Storage → Settings → S3 Connection) |
+| `SUPABASE_S3_REGION` | the region shown on the same page (e.g. `ap-south-1`) |
+| `SUPABASE_S3_ACCESS_KEY_ID` / `SUPABASE_S3_SECRET_ACCESS_KEY` | an S3 access key created on that page (storage-only; **not** the `service_role` key). Any of the five missing → uploads would use local disk, so the deploy's system check fails (`mindcare.E002`) |
 | `AI_SERVICE_URL` | the MindCare AI service's base URL, no trailing `/predict` (e.g. `https://mindcare-api-fysd.onrender.com`). Unset → `POST /api/v1/ai/anxiety-prediction/` answers 503 |
 
 **Local development:** the developer's local `.env` `DATABASE_URL` points at the
@@ -129,6 +135,13 @@ Check the ids with a `SELECT` first, and run it inside a transaction
 (`BEGIN; … COMMIT;`) so a mistake can be rolled back.
 
 ## Supabase settings
+
+- **Storage bucket for uploads:** Supabase → Storage → New bucket → name it (e.g.
+  `mindcare-private`), **Public bucket: OFF**. No policies are needed: the backend
+  uses S3 access keys, and nothing else should read the bucket. Then Storage →
+  Settings → S3 Connection: note the endpoint and region, and create an access key
+  (copy the secret at once; it's shown only once). Put all five values on Render
+  (see the table above).
 
 - **Data API: OFF** (turned off 2026-10-10). Django never used it, and with it on,
   any table without RLS was readable with the anon key. Keep it off; see
