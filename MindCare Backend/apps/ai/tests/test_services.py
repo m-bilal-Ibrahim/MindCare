@@ -21,13 +21,13 @@ from apps.ai.tests.helpers import (
 
 @override_settings(AI_SERVICE_URL="http://ai.invalid/")
 class PredictAnxietyRiskTests(SimpleTestCase):
-    def test_forwards_features_to_predict_with_60s_timeout(self):
+    def test_forwards_features_to_patient_summary_with_60s_timeout(self):
         with mock.patch(URLOPEN, return_value=FakeResponse(AI_RESPONSE)) as urlopen:
             result = services.predict_anxiety_risk(features=VALID_FEATURES)
 
         self.assertEqual(result, AI_RESPONSE)
         req = urlopen.call_args.args[0]
-        self.assertEqual(req.full_url, "http://ai.invalid/predict")
+        self.assertEqual(req.full_url, "http://ai.invalid/patient-summary")
         self.assertEqual(req.get_method(), "POST")
         self.assertEqual(req.get_header("Content-type"), "application/json")
         self.assertEqual(json.loads(req.data), VALID_FEATURES)

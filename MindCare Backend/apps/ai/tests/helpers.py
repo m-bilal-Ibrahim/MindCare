@@ -25,7 +25,10 @@ VALID_FEATURES = {
     "Family History of Anxiety": "No",
 }
 
+# The AI's POST /patient-summary answer: everything /predict returns, plus the
+# caveat, the estimated tier and the recommendation bundle.
 AI_RESPONSE = {
+    "caveat": "Estimated severity and recommendation are a best-guess reconstruction.",
     "predicted_class": "Low",
     "probabilities": {"Low": 0.966, "Medium": 0.0333, "High": 0.0007},
     "uncertainty_flag": False,
@@ -36,6 +39,17 @@ AI_RESPONSE = {
     "confidence_label": "confident",
     "borderline_reasons": [],
     "borderline_between": None,
+    "estimated_severity_tier": "Mild (3-4)",
+    "severity_tier_basis": {
+        "method": "most common tier for this predicted level and stress level in the data",
+        "share_of_matching_patients": 0.81,
+        "matching_patients": 412,
+    },
+    "recommendation_bundle": {
+        "exercises": "Walking 30 min/day",
+        "sleep_schedule": "Target: 8 hrs/night",
+        "nutrition": "Protein: not provided (needs Gender)",
+    },
 }
 
 URLOPEN = "integrations.ai_service.client.urlopen"
@@ -58,7 +72,7 @@ class FakeResponse:
 
 def http_error(status, payload):
     return HTTPError(
-        "http://ai.invalid/predict",
+        "http://ai.invalid/patient-summary",
         status,
         "error",
         {},

@@ -973,3 +973,25 @@ but needs the `service_role` key on Render); logging-only audit (decisions.md
 2026-09-15 rules it out for health data); fail-open auditing (data could be read
 with no trace); relying only on Supabase disk encryption (doesn't protect against a
 leaked database dump or an over-broad query).
+
+## 2026-10-11 - The AI gateway forwards to `/patient-summary` on the same endpoint
+**Decision:** `POST /api/v1/ai/anxiety-prediction/` now forwards to the AI service's
+`POST /patient-summary` instead of `/predict`. Same URL, permissions (approved,
+active psychologists only), throttle, and **no storage or logging**. It accepts two
+optional keys, `Gender` (`Female` / `Male` / `Other`) and `Alcohol Consumption
+(drinks/week)` (0–100), which the model never uses; they only fill the
+recommendation wording. The response adds `caveat`, `estimated_severity_tier`,
+`severity_tier_basis` and `recommendation_bundle`.
+**Why the same endpoint (Q27 option A):** `/patient-summary`'s response is a strict
+superset of `/predict`'s: the AI builds it from the `/predict` result
+(`**prediction.model_dump()` in `MindCare AI/src/api/main.py`) plus the summary
+fields, with the same validation and 422s. The Web's AI form merged in PR #28 keeps
+working unchanged, and `web/ai-recommendations` already reads the new fields when
+present, so the Web needs no change.
+**Rules that stay:** psychologist-facing only. The tier is an estimate (about 78%
+right with this model's predictions), and the bundle is the dataset's template text,
+never clinically validated. The Web shows `caveat` first. Nothing here reaches a
+patient: Phase 6's approval workflow (stored triple, separate training consent,
+age gate) is still required before any recommendation can.
+**Alternatives considered:** a new `/ai/patient-summary/` endpoint (option B, only if
+the response weren't a superset; it is, so the Web would have changed for nothing).
