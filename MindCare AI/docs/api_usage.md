@@ -229,7 +229,12 @@ caffeine mg value and the *computed* Stress Level, not the raw serving counts or
   "confidence": 0.9660,
   "confidence_label": "confident",
   "borderline_reasons": [],
-  "borderline_between": null
+  "borderline_between": null,
+  "alert_flags": [],
+  "alert_flag_count": 0,
+  "attention_level": "clear",
+  "model_class": "Low",
+  "final_risk_class": "Low"
 }
 ```
 
@@ -267,6 +272,9 @@ caffeine mg value and the *computed* Stress Level, not the raw serving counts or
 - `borderline_between`: `null` when confident. Otherwise the classes the prediction is unsure
   between: its two most likely classes when the top probability is low, plus `"High"` when it is
   flagged as possibly High. Example: `["Medium", "Low"]`, `["Medium", "High"]`.
+- `alert_flags`, `alert_flag_count`, `attention_level`, `model_class`, `final_risk_class`: the
+  **alert layer** (added 2026-10-11), rule-based and not model output. See "Alert layer" below.
+  `model_class` always equals `predicted_class`.
 
 ### Response body — 422 (rejected)
 
@@ -378,7 +386,7 @@ access logs as query parameters.
 | Field | Meaning |
 |---|---|
 | `caveat` | The fixed caveat above. Always present. |
-| `predicted_class`, `probabilities`, `uncertainty_flag`, `warnings`, `estimated_caffeine_mg`, `estimated_stress_level`, `confidence`, `confidence_label`, `borderline_reasons`, `borderline_between` | Identical to `/predict` for identical input. `predicted_class` is the **model's actual prediction**. |
+| `predicted_class`, `probabilities`, `uncertainty_flag`, `warnings`, `estimated_caffeine_mg`, `estimated_stress_level`, `confidence`, `confidence_label`, `borderline_reasons`, `borderline_between`, and the alert-layer fields | Identical to `/predict` for identical input. `predicted_class` is the **model's actual prediction**. |
 | `estimated_severity_tier` | One of `Minimal (1-2)`, `Mild (3-4)`, `Moderate (5-6)`, `High (7-8)`, `Severe (9-10)`. **An estimate, not a model prediction** (see below). |
 | `severity_tier_basis` | How the tier was chosen: `method`, `share_of_matching_patients` (how often this tier was right for dataset patients with the same predicted level and stress level; `null` if there were none) and `matching_patients`. |
 | `recommendation_bundle` | `exercises`, `sleep_schedule`, `nutrition`: the dataset's fixed template text for the estimated tier, with the patient's Sleep Hours, caffeine (over/under 200 mg), alcohol (0 or not) and protein (by Gender) filled in. |
@@ -426,6 +434,53 @@ answers 3/1/1/3, plus `"Gender": "Female"` and `"Alcohol Consumption (drinks/wee
 Without `Gender` and `Alcohol Consumption`, the same request returns the same fields, and `nutrition`
 reads `Protein: not provided (needs Gender); ... Alcohol: not provided (needs Alcohol Consumption)`.
 
+## Alert layer
+
+Added 2026-10-11 (`src/inference/alerts.py`, thresholds in `src/config/alert_thresholds.toml`).
+Psychologist-facing only, like everything this service returns. **It does not change the model,
+its preprocessing or `predicted_class`**: it adds rule-based flags on single input values so a
+review queue can be sorted.
+
+> **The thresholds are drafts, pending psychologist review.** They are hand-picked
+> clinical-guidance-style cut-offs, **not learned from data and not validated**. They are read once
+> at startup: edit the file and restart the service to change them, with no retraining. A missing,
+> unknown or non-numeric key stops startup rather than silently dropping an alert.
+
+**Flags.** Each fires on its own value, whatever the other inputs are, and reports `name`,
+`feature`, `value` and `threshold`. Caffeine and stress are checked on the values the server
+computed (`estimated_caffeine_mg`, `estimated_stress_level`). A missing or non-numeric value skips
+its flag instead of failing. Measured on all 11,000 rows of the (very likely synthetic) dataset,
+descriptively only:
+
+| Flag (`name`) | Fires when | Rows flagged | Truly High among flagged rows |
+|---|---|---|---|
+| `low_sleep` | Sleep Hours ≤ 3 | 0.2% | 94.1% |
+| `high_stress` | PSS-derived Stress Level ≥ 8 | 36.7% | 27.8% |
+| `high_heart_rate` | Heart Rate ≥ 115 bpm | 9.0% | 18.0% |
+| `high_breathing_rate` | Breathing Rate ≥ 27 breaths/min | 18.1% | 16.4% |
+| `high_caffeine` | estimated caffeine ≥ 520 mg/day | 9.0% | 30.3% |
+| `low_diet_quality` | Diet Quality < 4 | 34.8% | 20.2% |
+
+All rows: 10.3% are High. Flags per row: 0 → 30.8%, 1 → 39.8%, 2 → 21.6%, 3 → 6.5%, 4 → 1.1%,
+5 → 0.1%. So about **69% of rows get at least one flag and 29% would be at least `elevated`**,
+mostly from the stress and diet rules; `notice` and `elevated` are common, not rare.
+
+**`attention_level`**, in order:
+- `urgent`: the model predicts High, **or** `low_sleep` fired;
+- `elevated`: not urgent, 2 or more flags;
+- `notice`: not urgent, exactly 1 flag;
+- `clear`: otherwise.
+
+**`final_risk_class`** is `model_class`, except that `low_sleep` sets it to `High`. That override is
+a rule, not a prediction, and `model_class` always keeps the model's answer, so show both. The
+`/patient-summary` severity tier and recommendations are still estimated from `model_class`.
+
+**Where it shows.** `/predict` and `/patient-summary` only (`tests/test_alerts.py` fails if any other
+route gains these fields). The backend's `POST /api/v1/ai/anxiety-prediction/` returns the AI's
+JSON as is, so the fields reach the psychologist-only web page too. Nothing stores them yet: the
+backend keeps no health data before its Phase 5 audit trail, so sorting a dashboard by
+`attention_level` waits for that.
+
 ## Known limitations to be aware of when integrating
 
 This model has documented weaknesses that matter for how a caller should treat its output — see
@@ -449,5 +504,7 @@ This model has documented weaknesses that matter for how a caller should treat i
   review, never to be shown to a patient directly.
 - **Ages 18–49 only.** Requests for anyone else are rejected (see "Supported age range"). The web
   app must block under-18s at registration, and send users 50+ straight to a psychologist.
+- **The alert layer's thresholds are unreviewed drafts** and fire often (about 69% of dataset rows
+  get a flag). `final_risk_class` can differ from the model's class; it is a rule, not a prediction.
 - This is a prototype/research model on a very likely synthetic dataset — never represent its
   output as clinically validated, and never let it bypass psychologist review.

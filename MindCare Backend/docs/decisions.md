@@ -935,3 +935,32 @@ commands would stay open, which is how a name with digits got in); Postgres CHEC
 constraints (Unicode matching depends on the database locale, so local and Supabase
 could behave differently); rewriting the invalid names with a data migration (would
 silently change people's names).
+
+## 2026-10-11 - AI alert layer: rule-based attention tiers, returned but not stored
+**Decision:** The AI service adds an alert layer to `/predict` and `/patient-summary`
+(`MindCare AI/src/inference/alerts.py`; full write-up in `MindCare AI/docs/api_usage.md`,
+"Alert layer"). Six single-value flags (sleep ≤ 3, stress ≥ 8, heart rate ≥ 115,
+breathing rate ≥ 27, caffeine ≥ 520 mg/day, diet quality < 4) give an `attention_level`:
+- `urgent` if the model predicts High or sleep ≤ 3;
+- `elevated` if not urgent and 2+ flags;
+- `notice` if not urgent and exactly 1 flag;
+- `clear` otherwise.
+
+`final_risk_class` is High when sleep ≤ 3, otherwise the model's class; `model_class`
+always keeps the model's own answer. The XGBoost model is unchanged.
+
+**The thresholds are clinical-guidance based, not learned from data, and need
+psychologist review** before anyone relies on them. They live in
+`MindCare AI/src/config/alert_thresholds.toml` and change with a restart, no
+retraining. On the (very likely synthetic) dataset about 69% of patients get at
+least one flag and 29% two or more, so `notice`/`elevated` are common.
+
+Psychologist-facing only. `POST /api/v1/ai/anxiety-prediction/` passes the AI's JSON
+through, so the fields reach the psychologist web page with no backend change; its
+response serializer (schema docs only) doesn't list them yet. **Nothing is stored**:
+the 2026-09-26 rule (no health data before the Phase 5 audit trail) still applies,
+so sorting a dashboard by `attention_level` waits for Phase 5/6.
+**Alternatives considered:** Learning the thresholds from the dataset (it is very
+likely synthetic, and these are meant as clinical rules); letting the sleep rule
+replace the model's class (the psychologist would lose the model's own answer);
+storing the tiers now (blocked by the PHI rule).
