@@ -213,21 +213,31 @@ class AvailabilitySerializer(RejectUnknownFieldsMixin, serializers.Serializer):
     reason = BlankAsNoneChoiceField(choices=NotAcceptingReason.choices, required=False)
 
 
-def _document_field(label, required_message):
+def _document_field(label, required_message, *, required=True):
     return serializers.FileField(
+        required=required,
         error_messages={
             "required": required_message,
             "null": required_message,
             "empty": f"{label} is empty.",
             "invalid": required_message,
-        }
+        },
     )
 
 
 class CredentialDocumentsSerializer(RejectUnknownFieldsMixin, serializers.Serializer):
-    """The file parts of a psychologist's multipart register request. Every file
-    is checked by content (core.files.check_upload) before anything is stored;
-    validated values are CheckedUpload objects grouped by DocumentKind."""
+    """The file parts of a psychologist's register request. Every file is checked
+    by content (core.files.check_upload) before anything is stored; validated
+    values are CheckedUpload objects grouped by DocumentKind.
+
+    The license and degree are required only when settings.REQUIRE_CREDENTIAL_DOCS
+    is on (off by default, so the live JSON signup keeps working; decisions.md
+    2026-10-11). Files that are sent are always checked."""
+
+    REQUIRED_MESSAGES = {
+        "license_document": "Upload your license document.",
+        "degree_document": "Upload your degree certificate.",
+    }
 
     LABELS = {
         "license_document": "License document",
@@ -236,10 +246,10 @@ class CredentialDocumentsSerializer(RejectUnknownFieldsMixin, serializers.Serial
     }
 
     license_document = _document_field(
-        "License document", "Upload your license document."
+        "License document", "Upload your license document.", required=False
     )
     degree_document = _document_field(
-        "Degree certificate", "Upload your degree certificate."
+        "Degree certificate", "Upload your degree certificate.", required=False
     )
     other_documents = serializers.ListField(
         child=_document_field("Other document", "Upload a file."),
@@ -270,10 +280,30 @@ class CredentialDocumentsSerializer(RejectUnknownFieldsMixin, serializers.Serial
     def validate_other_documents(self, value):
         return [self._check(f, "other_documents") for f in value]
 
+    def validate(self, attrs):
+        from django.conf import settings
+
+        if settings.REQUIRE_CREDENTIAL_DOCS:
+            missing = {
+                field: [message]
+                for field, message in self.REQUIRED_MESSAGES.items()
+                if not attrs.get(field)
+            }
+            if missing:
+                raise serializers.ValidationError(missing)
+        return attrs
+
     def to_documents(self):
+        """DocumentKind -> [CheckedUpload], or None when no file was sent."""
         data = self.validated_data
-        return {
-            DocumentKind.LICENSE: [data["license_document"]],
-            DocumentKind.DEGREE: [data["degree_document"]],
+        documents = {
+            DocumentKind.LICENSE: [data["license_document"]]
+            if data.get("license_document")
+            else [],
+            DocumentKind.DEGREE: [data["degree_document"]]
+            if data.get("degree_document")
+            else [],
             DocumentKind.OTHER: data.get("other_documents", []),
         }
+        documents = {kind: files for kind, files in documents.items() if files}
+        return documents or None

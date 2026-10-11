@@ -88,7 +88,8 @@ class CredentialDocumentAPITests(APITestCase):
             set(listed[0]), {"id", "kind", "file_type", "size", "uploaded_at"}
         )
 
-    def test_license_and_degree_are_required(self):
+    @override_settings(REQUIRE_CREDENTIAL_DOCS=True)
+    def test_license_and_degree_required_when_the_setting_is_on(self):
         r, payload = self.register({})
         self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
@@ -99,13 +100,29 @@ class CredentialDocumentAPITests(APITestCase):
             },
         )
         self.assertFalse(User.objects.filter(email=payload["email"]).exists())
-
-    def test_json_psychologist_registration_needs_the_files(self):
         r = self.client.post(
             REGISTER_URL, register_payload(role=Role.PSYCHOLOGIST), format="json"
         )
         self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("license_document", r.json())
+
+    def test_files_are_optional_by_default_json_signup_still_works(self):
+        from django.conf import settings
+
+        self.assertFalse(settings.REQUIRE_CREDENTIAL_DOCS)
+        payload = register_payload(role=Role.PSYCHOLOGIST)
+        r = self.client.post(REGISTER_URL, payload, format="json")
+        self.assertEqual(r.status_code, status.HTTP_201_CREATED, r.json())
+        self.assertEqual(r.json()["profile"]["documents"], [])
+        user = User.objects.get(email=payload["email"])
+        self.assertEqual(user.approval_status, ApprovalStatus.PENDING)
+
+    def test_only_some_files_is_fine_by_default(self):
+        r, payload = self.register({"license_document": pdf()})
+        self.assertEqual(r.status_code, status.HTTP_201_CREATED, r.json())
+        self.assertEqual(
+            [d["kind"] for d in r.json()["profile"]["documents"]], ["license"]
+        )
 
     def test_type_is_checked_by_content(self):
         r, payload = self.register(

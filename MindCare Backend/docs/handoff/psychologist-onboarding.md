@@ -1,9 +1,10 @@
 # Handoff: 6.2 psychologist onboarding (credential documents)
 
-**Breaking change for the therapist signup on the Web.** A psychologist registration
-must now include the license and degree files. A JSON-only psychologist registration
-gets a 400 asking for them. Ship the Web's upload fields **together with** the
-backend PR (merged back to back).
+**Not a breaking change.** The current JSON therapist signup keeps working:
+the license and degree files are **optional** until the server sets
+`REQUIRE_CREDENTIAL_DOCS=true` (off by default). Add the upload step whenever
+you're ready; once it ships, the backend owner turns the setting on so the files
+become required.
 
 ## Endpoint
 
@@ -11,13 +12,14 @@ backend PR (merged back to back).
 throttled at 10/hour per address.
 
 - **Patients and NGOs:** unchanged, `application/json`.
-- **Psychologists:** `multipart/form-data` with these parts:
+- **Psychologists:** JSON as today, **or** `multipart/form-data` with these parts
+  (files optional until `REQUIRE_CREDENTIAL_DOCS` is on):
 
 | Part | Required | Content |
 |---|---|---|
 | `data` | yes | The **same JSON body as before** (email, password, full_name, role `"psychologist"`, is_adult_confirmed, profile), as a string |
-| `license_document` | yes | One file: PDF, JPG or PNG, max 5 MB |
-| `degree_document` | yes | One file, same rules |
+| `license_document` | when `REQUIRE_CREDENTIAL_DOCS` is on | One file: PDF, JPG or PNG, max 5 MB |
+| `degree_document` | when `REQUIRE_CREDENTIAL_DOCS` is on | One file, same rules |
 | `other_documents` | no | Up to 3 files, same rules (repeat the part name for each file) |
 
 The type is checked by the file's content, not its name. Images are re-encoded on
@@ -52,7 +54,7 @@ download their files back, and admins open them in the review screen (6.3).
 
 | Body | When |
 |---|---|
-| `{"license_document": ["Upload your license document."]}` | Missing (also `degree_document`: `Upload your degree certificate.`) |
+| `{"license_document": ["Upload your license document."]}` | Missing while `REQUIRE_CREDENTIAL_DOCS` is on (also `degree_document`: `Upload your degree certificate.`) |
 | `{"license_document": ["License document must be one of: PDF, JPG, PNG."]}` | Wrong type (by content) |
 | `{"license_document": ["License document must be 5 MB or smaller."]}` | Too big |
 | `{"degree_document": ["Degree certificate is empty."]}` | Empty file |
@@ -64,7 +66,7 @@ download their files back, and admins open them in the review screen (6.3).
 
 If registration fails for any reason, no account is created and no file is kept.
 
-`GET /api/v1/psychologists/me/` also returns `documents` (same shape).
+`GET /api/v1/psychologists/me/` also returns `documents` (same shape; `[]` when nothing was uploaded: show "No documents uploaded").
 
 ## Screens (Web, once the partner's branches are on GitHub)
 

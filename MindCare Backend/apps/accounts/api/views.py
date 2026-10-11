@@ -48,10 +48,11 @@ class RegisterView(APIView):
         },
         responses={201: RegisterResponseDoc},
         description=(
-            "Patients and NGOs send JSON. Psychologists send multipart/form-data: "
-            "a `data` part holding the same JSON body, plus `license_document`, "
-            "`degree_document` and up to 3 `other_documents` (PDF, JPG or PNG, "
-            "5 MB each, checked by content)."
+            "JSON for every role. A psychologist may instead send "
+            "multipart/form-data: a `data` part holding the same JSON body, plus "
+            "`license_document`, `degree_document` and up to 3 `other_documents` "
+            "(PDF, JPG or PNG, 5 MB each, checked by content). The license and "
+            "degree become required when the server sets REQUIRE_CREDENTIAL_DOCS."
         ),
     )
     def post(self, request):
@@ -101,8 +102,9 @@ def _split_register_request(request):
 
 
 def _validated_documents(role, files):
-    """Psychologists must send their credential files; other roles may not send
-    any. Returns DocumentKind -> [CheckedUpload] or None."""
+    """Psychologists may send their credential files (required only when
+    REQUIRE_CREDENTIAL_DOCS is on); other roles may not send any. Returns
+    DocumentKind -> [CheckedUpload] or None."""
     if role != Role.PSYCHOLOGIST:
         if files:
             raise ValidationError({key: ["This field can't be set."] for key in files})

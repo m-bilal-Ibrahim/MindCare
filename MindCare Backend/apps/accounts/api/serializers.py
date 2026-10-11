@@ -158,8 +158,14 @@ class RegisterMultipartDoc(serializers.Serializer):
     data = serializers.CharField(
         help_text="The psychologist register body (see RegisterRequest), as a JSON string."
     )
-    license_document = serializers.FileField(help_text="PDF, JPG or PNG, max 5 MB.")
-    degree_document = serializers.FileField(help_text="PDF, JPG or PNG, max 5 MB.")
+    license_document = serializers.FileField(
+        required=False,
+        help_text="PDF, JPG or PNG, max 5 MB. Required when REQUIRE_CREDENTIAL_DOCS is on.",
+    )
+    degree_document = serializers.FileField(
+        required=False,
+        help_text="PDF, JPG or PNG, max 5 MB. Required when REQUIRE_CREDENTIAL_DOCS is on.",
+    )
     other_documents = serializers.ListField(
         child=serializers.FileField(),
         required=False,

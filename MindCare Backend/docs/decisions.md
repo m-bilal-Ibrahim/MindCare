@@ -999,8 +999,9 @@ the response weren't a superset; it is, so the Web would have changed for nothin
 ## 2026-10-11 - 6.2: credential documents are uploaded with the registration request
 **Decision (Q19, Q20, Q21):**
 - A psychologist registers with **multipart/form-data**: a `data` part holding the
-  same JSON body as before, plus `license_document` (required), `degree_document`
-  (required) and up to 3 `other_documents`. PDF, JPG or PNG, 5 MB each, checked by
+  same JSON body as before, plus `license_document` (required; optional since the
+  REQUIRE_CREDENTIAL_DOCS entry below), `degree_document`
+  (same) and up to 3 `other_documents`. PDF, JPG or PNG, 5 MB each, checked by
   content. Patients and NGOs keep sending JSON, and any file they send is refused.
 - Every file is validated **before** anything is written. The files are stored in the
   registration transaction (`credentials/<profile id>/<uuid>.<ext>` in private
@@ -1014,7 +1015,8 @@ the response weren't a superset; it is, so the Web would have changed for nothin
   `register_user()`, the same as other required fields. So `seed_demo` and other
   tooling can still create psychologists. Psychologists approved before this change
   have no documents; they were approved on their text credentials.
-- **Breaking for the Web's therapist signup:** a JSON psychologist registration now
+- **Superseded the same day (see "Credential files optional until
+  REQUIRE_CREDENTIAL_DOCS" below):** ~~Breaking for the Web's therapist signup:~~ a JSON psychologist registration now
   gets a 400 asking for the files. This backend PR must ship together with the Web's
   upload fields (merged back to back), so signup is never broken in production.
 - Deleting a psychologist in Django admin removes the document rows (CASCADE), but
@@ -1026,3 +1028,26 @@ the response weren't a superset; it is, so the Web would have changed for nothin
 **Alternatives considered:** a single-use upload token after registration (two
 requests, plus a window where an account has no documents); letting pending accounts
 log in to upload (reverses the 2026-09-26 decision).
+
+## 2026-10-11 - Credential files optional until REQUIRE_CREDENTIAL_DOCS; NUM_PROXIES measured at 3
+**Decision:**
+- **Credential files don't break the live signup.** The frontend partner owns all
+  Web and App work and has just shipped the current therapist signup, which sends
+  JSON without files. So the license and degree files (6.2) are **optional** while
+  `REQUIRE_CREDENTIAL_DOCS` is off (the default). A psychologist can register with
+  JSON exactly as before, or with multipart plus any of the files; any file that is
+  sent is still checked by content and stored the same way. Without files the account
+  is created as before, and the admin review shows an empty `documents` list ("no
+  documents uploaded"). Setting `REQUIRE_CREDENTIAL_DOCS=true` on Render, once the Web
+  sends the files, makes the license and degree required again (400 with the same
+  messages). This replaces the "required at registration" part of the 6.2 entry above.
+- **`NUM_PROXIES = 3`.** Measured on production with the temporary probe (removed
+  in #34): `X-Forwarded-For` arrives as `client, cloudflare, render-internal`. DRF
+  takes the entry `NUM_PROXIES` from the right, so 3 picks the client. Set on Render
+  2026-10-11. If Render or Cloudflare ever changes the chain, measure again: too low
+  makes every user share one throttle bucket, too high lets a client forge its
+  address.
+**Alternatives considered:** keeping the files required and merging the backend
+together with a Web upload step (rejected: the Web is the partner's, on her own
+schedule, and live signup must keep working); a header-based client IP
+(`CF-Connecting-IP`), rejected 2026-10-10.
