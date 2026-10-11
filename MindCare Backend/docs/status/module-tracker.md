@@ -59,7 +59,7 @@ Last updated: 2026-10-10 (input-validation-hardening, backend part). Re-checked 
 
 | Bullet | Backend | Web | App | Notes |
 |---|---|---|---|---|
-| AI analyses mental health and sensor data to recommend exercises, sleep schedule and diet | partial | partial | — | `/ai/anxiety-prediction/` live (form input, nothing stored). `/patient-summary` forwarding and Web display on branch `web/ai-recommendations` |
+| AI analyses mental health and sensor data to recommend exercises, sleep schedule and diet | partial | partial | — | `/ai/anxiety-prediction/` forwards to `/patient-summary` (PR ai-patient-summary): prediction, estimated tier and exercise/sleep/nutrition bundle from form input; nothing stored. Web display on branch `web/ai-recommendations`, needs no change. Sensor data and stored, approved recommendations are Phase 6/7 |
 | AI learns from psychologist feedback (approval or update) | not started | not started | — | Needs the stored triple and separate training consent (decisions.md 2026-09-27) |
 | Psychologist approves or updates recommendations | not started | mock only | not started | Care plan editor is mock |
 

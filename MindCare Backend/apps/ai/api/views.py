@@ -35,8 +35,8 @@ class AnxietyPredictionView(APIView):
         responses={
             200: AnxietyPredictionResponseSerializer,
             400: OpenApiResponse(
-                description="Invalid input, or the AI service rejected it "
-                "(e.g. age outside 18-49): {detail}."
+                description="Invalid input ({field: [message]}), or the AI service "
+                "rejected it, e.g. an implausible caffeine total ({detail})."
             ),
             403: OpenApiResponse(description="Not an approved, active psychologist."),
             503: OpenApiResponse(
