@@ -151,6 +151,23 @@ RegisterRequestDoc = PolymorphicProxySerializer(
     resource_type_field_name="role",
 )
 
+
+class RegisterMultipartDoc(serializers.Serializer):
+    """Psychologist registration as multipart/form-data (documentation only)."""
+
+    data = serializers.CharField(
+        help_text="The psychologist register body (see RegisterRequest), as a JSON string."
+    )
+    license_document = serializers.FileField(help_text="PDF, JPG or PNG, max 5 MB.")
+    degree_document = serializers.FileField(help_text="PDF, JPG or PNG, max 5 MB.")
+    other_documents = serializers.ListField(
+        child=serializers.FileField(),
+        required=False,
+        max_length=3,
+        help_text="Up to 3 more files, same rules.",
+    )
+
+
 RegisterResponseDoc = PolymorphicProxySerializer(
     component_name="RegisterResponse",
     serializers={

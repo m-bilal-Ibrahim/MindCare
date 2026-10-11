@@ -4,7 +4,7 @@ this is the interim correction path until Phase 2.5's re-review flow."""
 from django import forms
 from django.contrib import admin
 
-from apps.psychologists.models import PsychologistProfile
+from apps.psychologists.models import CredentialDocument, PsychologistProfile
 from core.validators import normalize_display_text, normalize_identifier
 
 
@@ -26,9 +26,24 @@ class PsychologistProfileAdminForm(forms.ModelForm):
         return self.cleaned_data["qualifications"].strip()
 
 
+class CredentialDocumentInline(admin.TabularInline):
+    """Which credential files were uploaded. Read-only, and no file link here:
+    opening a file goes through the audited admin review endpoint (6.3)."""
+
+    model = CredentialDocument
+    fields = ["kind", "file_type", "size", "uploaded_at"]
+    readonly_fields = fields
+    extra = 0
+    can_delete = False
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(PsychologistProfile)
 class PsychologistProfileAdmin(admin.ModelAdmin):
     form = PsychologistProfileAdminForm
+    inlines = [CredentialDocumentInline]
     list_display = [
         "user",
         "license_number",

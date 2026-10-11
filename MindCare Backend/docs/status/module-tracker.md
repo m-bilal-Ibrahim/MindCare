@@ -28,8 +28,8 @@ Last updated: 2026-10-10 (input-validation-hardening, backend part). Re-checked 
 | Bullet | Backend | Web | App | Notes |
 |---|---|---|---|---|
 | Register with personal and professional info, certifications, background, specializations | done | done | — | Text credentials at registration (Phase 2) |
-| Upload credentials and licences for verification | not started | not started | — | Needs file storage; pending accounts can't log in today |
-| Set availability, manage session bookings, video conferencing (Zoom / Meet) | partial | partial | — | Only the "accepting new patients" switch exists. Working hours, booking and video links not started (roadmap Phase 4) |
+| Upload credentials and licences for verification | done (PR 6.2) | not started | — | Multipart registration: license + degree required, up to 3 more; private storage. Web upload fields wait for the partner's branches and must merge together with the backend PR |
+| Set availability, manage session bookings, video conferencing (Zoom / Meet) | partial | partial | — | Only the "accepting new patients" switch exists. **Deferred to Phase 2** (Q21): working hours, booking and video links are designed together |
 
 ## 6.3 Admin Panel
 

@@ -169,6 +169,10 @@ as GPS location. Audio types: MP3, M4A, OGG. Documents: PDF.
 | `languages` | psychologist register/profile | Languages | Choice, at least 1 | yes | |
 | `years_of_experience` | psychologist register/profile | Years of experience | Number 0–60 | yes | |
 | `bio` | psychologist register/profile | Bio | Free text 30–2000 | no | |
+| `license_document` | psychologist register (multipart) | License document | File: PDF, JPG, PNG; 5 MB | yes | missing → `Upload your license document.` |
+| `degree_document` | psychologist register (multipart) | Degree certificate | File: PDF, JPG, PNG; 5 MB | yes | missing → `Upload your degree certificate.` |
+| `other_documents` | psychologist register (multipart) | Other document | File: PDF, JPG, PNG; 5 MB; at most 3 | no | more than 3 → `Upload at most 3 other documents.` |
+| `data` | psychologist register (multipart) | — | JSON object (the register body) | yes | otherwise → `Send the registration details as JSON in the 'data' field.` |
 | `organization_name` | NGO register | Organisation name | Organisation name | yes | locked |
 | `registration_number` | NGO register | Registration number | Identifier | yes | unique per country; locked |
 | `registration_country` | NGO register | Registration country | Choice | yes | locked |

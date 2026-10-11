@@ -27,6 +27,12 @@ def save_private_file(upload, *, folder, label, allowed, max_mb):
     return key, checked
 
 
+def store_checked(checked, *, folder):
+    """Store an upload that has already passed core.files.check_upload (e.g. in a
+    serializer, so every file is validated before anything is written)."""
+    return default_storage.save(f"{folder}/{checked.storage_name}", checked.content)
+
+
 def signed_url(key, *, expires=None):
     """A URL that works for `expires` seconds (default SIGNED_URL_EXPIRY_SECONDS).
     On local disk this is just the media URL (development only)."""
