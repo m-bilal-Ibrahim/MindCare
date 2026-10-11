@@ -9,6 +9,7 @@ from django.db import IntegrityError, transaction
 from apps.accounts.models import Role
 from apps.psychologists.models import (
     CREDENTIAL_FIELDS,
+    CredentialDocument,
     MAX_YEARS_OF_EXPERIENCE,
     MIN_YEARS_OF_EXPERIENCE,
     YEARS_OF_EXPERIENCE_MESSAGE,
@@ -20,7 +21,9 @@ from apps.reference.services import (
     resolve_location_fields,
 )
 from core.choices import Gender
+from core.files import JPEG, PDF, PNG
 from core.exceptions import DomainValidationError
+from integrations.storage_client import client as storage
 from core.validators import (
     normalize_display_text,
     normalize_identifier,
@@ -200,3 +203,38 @@ def update_psychologist_profile(*, profile, **fields):
         if languages is not None:
             profile.languages.set(languages)
     return profile
+
+
+# --- Credential documents (6.2) ----------------------------------------------
+# Allowed types and size for every credential file (docs/validation-rules.md).
+CREDENTIAL_FILE_KINDS = (PDF, JPEG, PNG)
+CREDENTIAL_FILE_MAX_MB = 5
+MAX_OTHER_DOCUMENTS = 3
+
+
+def store_credential_documents(*, profile, documents):
+    """Store already-validated uploads (core.files.CheckedUpload) for a profile.
+
+    `documents` maps a DocumentKind to a list of CheckedUpload. Runs inside the
+    registration transaction; if anything fails, files stored so far are deleted
+    before the error propagates, so a failed registration leaves no files behind.
+    Returns the stored keys.
+    """
+    stored = []
+    try:
+        for kind, uploads in documents.items():
+            for checked in uploads:
+                key = storage.store_checked(checked, folder=f"credentials/{profile.pk}")
+                stored.append(key)
+                CredentialDocument.objects.create(
+                    profile=profile,
+                    kind=kind,
+                    storage_key=key,
+                    file_type=checked.kind.extension,
+                    size=checked.size,
+                )
+    except Exception:
+        for key in stored:
+            storage.delete_file(key)
+        raise
+    return stored

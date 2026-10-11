@@ -1,5 +1,8 @@
 """Settings used when running the test suite (pytest-django)."""
 
+import tempfile
+from pathlib import Path
+
 from django.core.exceptions import ImproperlyConfigured
 
 from .base import *  # noqa: F401,F403
@@ -29,7 +32,7 @@ if (DATABASES["default"].get("HOST") or "localhost") not in _LOCAL_TEST_DB_HOSTS
 # real storage or real keys).
 FIELD_ENCRYPTION_KEY = "dGVzdC1vbmx5LW5vdC1hLXNlY3JldC1rZXktMDAwMDA="
 FIELD_ENCRYPTION_PREVIOUS_KEYS = []
-MEDIA_ROOT = BASE_DIR / ".test-media"  # noqa: F405
+MEDIA_ROOT = Path(tempfile.gettempdir()) / "mindcare-test-media"
 
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.MD5PasswordHasher",
