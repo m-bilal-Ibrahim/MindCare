@@ -11,9 +11,13 @@ from django.utils.timezone import now
 from apps.accounts.models import ApprovalStatus, Role, User
 from apps.ngo.services import create_ngo_profile
 from apps.patients.services import create_patient_profile
-from apps.psychologists.services import create_psychologist_profile
+from apps.psychologists.services import (
+    create_psychologist_profile,
+    store_credential_documents,
+)
 from core.audit import log_auth_event
 from core.exceptions import DomainValidationError
+from integrations.storage_client.client import delete_file
 
 ROLES_REQUIRING_APPROVAL = {Role.PSYCHOLOGIST, Role.NGO}
 
@@ -27,8 +31,19 @@ PROFILE_CREATORS = {
 
 
 def register_user(
-    *, email, password, full_name, role, is_adult_confirmed, profile_data
+    *,
+    email,
+    password,
+    full_name,
+    role,
+    is_adult_confirmed,
+    profile_data,
+    credential_documents=None,
 ):
+    """Create the user and their role profile in one transaction. For a
+    psychologist, `credential_documents` (DocumentKind -> [CheckedUpload],
+    validated by the caller) are stored in the same transaction; if anything
+    fails, no user, profile or file is left behind."""
     if is_adult_confirmed is not True:
         raise DomainValidationError(
             {"is_adult_confirmed": ["You must confirm you are 18 or older."]}
@@ -39,6 +54,7 @@ def register_user(
         if role in ROLES_REQUIRING_APPROVAL
         else ApprovalStatus.APPROVED
     )
+    stored_keys = []
     try:
         with transaction.atomic():
             user = User.objects.create_user(
@@ -49,9 +65,19 @@ def register_user(
                 approval_status=approval_status,
                 adult_confirmed_at=now(),
             )
-            PROFILE_CREATORS[role](user=user, **profile_data)
-    except IntegrityError as exc:
-        if User.objects.filter(email__iexact=email).exists():
+            profile = PROFILE_CREATORS[role](user=user, **profile_data)
+            if credential_documents:
+                stored_keys = store_credential_documents(
+                    profile=profile, documents=credential_documents
+                )
+    except Exception as exc:
+        # The transaction rolled back: remove files stored before the failure.
+        for key in stored_keys:
+            delete_file(key)
+        if (
+            isinstance(exc, IntegrityError)
+            and User.objects.filter(email__iexact=email).exists()
+        ):
             raise DuplicateEmailError("A user with this email already exists.") from exc
         raise
     log_auth_event("register", user_id=user.id, email=user.email, role=user.role)

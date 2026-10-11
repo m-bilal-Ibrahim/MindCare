@@ -1,10 +1,21 @@
 """DRF serializers for the psychologists API."""
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from apps.psychologists.models import NotAcceptingReason, PsychologistProfile
+from apps.psychologists.models import (
+    CredentialDocument,
+    DocumentKind,
+    NotAcceptingReason,
+    PsychologistProfile,
+)
+from apps.psychologists.services import (
+    CREDENTIAL_FILE_KINDS,
+    CREDENTIAL_FILE_MAX_MB,
+    MAX_OTHER_DOCUMENTS,
+)
 from apps.reference.api.serializers import (
     CitySerializer,
     CountrySerializer,
@@ -14,6 +25,7 @@ from apps.reference.api.serializers import (
 from apps.reference.models import Country, Language, Specialization
 from apps.relationships.selectors import last_active_band
 from core.choices import Gender
+from core.files import check_upload
 from apps.psychologists.models import MAX_YEARS_OF_EXPERIENCE, MIN_YEARS_OF_EXPERIENCE
 from core.serializers import (
     RejectUnknownFieldsMixin,
@@ -66,6 +78,15 @@ class PsychologistRegistrationProfileSerializer(
     bio = free_text_field("Bio", 30, 2000, required=False, allow_blank=True)
 
 
+class CredentialDocumentSerializer(serializers.ModelSerializer):
+    """What the owner sees: never the storage key or a URL."""
+
+    class Meta:
+        model = CredentialDocument
+        fields = ["id", "kind", "file_type", "size", "uploaded_at"]
+        read_only_fields = fields
+
+
 class PsychologistProfileOwnerSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(source="user.full_name", read_only=True)
     license_issuing_country = CountrySerializer(read_only=True)
@@ -73,6 +94,7 @@ class PsychologistProfileOwnerSerializer(serializers.ModelSerializer):
     languages = LanguageSerializer(many=True, read_only=True)
     country = CountrySerializer(read_only=True)
     city = CitySerializer(read_only=True)
+    documents = serializers.SerializerMethodField()
 
     class Meta:
         model = PsychologistProfile
@@ -90,10 +112,15 @@ class PsychologistProfileOwnerSerializer(serializers.ModelSerializer):
             "timezone",
             "gender",
             "bio",
+            "documents",
             "created_at",
             "updated_at",
         ]
         read_only_fields = fields
+
+    @extend_schema_field(CredentialDocumentSerializer(many=True))
+    def get_documents(self, obj):
+        return CredentialDocumentSerializer(obj.documents.all(), many=True).data
 
 
 DIRECTORY_CARD_FIELDS = [
@@ -184,3 +211,69 @@ class AvailabilitySerializer(RejectUnknownFieldsMixin, serializers.Serializer):
 
     accepting = serializers.BooleanField()
     reason = BlankAsNoneChoiceField(choices=NotAcceptingReason.choices, required=False)
+
+
+def _document_field(label, required_message):
+    return serializers.FileField(
+        error_messages={
+            "required": required_message,
+            "null": required_message,
+            "empty": f"{label} is empty.",
+            "invalid": required_message,
+        }
+    )
+
+
+class CredentialDocumentsSerializer(RejectUnknownFieldsMixin, serializers.Serializer):
+    """The file parts of a psychologist's multipart register request. Every file
+    is checked by content (core.files.check_upload) before anything is stored;
+    validated values are CheckedUpload objects grouped by DocumentKind."""
+
+    LABELS = {
+        "license_document": "License document",
+        "degree_document": "Degree certificate",
+        "other_documents": "Other document",
+    }
+
+    license_document = _document_field(
+        "License document", "Upload your license document."
+    )
+    degree_document = _document_field(
+        "Degree certificate", "Upload your degree certificate."
+    )
+    other_documents = serializers.ListField(
+        child=_document_field("Other document", "Upload a file."),
+        required=False,
+        max_length=MAX_OTHER_DOCUMENTS,
+        error_messages={
+            "max_length": f"Upload at most {MAX_OTHER_DOCUMENTS} other documents."
+        },
+    )
+
+    def _check(self, upload, field):
+        try:
+            return check_upload(
+                upload,
+                label=self.LABELS[field],
+                allowed=CREDENTIAL_FILE_KINDS,
+                max_mb=CREDENTIAL_FILE_MAX_MB,
+            )
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(list(exc.messages)) from exc
+
+    def validate_license_document(self, value):
+        return self._check(value, "license_document")
+
+    def validate_degree_document(self, value):
+        return self._check(value, "degree_document")
+
+    def validate_other_documents(self, value):
+        return [self._check(f, "other_documents") for f in value]
+
+    def to_documents(self):
+        data = self.validated_data
+        return {
+            DocumentKind.LICENSE: [data["license_document"]],
+            DocumentKind.DEGREE: [data["degree_document"]],
+            DocumentKind.OTHER: data.get("other_documents", []),
+        }

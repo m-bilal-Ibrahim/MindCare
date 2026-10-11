@@ -995,3 +995,34 @@ patient: Phase 6's approval workflow (stored triple, separate training consent,
 age gate) is still required before any recommendation can.
 **Alternatives considered:** a new `/ai/patient-summary/` endpoint (option B, only if
 the response weren't a superset; it is, so the Web would have changed for nothing).
+
+## 2026-10-11 - 6.2: credential documents are uploaded with the registration request
+**Decision (Q19, Q20, Q21):**
+- A psychologist registers with **multipart/form-data**: a `data` part holding the
+  same JSON body as before, plus `license_document` (required), `degree_document`
+  (required) and up to 3 `other_documents`. PDF, JPG or PNG, 5 MB each, checked by
+  content. Patients and NGOs keep sending JSON, and any file they send is refused.
+- Every file is validated **before** anything is written. The files are stored in the
+  registration transaction (`credentials/<profile id>/<uuid>.<ext>` in private
+  storage); if registration fails at any point, the stored files are deleted. So
+  there's no account without its documents, and no orphan files.
+- `CredentialDocument` keeps kind, detected type, size and upload time, plus the
+  storage key. The uploaded filename is not kept. The owner sees the list on
+  `/psychologists/me/` without keys or URLs. Admins open files in 6.3 through
+  audited, short-lived signed URLs; Django admin lists them read-only, with no link.
+- **Required at the API boundary** (the register serializer), not in
+  `register_user()`, the same as other required fields. So `seed_demo` and other
+  tooling can still create psychologists. Psychologists approved before this change
+  have no documents; they were approved on their text credentials.
+- **Breaking for the Web's therapist signup:** a JSON psychologist registration now
+  gets a 400 asking for the files. This backend PR must ship together with the Web's
+  upload fields (merged back to back), so signup is never broken in production.
+- Deleting a psychologist in Django admin removes the document rows (CASCADE), but
+  not the files in the bucket; tidy-up of such test files is manual for now.
+- **Availability (working hours), session booking and video links are deferred to
+  Phase 2** with booking (Q21). The existing "accepting new patients" switch stays.
+- **NGO documents are deferred to Phase 2** with 6.12 (Q20). There is no NGO signup
+  screen yet.
+**Alternatives considered:** a single-use upload token after registration (two
+requests, plus a window where an account has no documents); letting pending accounts
+log in to upload (reverses the 2026-09-26 decision).

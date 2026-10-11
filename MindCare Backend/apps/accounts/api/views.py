@@ -4,6 +4,8 @@ Views stay thin: parse the request, delegate to services.py (writes) or
 selectors.py (reads), then serialize the result. No business logic here.
 """
 
+import json
+
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers, status
 from rest_framework.exceptions import ParseError, ValidationError
@@ -19,12 +21,14 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from apps.accounts import selectors, services
 from apps.accounts.api.serializers import (
     MindCareTokenObtainPairSerializer,
+    RegisterMultipartDoc,
     RegisterRequestDoc,
     RegisterResponseDoc,
     RegisterSerializer,
     registration_response_data,
 )
-from apps.accounts.models import ApprovalStatus
+from apps.accounts.models import ApprovalStatus, Role
+from apps.psychologists.api.serializers import CredentialDocumentsSerializer
 from core.exceptions import DomainValidationError
 
 
@@ -37,11 +41,25 @@ class RegisterView(APIView):
     authentication_classes = []
     throttle_classes = [RegisterRateThrottle]
 
-    @extend_schema(request=RegisterRequestDoc, responses={201: RegisterResponseDoc})
+    @extend_schema(
+        request={
+            "application/json": RegisterRequestDoc,
+            "multipart/form-data": RegisterMultipartDoc,
+        },
+        responses={201: RegisterResponseDoc},
+        description=(
+            "Patients and NGOs send JSON. Psychologists send multipart/form-data: "
+            "a `data` part holding the same JSON body, plus `license_document`, "
+            "`degree_document` and up to 3 `other_documents` (PDF, JPG or PNG, "
+            "5 MB each, checked by content)."
+        ),
+    )
     def post(self, request):
-        serializer = RegisterSerializer(data=request.data)
+        payload, files = _split_register_request(request)
+        serializer = RegisterSerializer(data=payload)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
+        documents = _validated_documents(data["role"], files)
         try:
             user = services.register_user(
                 email=data["email"],
@@ -50,6 +68,7 @@ class RegisterView(APIView):
                 role=data["role"],
                 is_adult_confirmed=data["is_adult_confirmed"],
                 profile_data=data["profile"],
+                credential_documents=documents,
             )
         except services.DuplicateEmailError as exc:
             raise ValidationError({"email": str(exc)}) from exc
@@ -63,6 +82,34 @@ class RegisterView(APIView):
         return Response(
             registration_response_data(user), status=status.HTTP_201_CREATED
         )
+
+
+MALFORMED_DATA_PART = "Send the registration details as JSON in the 'data' field."
+
+
+def _split_register_request(request):
+    """JSON body as-is; multipart: the JSON `data` part plus the uploaded files."""
+    if not request.content_type.startswith("multipart/form-data"):
+        return request.data, {}
+    try:
+        payload = json.loads(request.data.get("data", ""))
+    except ValueError:
+        payload = None
+    if not isinstance(payload, dict):
+        raise ValidationError({"data": [MALFORMED_DATA_PART]})
+    return payload, request.FILES
+
+
+def _validated_documents(role, files):
+    """Psychologists must send their credential files; other roles may not send
+    any. Returns DocumentKind -> [CheckedUpload] or None."""
+    if role != Role.PSYCHOLOGIST:
+        if files:
+            raise ValidationError({key: ["This field can't be set."] for key in files})
+        return None
+    documents = CredentialDocumentsSerializer(data=files)
+    documents.is_valid(raise_exception=True)
+    return documents.to_documents()
 
 
 class LoginRateThrottle(AnonRateThrottle):
