@@ -15,44 +15,71 @@ class MoodCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        decoration: BoxDecoration(
-          color: AppColors.cardBackground,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: selected ? AppColors.textDark : AppColors.border, width: selected ? 1.6 : 1),
-        ),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Column(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(colors: [option.color.withOpacity(0.9), option.color]),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(option.label, style: const TextStyle(fontWeight: FontWeight.w500, color: AppColors.textDark)),
-              ],
-            ),
-            if (selected)
-              Positioned(
-                top: -8,
-                right: 4,
-                child: Container(
-                  width: 20,
-                  height: 20,
-                  decoration: const BoxDecoration(color: AppColors.textDark, shape: BoxShape.circle),
-                  child: const Icon(Icons.check, size: 13, color: Colors.white),
+    final color = option.color;
+    // A lighter tint of the mood colour gives the orb a soft, lit-from-above look.
+    final highlight = Color.lerp(color, Colors.white, 0.45)!;
+
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: option.label,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          decoration: BoxDecoration(
+            color: selected ? Color.alphaBlend(color.withValues(alpha: 0.08), AppColors.cardBackground) : AppColors.cardBackground,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: selected ? color : AppColors.border, width: selected ? 1.6 : 1),
+          ),
+          child: Stack(
+            children: [
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 46,
+                      height: 46,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [highlight, color],
+                        ),
+                        boxShadow: [
+                          BoxShadow(color: color.withValues(alpha: 0.28), blurRadius: 12, offset: const Offset(0, 4)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      option.label,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textDark),
+                    ),
+                  ],
                 ),
               ),
-          ],
+              Positioned(
+                top: 8,
+                right: 8,
+                child: AnimatedScale(
+                  scale: selected ? 1 : 0,
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOutBack,
+                  child: Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                    child: const Icon(Icons.check, size: 13, color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
