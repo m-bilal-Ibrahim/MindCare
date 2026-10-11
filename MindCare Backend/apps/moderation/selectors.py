@@ -1,6 +1,22 @@
-"""Read-path query logic for moderation.
+"""Read-path query logic for moderation."""
 
-Views call into these functions to fetch data. Object-level ownership
-filtering (e.g. scoping a psychologist's queries to their own patients)
-belongs here, not just in permission classes.
-"""
+from apps.moderation.models import Report
+
+_PARTIES = (
+    "reporter__patient_profile",
+    "reporter__psychologist_profile",
+    "reported_user__patient_profile",
+    "reported_user__psychologist_profile",
+)
+
+
+def reports_by(*, reporter):
+    """A reporter's own reports (only status comes back to them)."""
+    return Report.objects.filter(reporter=reporter)
+
+
+def reports_for_admin(*, status=None):
+    qs = Report.objects.select_related(*_PARTIES)
+    if status:
+        qs = qs.filter(status=status)
+    return qs

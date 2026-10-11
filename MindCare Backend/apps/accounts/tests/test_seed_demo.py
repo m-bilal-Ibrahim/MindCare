@@ -78,7 +78,11 @@ class SeedDemoServiceTests(TestCase):
             names,
             {
                 spec["full_name"]
-                for spec in demo.DEMO_PSYCHOLOGISTS + demo.DEMO_PATIENTS
+                for spec in [
+                    *demo.DEMO_PSYCHOLOGISTS,
+                    *demo.DEMO_PATIENTS,
+                    demo.DEMO_APPLICANT,
+                ]
             },
         )
         sara.refresh_from_db()
@@ -87,10 +91,10 @@ class SeedDemoServiceTests(TestCase):
     def test_is_idempotent(self):
         first = demo.seed_demo_accounts(password=PASSWORD)
         second = demo.seed_demo_accounts(password=PASSWORD)
-        self.assertEqual(first["created"], 8)
+        self.assertEqual(first["created"], 9)
         self.assertEqual(second["created"], 0)
-        self.assertEqual(second["existing"], 8)
-        self.assertEqual(User.objects.filter(email__in=demo.DEMO_EMAILS).count(), 8)
+        self.assertEqual(second["existing"], 9)
+        self.assertEqual(User.objects.filter(email__in=demo.DEMO_EMAILS).count(), 9)
 
     def test_seeds_accepted_and_pending_relationships_with_one_psychologist(self):
         demo.seed_demo_accounts(password=PASSWORD)
@@ -156,7 +160,7 @@ class SeedDemoServiceTests(TestCase):
 
         result = demo.remove_demo_accounts()
 
-        self.assertEqual(result["users"], 8)
+        self.assertEqual(result["users"], 9)
         self.assertEqual(result["relationships"], 3)
         self.assertFalse(User.objects.filter(email__in=demo.DEMO_EMAILS).exists())
         self.assertTrue(User.objects.filter(pk=real_patient.user.pk).exists())
@@ -179,7 +183,7 @@ class SeedDemoCommandTests(TestCase):
         out = StringIO()
         with mock.patch.dict(os.environ, {"DEMO_PASSWORD": PASSWORD}):
             call_command("seed_demo", stdout=out)
-        self.assertEqual(User.objects.filter(email__in=demo.DEMO_EMAILS).count(), 8)
+        self.assertEqual(User.objects.filter(email__in=demo.DEMO_EMAILS).count(), 9)
         self.assertNotIn(PASSWORD, out.getvalue())
 
     def test_remove_option_needs_no_password(self):
@@ -188,3 +192,55 @@ class SeedDemoCommandTests(TestCase):
             os.environ.pop("DEMO_PASSWORD", None)
             call_command("seed_demo", "--remove", stdout=StringIO())
         self.assertFalse(User.objects.filter(email__in=demo.DEMO_EMAILS).exists())
+
+
+class SeedDemoAdminDataTests(TestCase):
+    """6.3 demo data: a pending applicant with fictional documents, an open report."""
+
+    def setUp(self):
+        import tempfile
+
+        from django.test import override_settings
+
+        self.media = tempfile.mkdtemp()
+        self.override = override_settings(MEDIA_ROOT=self.media)
+        self.override.enable()
+
+    def tearDown(self):
+        import shutil
+
+        self.override.disable()
+        shutil.rmtree(self.media, ignore_errors=True)
+
+    def test_pending_applicant_with_documents_and_one_open_report(self):
+        from django.core.files.storage import default_storage
+
+        from apps.moderation.models import Report, ReportStatus
+
+        demo.seed_demo_accounts(password=PASSWORD)
+        demo.seed_demo_accounts(password=PASSWORD)  # idempotent
+        applicant = User.objects.get(email=demo.DEMO_APPLICANT["email"])
+        self.assertEqual(applicant.approval_status, ApprovalStatus.PENDING)
+        docs = applicant.psychologist_profile.documents.all()
+        self.assertEqual(sorted(d.kind for d in docs), ["degree", "license"])
+        for doc in docs:
+            self.assertTrue(default_storage.exists(doc.storage_key))
+        self.assertEqual(Report.objects.filter(status=ReportStatus.OPEN).count(), 1)
+
+    def test_remove_deletes_reports_and_document_files(self):
+        from django.core.files.storage import default_storage
+
+        from apps.moderation.models import Report
+
+        demo.seed_demo_accounts(password=PASSWORD)
+        keys = list(
+            User.objects.get(
+                email=demo.DEMO_APPLICANT["email"]
+            ).psychologist_profile.documents.values_list("storage_key", flat=True)
+        )
+        with self.captureOnCommitCallbacks(execute=True):
+            demo.remove_demo_accounts()
+        self.assertFalse(Report.objects.exists())
+        self.assertFalse(User.objects.filter(email__in=demo.DEMO_EMAILS).exists())
+        for key in keys:
+            self.assertFalse(default_storage.exists(key))

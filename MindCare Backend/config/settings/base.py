@@ -124,8 +124,8 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Uploaded files (credential documents, photos, audio). Local disk here; prod.py
-# switches the default storage to a private Supabase Storage bucket. The
+# Uploaded files (credential documents, photos, audio). Local disk by default;
+# the SUPABASE_S3_* variables switch to a private Supabase Storage bucket. The
 # database stores only keys; files are served through short-lived signed URLs
 # from integrations/storage_client (docs/decisions.md, 2026-10-11).
 STORAGES = {
@@ -140,6 +140,32 @@ SIGNED_URL_EXPIRY_SECONDS = 300
 # with REQUIRE_CREDENTIAL_DOCS=true once the Web sends the files
 # (docs/decisions.md, 2026-10-11).
 REQUIRE_CREDENTIAL_DOCS = env.bool("REQUIRE_CREDENTIAL_DOCS", default=False)
+
+# Uploads: a private Supabase Storage bucket over its S3-compatible API
+# (django-storages). Keys are storage-only S3 access keys, not the service_role
+# key (docs/decisions.md, 2026-10-11). Files are reachable only via signed URLs.
+# Turned on by the SUPABASE_S3_* variables, in any environment (so `seed_demo` run
+# locally against production writes demo files to the real bucket).
+if env("SUPABASE_S3_BUCKET", default=""):
+    STORAGES = {
+        **STORAGES,
+        "default": {
+            "BACKEND": "storages.backends.s3.S3Storage",
+            "OPTIONS": {
+                "bucket_name": env("SUPABASE_S3_BUCKET"),
+                "endpoint_url": env("SUPABASE_S3_ENDPOINT"),
+                "region_name": env("SUPABASE_S3_REGION"),
+                "access_key": env("SUPABASE_S3_ACCESS_KEY_ID"),
+                "secret_key": env("SUPABASE_S3_SECRET_ACCESS_KEY"),
+                "default_acl": None,
+                "querystring_auth": True,
+                "querystring_expire": SIGNED_URL_EXPIRY_SECONDS,
+                "file_overwrite": False,
+                "signature_version": "s3v4",
+                "addressing_style": "path",
+            },
+        },
+    }
 
 # prod.py sets this: a deploy fails its system check if uploads would land on
 # Render's temporary disk.
@@ -169,6 +195,8 @@ REST_FRAMEWORK = {
         "relationship_requests": "10/hour",
         "ai_prediction": "20/min",
         "motivation": "60/min",
+        "admin": "120/min",
+        "reports": "10/day",
     },
     "NUM_PROXIES": env.int("NUM_PROXIES", default=0),
 }
@@ -221,6 +249,11 @@ SPECTACULAR_SETTINGS = {
             "referred_elsewhere",
             "treatment_completed",
         ],
+        "ReportReasonEnum": "apps.moderation.models.ReportReason",
+        "ReportStatusEnum": "apps.moderation.models.ReportStatus",
+        "RejectReasonEnum": "apps.accounts.services.RejectReason.CHOICES",
+        "DeactivateReasonEnum": "apps.accounts.services.DeactivateReason.CHOICES",
+        "RelationshipStatusEnum": "apps.relationships.models.RelationshipStatus",
     },
 }
 

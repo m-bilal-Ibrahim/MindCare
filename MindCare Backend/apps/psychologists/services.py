@@ -238,3 +238,39 @@ def store_credential_documents(*, profile, documents):
             storage.delete_file(key)
         raise
     return stored
+
+
+class DocumentNotFound(Exception):
+    pass
+
+
+def open_credential_document(*, admin, document_id, ip=None):
+    """A short-lived signed URL for an admin reviewing a credential file (6.3).
+
+    The audit row is written in the same transaction before the URL is made: no
+    row, no URL (fail closed; docs/decisions.md, 2026-10-11). Returns
+    (document, url, expires_in_seconds).
+    """
+    from django.conf import settings
+
+    from apps.audit.models import AuditAction, AuditResource
+    from apps.audit.services import record_access
+
+    with transaction.atomic():
+        document = (
+            CredentialDocument.objects.select_related("profile")
+            .filter(pk=document_id)
+            .first()
+        )
+        if document is None:
+            raise DocumentNotFound()
+        record_access(
+            actor=admin,
+            action=AuditAction.DOWNLOAD,
+            resource_type=AuditResource.CREDENTIAL_DOCUMENT,
+            resource_id=document.pk,
+            ip=ip,
+        )
+        expires = settings.SIGNED_URL_EXPIRY_SECONDS
+        url = storage.signed_url(document.storage_key, expires=expires)
+    return document, url, expires

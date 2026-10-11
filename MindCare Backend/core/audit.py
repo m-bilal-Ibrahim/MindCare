@@ -76,3 +76,32 @@ def log_relationship_event(
         "timestamp": timezone.now().isoformat(),
     }
     logger.info(json.dumps(payload))
+
+
+ADMIN_EVENTS = {
+    "account_approved",
+    "account_rejected",
+    "account_deactivated",
+    "account_reactivated",
+    "report_submitted",
+    "report_dismissed",
+    "report_actioned",
+}
+
+
+def log_admin_event(*, event, actor_id, target_user_id=None, reason=None, ref_id=None):
+    """An admin decision (approve, reject, deactivate, reactivate, report review)
+    or a report submission. IDs and reason codes only: never names, never what a
+    person typed (6.3; docs/decisions.md, 2026-10-11)."""
+    if event not in ADMIN_EVENTS:
+        raise ValueError(f"Unknown admin event: {event!r}")
+    payload = {
+        "event_type": "admin",
+        "event": event,
+        "actor_id": actor_id,
+        "target_user_id": target_user_id,
+        "reason": reason,
+        "ref_id": ref_id,
+        "timestamp": timezone.now().isoformat(),
+    }
+    logger.info(json.dumps(payload))

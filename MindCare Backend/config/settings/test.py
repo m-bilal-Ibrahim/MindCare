@@ -33,6 +33,11 @@ if (DATABASES["default"].get("HOST") or "localhost") not in _LOCAL_TEST_DB_HOSTS
 FIELD_ENCRYPTION_KEY = "dGVzdC1vbmx5LW5vdC1hLXNlY3JldC1rZXktMDAwMDA="
 FIELD_ENCRYPTION_PREVIOUS_KEYS = []
 MEDIA_ROOT = Path(tempfile.gettempdir()) / "mindcare-test-media"
+# Tests always use local disk, even if a developer shell has SUPABASE_S3_* set.
+STORAGES = {
+    **STORAGES,  # noqa: F405
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+}
 
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.MD5PasswordHasher",

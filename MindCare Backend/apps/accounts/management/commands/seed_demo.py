@@ -17,14 +17,16 @@ from core.exceptions import DomainValidationError
 
 class Command(BaseCommand):
     help = (
-        "Create 6 approved demo psychologists and 2 demo patients (or --remove them)."
+        "Create the demo accounts: 6 approved psychologists, 2 patients, 1 pending "
+        "applicant with fictional documents, and 1 open report (or --remove them)."
     )
 
     def add_arguments(self, parser):
         parser.add_argument(
             "--remove",
             action="store_true",
-            help="Delete the demo accounts (and their relationship rows) instead.",
+            help="Delete the demo accounts (with their reports, relationship rows and "
+            "document files) instead.",
         )
 
     def handle(self, *args, remove=False, **options):

@@ -97,15 +97,20 @@ Status 2026-10-11: all done (`NUM_PROXIES=3` set on Render).
 ## Demo accounts
 
 `DEMO_PASSWORD=<choose one> python manage.py seed_demo` creates 6 approved demo
-psychologists and 2 demo patients (all `demo.*@example.com`; psychologist bios start
+psychologists, 2 demo patients, 1 pending demo applicant (Dr. Nadia Siddiqui, with two
+fictional PDF documents) and 1 open demo report (all `demo.*@example.com`; psychologist bios start
 "Demo account, not a real psychologist."; names are plain because of the name rule). It
 can be re-run safely. Demo patient 1 (Hina) has an accepted relationship with
 Dr. Sara Ahmed and demo patient 2 (Daniyal) a pending request to her, so
 `demo.psych.sara@example.com` shows both the inbox and the patient list. Pending
 requests expire after 3 days; re-running the command renews it. `python manage.py seed_demo --remove` deletes exactly those
-accounts and their relationship rows. Render's free tier has no Shell, so run it
-locally with `DATABASE_URL` set to the production URL for that one command, then
-remove the variable again. Demo cities outside Pakistan
+accounts with their reports, relationship rows and document files. Render's free tier
+has no Shell, so run it locally with `DATABASE_URL` set to the production URL for that
+one command, then remove the variable again. **Also set the five `SUPABASE_S3_*`
+variables in that shell** (same values as on Render): they switch storage to the
+bucket in any environment, so the applicant's demo documents land in the real bucket
+and open from the admin review screen. Without them the files would be written to
+your laptop and the links would not work. Demo cities outside Pakistan
 (London, Dubai) are created unverified, like any typed city.
 
 ## Removing test data (Phase 3 onwards)

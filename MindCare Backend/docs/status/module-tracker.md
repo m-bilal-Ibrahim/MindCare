@@ -35,9 +35,9 @@ Last updated: 2026-10-10 (input-validation-hardening, backend part). Re-checked 
 
 | Bullet | Backend | Web | App | Notes |
 |---|---|---|---|---|
-| Verify psychologist credentials; approve or reject registrations | partial | partial (branch `web/admin-psychologist-approvals`) | — | Django admin only; API contract agreed (option A) |
-| Monitor platform activities; ensure policies are followed | not started | mock only | — | Overview and Users pages use `constants/adminConsole.ts` |
-| Moderate community content; manage reports and complaints | not started | mock only | not started | Moderation page is mock. Community moderation comes with 6.8 |
+| Verify psychologist credentials; approve or reject registrations | done (PR 6.3) | partial (branch `web/admin-psychologist-approvals`) | — | Endpoints exactly per the contract; audited document links; Django admin uses the same service. Web: merge the partner's branch, then add the document viewer |
+| Monitor platform activities; ensure policies are followed | done (PR 6.3) | mock only | — | Overview, Users (pseudonyms for private patients, audited reveal), deactivate/reactivate. Web pages still use `constants/adminConsole.ts` until the partner's branches land |
+| Moderate community content; manage reports and complaints | partial (PR 6.3) | mock only | not started | Reports and complaints done (both directions, encrypted descriptions, dismiss/uphold). **Community content moderation deferred to 6.8** |
 
 ## 6.4 Patient Profiling
 
