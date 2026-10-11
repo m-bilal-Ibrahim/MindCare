@@ -748,6 +748,24 @@ coin-flip, so the reviewing psychologist knows where their own judgement matters
 
 ---
 
+## Alert Layer (added 2026-10-11 — `src/inference/alerts.py`, `src/config/alert_thresholds.toml`)
+
+Rule-based flags next to the prediction, for sorting the psychologist's review queue. **Not part
+of the model**: it changes no prediction, preprocessing or probability, and the thresholds are
+hand-picked drafts pending psychologist review, **not learned from data and not validated**.
+
+- Six single-value flags (sleep ≤ 3, stress ≥ 8, HR ≥ 115, BR ≥ 27, caffeine ≥ 520 mg, diet < 4).
+- `attention_level`: `urgent` if the model predicts High or sleep ≤ 3; else `elevated` (2+ flags),
+  `notice` (1) or `clear`.
+- `final_risk_class` = High when sleep ≤ 3, else the model's class. `model_class` keeps the model's
+  own answer.
+- **Limit:** on the dataset about 69% of rows get at least one flag and 29% two or more, mostly from
+  stress (36.7% of rows) and diet (34.8%). Only `low_sleep` is strongly tied to High (94.1% of its
+  0.2% of rows), and that comes from a very likely synthetic dataset. Full table: `docs/api_usage.md`,
+  "Alert layer".
+
+---
+
 ## Uncertainty / Abstention Mechanism (Phase 16 — `src/models/uncertainty_flagging.py`, `reports/uncertainty_flagging.md`)
 
 > **Current rule (since 2026-09-28): P(High) ≥ 0.025 on the XGBoost model.** Unchanged for the

@@ -1,0 +1,15 @@
+# Draft thresholds, pending psychologist review.
+#
+# Alert layer thresholds (src/inference/alerts.py). Read once at API startup: editing this file and
+# restarting the service changes the alerts, with no retraining. The XGBoost model never sees them.
+#
+# These are clinical-guidance-style cut-offs chosen by hand, NOT learned from data, and not
+# validated. Each flag fires on its own value alone, whatever the other inputs are. How often each
+# fires on the (very likely synthetic) dataset is in docs/api_usage.md, "Alert layer".
+
+sleep_hours_max = 3         # flag when Sleep Hours <= 3 (also forces final_risk_class = High)
+stress_min = 8              # flag when the PSS-derived Stress Level (1-10) >= 8
+heart_rate_min = 115        # flag when Heart Rate (bpm) >= 115
+breathing_rate_min = 27     # flag when Breathing Rate (breaths/min) >= 27
+caffeine_mg_min = 520       # flag when estimated Caffeine Intake (mg/day) >= 520
+diet_quality_below = 4      # flag when Diet Quality (1-10) < 4

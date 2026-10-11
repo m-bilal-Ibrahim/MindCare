@@ -651,6 +651,17 @@ preprocessing (Phase 10) is shared between the two targets.
       **Superseded 2026-09-28:** the production threshold is now 0.025 on XGBoost; see "Model
       switched from Random Forest to XGBoost" above.
 
+### Alert layer (2026-10-11, not a model change)
+- [x] `src/inference/alerts.py` + `src/config/alert_thresholds.toml` (read at startup), in `/predict`
+      and `/patient-summary`: `alert_flags`, `alert_flag_count`, `attention_level`, `model_class`,
+      `final_risk_class`. Tests: `tests/test_alerts.py`. Docs: `docs/api_usage.md`, "Alert layer".
+- The thresholds are **hand-picked drafts pending psychologist review, not learned from data**. Do
+  not tune them against the dataset or describe them as validated.
+- `final_risk_class` overrides to High on sleep <= 3 by rule; `model_class`/`predicted_class` stay the
+  model's. The XGBoost model, preprocessing and served artifacts are unchanged
+  (`scripts/deploy_artifacts.py verify` passes with identical probabilities).
+- Fires often on the dataset (69% of rows get 1+ flag); only low sleep is strongly tied to High.
+
 ### Phase 21/22 — Clinical validation comparison tool (built, no data yet)
 - [x] Clinical scoring scales and agreement metrics built in `src/evaluation/clinical_scales.py` and `src/evaluation/clinical_agreement.py`
 - [x] Unit tests in `tests/test_clinical_scales.py` (arithmetic verification only)

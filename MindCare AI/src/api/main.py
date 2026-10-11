@@ -24,6 +24,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, ConfigDict, Field
 
+from src.inference.alerts import evaluate_alerts, load_thresholds
 from src.inference.confidence import confidence_label
 from src.inference.input_validation import ALL_FEATURES, InputValidationError, validate_patient
 from src.inference.stress_scale import PSS_FIELDS, PSS_ITEM_MAX, PSS_ITEM_MIN, estimate_stress_level
@@ -86,6 +87,9 @@ async def lifespan(app: FastAPI):
     class_names = list(ml_artifacts["label_encoder"].classes_)
     ml_artifacts["class_names"] = class_names
     ml_artifacts["high_index"] = class_names.index("High")
+    # Alert thresholds (src/config/alert_thresholds.toml) are read here, once, like the model: edit
+    # the file and restart to change them. A bad file stops startup rather than dropping an alert.
+    ml_artifacts["alert_thresholds"] = load_thresholds()
     yield
     ml_artifacts.clear()
 
@@ -181,6 +185,13 @@ class PatientFeatures(BaseModel):
     family_history_of_anxiety: YesNoValue = Field(alias="Family History of Anxiety")
 
 
+class AlertFlag(BaseModel):
+    name: str
+    feature: str
+    value: float
+    threshold: float
+
+
 class PredictionResponse(BaseModel):
     predicted_class: Literal["Low", "Medium", "High"]
     probabilities: dict[str, float]
@@ -193,6 +204,13 @@ class PredictionResponse(BaseModel):
     confidence_label: Literal["confident", "borderline"]
     borderline_reasons: list[str]
     borderline_between: list[str] | None
+    # Alert layer (src/inference/alerts.py): rule-based flags, not model output. model_class equals
+    # predicted_class; final_risk_class is High when the low-sleep rule fired, else model_class.
+    alert_flags: list[AlertFlag]
+    alert_flag_count: int
+    attention_level: Literal["urgent", "elevated", "notice", "clear"]
+    model_class: Literal["Low", "Medium", "High"]
+    final_risk_class: Literal["Low", "Medium", "High"]
 
 
 class HealthResponse(BaseModel):
@@ -277,6 +295,7 @@ def predict(patient: PatientFeatures) -> PredictionResponse:
         estimated_caffeine_mg=caffeine_mg,
         estimated_stress_level=stress_level,
         **confidence_label(probability_by_class, predicted_class, review_flag),
+        **evaluate_alerts(patient_dict, predicted_class, ml_artifacts["alert_thresholds"]),
     )
 
 
@@ -314,6 +333,13 @@ class PatientSummaryResponse(BaseModel):
     confidence_label: Literal["confident", "borderline"]
     borderline_reasons: list[str]
     borderline_between: list[str] | None
+    # Alert layer, as in PredictionResponse. The severity tier below is still estimated from the
+    # model's class, not from final_risk_class.
+    alert_flags: list[AlertFlag]
+    alert_flag_count: int
+    attention_level: Literal["urgent", "elevated", "notice", "clear"]
+    model_class: Literal["Low", "Medium", "High"]
+    final_risk_class: Literal["Low", "Medium", "High"]
     estimated_severity_tier: Literal["Minimal (1-2)", "Mild (3-4)", "Moderate (5-6)", "High (7-8)", "Severe (9-10)"]
     severity_tier_basis: SeverityTierBasis
     recommendation_bundle: RecommendationBundle
