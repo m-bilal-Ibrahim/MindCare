@@ -399,7 +399,15 @@ features) among True-High(/Severe) rows. **It does not replicate:**
   physiological/lifestyle profile systematically different in a way that should degrade model
   performance for this occupation.
 
-**Conclusion: treat the Scientist recall gap as likely validation-set sampling noise, not a
+**Update 2026-10-12 (served v2 XGBoost, `reports/fairness_11feature_v2.md`): the cross-validated check
+was run and the gap PERSISTS** - out-of-fold over 9,350 rows, Scientist balanced accuracy
+0.760 (95% CI 0.719-0.797) vs
+0.811, High recall 0.747 (0.645-0.847)
+vs 0.877. This supersedes "likely noise" below: describe it as an unexplained,
+persistent gap, still not established bias (13 occupations tested; no Occupation-Stress relationship;
+synthetic data).
+
+**Original conclusion: treat the Scientist recall gap as likely validation-set sampling noise, not a
 validated fairness issue**, pending a larger sample (e.g. cross-validated fairness evaluation
 instead of a single validation split) before treating it as something to correct for. Do not
 cite this as evidence of occupational bias without that caveat.
@@ -668,6 +676,16 @@ preprocessing (Phase 10) is shared between the two targets.
       review attention rather than gatekeeping access to review. Not yet done for 5-class Severity.
       **Superseded 2026-09-28:** the production threshold is now 0.025 on XGBoost; see "Model
       switched from Random Forest to XGBoost" above.
+
+### Validation/CV-only checks of the served v2 model (2026-10-11/12, test set NOT used)
+- [x] Re-tuning on the 11 features (`src/models/tune_models_11feature.py`): no gain, v2 params kept.
+- [x] Derived features (`src/experiments/derived_features_11feature.py`): null result, not adopted.
+- [x] Calibration and review threshold (`src/experiments/calibration_review_flag_11feature_v2.py`): already
+      well calibrated, calibration not deployed; threshold stays 0.025, with 0.0302 / 0.0349 documented as
+      alternatives. **The threshold is an open clinical decision.**
+- [x] Fairness by Gender and Occupation (`src/fairness/fairness_11feature_v2.py`): Scientist gap persists
+      out-of-fold (see "Known finding" above).
+- Summary in `docs/model_card.md`, "Current Status Summary".
 
 ### Phase 21/22 — Clinical validation comparison tool (built, no data yet)
 - [x] Clinical scoring scales and agreement metrics built in `src/evaluation/clinical_scales.py` and `src/evaluation/clinical_agreement.py`
