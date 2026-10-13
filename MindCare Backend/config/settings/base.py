@@ -135,6 +135,12 @@ STORAGES = {
 MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = "/media/"
 SIGNED_URL_EXPIRY_SECONDS = 300
+# Psychologist registration: are the license and degree files required? Off by
+# default so the live therapist signup (JSON, no files) keeps working; turn on
+# with REQUIRE_CREDENTIAL_DOCS=true once the Web sends the files
+# (docs/decisions.md, 2026-10-11).
+REQUIRE_CREDENTIAL_DOCS = env.bool("REQUIRE_CREDENTIAL_DOCS", default=False)
+
 # prod.py sets this: a deploy fails its system check if uploads would land on
 # Render's temporary disk.
 REQUIRE_OBJECT_STORAGE = False

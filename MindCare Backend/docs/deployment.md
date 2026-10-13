@@ -29,6 +29,8 @@ Production backend runs on **Render**, with **Supabase** (Postgres) and
 | `SUPABASE_S3_ENDPOINT` | `https://<project-ref>.supabase.co/storage/v1/s3` (Supabase → Storage → Settings → S3 Connection) |
 | `SUPABASE_S3_REGION` | the region shown on the same page (e.g. `ap-south-1`) |
 | `SUPABASE_S3_ACCESS_KEY_ID` / `SUPABASE_S3_SECRET_ACCESS_KEY` | an S3 access key created on that page (storage-only; **not** the `service_role` key). Any of the five missing → uploads would use local disk, so the deploy's system check fails (`mindcare.E002`) |
+| `REQUIRE_CREDENTIAL_DOCS` | optional; `true` makes the license and degree files required at psychologist registration. Default `false`, so the current JSON therapist signup keeps working. Turn on only when the Web sends the files |
+| `NUM_PROXIES` | `3`: measured 2026-10-11, `X-Forwarded-For` = `client, cloudflare, render-internal` (see @decisions.md). Re-measure if the proxy chain changes |
 | `AI_SERVICE_URL` | the MindCare AI service's base URL, no trailing `/predict` (e.g. `https://mindcare-api-fysd.onrender.com`). Unset → `POST /api/v1/ai/anxiety-prediction/` answers 503 |
 
 **Local development:** the developer's local `.env` `DATABASE_URL` points at the
@@ -70,17 +72,11 @@ returns `Access-Control-Allow-Origin` for that origin.
 
 ## Pre-deploy checklist for the Phase 2 merge
 
-Status 2026-09-30: migrations-on-deploy, existing users and frontend readiness are
-done. **Still open before merging:** `NUM_PROXIES` on Render.
+Status 2026-10-11: all done (`NUM_PROXIES=3` set on Render).
 
-- [ ] **Rate limits behind Render's proxy:** `NUM_PROXIES` defaults to 0, so DRF
-      throttles on the proxy's address and every user shares one bucket (login
-      5/min, register 10/hour, reference 120/min, stats 60/min). Measure it with the
-      temporary `GET /api/v1/accounts/debug/client-ip/` (admin JWT): set
-      `NUM_PROXIES` to the number of `X-Forwarded-For` entries that are proxies,
-      i.e. the value for which `throttle_ident` equals your own public IP (normally
-      the same as `cf_connecting_ip`). Then remove the endpoint in the next PR
-      (see @decisions.md, 2026-10-10).
+- [x] **Rate limits behind Render's proxy:** measured 2026-10-11:
+      `X-Forwarded-For` = `client, cloudflare, render-internal`, so
+      `NUM_PROXIES=3` is set on Render (see @decisions.md, 2026-10-11).
 - [x] **Migrations run on deploy** (confirmed from Render's dashboard,
       2026-09-30). Render's build command:
       `pip install -r requirements/prod.txt && python manage.py collectstatic --noinput && python manage.py migrate`.

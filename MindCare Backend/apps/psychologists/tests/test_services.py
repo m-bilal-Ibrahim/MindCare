@@ -15,7 +15,7 @@ from apps.psychologists.services import (
 )
 from apps.reference.models import City, Country, Specialization
 from core.exceptions import DomainValidationError
-from core.testing import make_user, psychologist_profile_data
+from core.testing import make_psychologist, make_user, psychologist_profile_data
 
 
 def _create(**overrides):
@@ -189,3 +189,81 @@ class UpdatePsychologistProfileTests(TestCase):
         )
         self.profile.refresh_from_db()
         self.assertEqual(self.profile.years_of_experience, 5)
+
+
+class StoreCredentialDocumentsTests(TestCase):
+    """6.2: documents are stored with the profile; nothing is left behind on
+    failure (docs/decisions.md, 2026-10-11)."""
+
+    def setUp(self):
+        import tempfile
+
+        from django.test import override_settings
+
+        self.media = tempfile.mkdtemp()
+        self.override = override_settings(MEDIA_ROOT=self.media)
+        self.override.enable()
+
+    def tearDown(self):
+        import shutil
+
+        self.override.disable()
+        shutil.rmtree(self.media, ignore_errors=True)
+
+    def _checked(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        from core.files import PDF, check_upload
+
+        f = SimpleUploadedFile("x.pdf", b"%PDF-1.7\n%%EOF\n")
+        return check_upload(f, label="License document", allowed=(PDF,), max_mb=5)
+
+    def _files(self):
+        import os
+
+        return [n for _, _, names in os.walk(self.media) for n in names]
+
+    def test_stores_rows_and_files(self):
+        from apps.psychologists.models import CredentialDocument, DocumentKind
+        from apps.psychologists.services import store_credential_documents
+
+        profile = make_psychologist()
+        keys = store_credential_documents(
+            profile=profile,
+            documents={
+                DocumentKind.LICENSE: [self._checked()],
+                DocumentKind.DEGREE: [self._checked()],
+            },
+        )
+        self.assertEqual(len(keys), 2)
+        self.assertEqual(CredentialDocument.objects.filter(profile=profile).count(), 2)
+        self.assertEqual(len(self._files()), 2)
+
+    def test_partial_failure_removes_the_files_already_stored(self):
+        from unittest import mock
+
+        from apps.psychologists.models import CredentialDocument, DocumentKind
+        from apps.psychologists.services import store_credential_documents
+
+        profile = make_psychologist()
+        real_create = CredentialDocument.objects.create
+        calls = {"n": 0}
+
+        def create_then_fail(**kwargs):
+            calls["n"] += 1
+            if calls["n"] == 2:
+                raise RuntimeError("database hiccup")
+            return real_create(**kwargs)
+
+        with mock.patch.object(
+            CredentialDocument.objects, "create", side_effect=create_then_fail
+        ):
+            with self.assertRaises(RuntimeError):
+                store_credential_documents(
+                    profile=profile,
+                    documents={
+                        DocumentKind.LICENSE: [self._checked()],
+                        DocumentKind.DEGREE: [self._checked()],
+                    },
+                )
+        self.assertEqual(self._files(), [])

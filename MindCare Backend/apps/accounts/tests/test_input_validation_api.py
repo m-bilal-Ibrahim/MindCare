@@ -11,6 +11,7 @@ from core.testing import (
     make_psychologist,
     make_user,
     ngo_profile_data,
+    post_register,
     register_payload,
 )
 
@@ -42,7 +43,7 @@ class RegisterValidationTests(APITestCase):
         profile = overrides.pop("profile", {})
         payload = register_payload(role=role, **overrides)
         payload["profile"].update(profile)
-        return self.client.post(REGISTER_URL, payload, format="json")
+        return post_register(self.client, payload)
 
     def test_full_name_rules_for_every_role(self):
         bad = {

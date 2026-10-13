@@ -236,3 +236,28 @@ class ReferenceDataTransactionTestCase(TransactionTestCase):
     def _fixture_teardown(self):
         super()._fixture_teardown()  # the flush
         reseed_reference_data()
+
+
+TEST_PDF = b"%PDF-1.7\n1 0 obj\n<<>>\nendobj\n%%EOF\n"
+
+
+def credential_files():
+    """The two required credential files of a psychologist registration (6.2)."""
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    return {
+        "license_document": SimpleUploadedFile("license.pdf", TEST_PDF),
+        "degree_document": SimpleUploadedFile("degree.pdf", TEST_PDF),
+    }
+
+
+def post_register(client, payload, *, files=None):
+    """POST /accounts/register/ the way the frontends do: JSON for patients and
+    NGOs, multipart (JSON `data` part + credential files) for psychologists."""
+    import json
+
+    url = "/api/v1/accounts/register/"
+    if payload.get("role") != Role.PSYCHOLOGIST:
+        return client.post(url, payload, format="json")
+    files = credential_files() if files is None else files
+    return client.post(url, {"data": json.dumps(payload), **files}, format="multipart")

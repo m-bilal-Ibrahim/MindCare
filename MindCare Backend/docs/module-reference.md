@@ -234,4 +234,15 @@ new service, selector, or API endpoint. Keep entries one row per function/class.
 | `apps/audit/admin.py` | `AccessLogAdmin` | Read-only list with filters; no add, change or delete, even for superusers | `/admin/audit/accesslog/` | neither (Django admin) |
 | `apps/patients/selectors.py` | `get_patient_display_identity()` | Admin reveals of a private patient's real name now also write an `identity_reveal` audit row, fail closed | patient-identity reads | MindCare Web |
 
+### 6.2 Psychologist onboarding (credential documents)
+
+| File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
+|------|-------------------|---------|--------------|--------------------|
+| `apps/psychologists/models.py` | `CredentialDocument`, `DocumentKind` | A credential file (license, degree, other) stored privately for admin verification; key, detected type, size, upload time; no filename | — | neither |
+| `apps/psychologists/services.py` | `store_credential_documents()`, `CREDENTIAL_FILE_KINDS`, `CREDENTIAL_FILE_MAX_MB`, `MAX_OTHER_DOCUMENTS` | Stores validated uploads under `credentials/<profile id>/` and creates the rows; deletes stored files if anything fails | `POST /api/v1/accounts/register/` | MindCare Web |
+| `apps/psychologists/api/serializers.py` | `CredentialDocumentsSerializer`, `CredentialDocumentSerializer` | Validates the multipart file parts by content (license and degree required, up to 3 others, PDF/JPG/PNG, 5 MB); lists the owner's documents without keys or URLs (`documents` on the owner profile) | `POST /api/v1/accounts/register/`, `GET /api/v1/psychologists/me/` | MindCare Web |
+| `apps/accounts/api/views.py` | `RegisterView`, `_split_register_request()`, `_validated_documents()` | Register accepts JSON (patients, NGOs) or multipart with a JSON `data` part plus credential files (psychologists); files are refused for other roles | `POST /api/v1/accounts/register/` | MindCare Web, MindCare App |
+| `apps/accounts/services.py` | `register_user(credential_documents=...)` | Stores a psychologist's documents in the registration transaction; removes stored files if registration fails | `POST /api/v1/accounts/register/` | MindCare Web |
+| `apps/psychologists/admin.py` | `CredentialDocumentInline` | Read-only list of a profile's documents in Django admin (no file link; opening files is the audited 6.3 review) | `/admin/psychologists/psychologistprofile/` | neither (Django admin) |
+
 <!-- Add new `### apps/<app_name>` sections below as modules are implemented. -->

@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.accounts.models import ApprovalStatus, Role, User
-from core.testing import register_payload
+from core.testing import post_register, register_payload
 
 REGISTER_URL = "/api/v1/accounts/register/"
 LOGIN_URL = "/api/v1/accounts/login/"
@@ -29,12 +29,11 @@ class RegisterAPITests(APITestCase):
         self.assertEqual(user.approval_status, ApprovalStatus.APPROVED)
 
     def test_psychologist_registration_is_pending(self):
-        response = self.client.post(
-            REGISTER_URL,
+        response = post_register(
+            self.client,
             register_payload(
                 role="psychologist", email="newdoc@example.com", full_name="New Doc"
             ),
-            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         user = User.objects.get(email="newdoc@example.com")
@@ -117,9 +116,7 @@ class RegisterWithProfileAPITests(APITestCase):
         cache.clear()
 
     def test_psychologist_register_returns_profile(self):
-        r = self.client.post(
-            REGISTER_URL, register_payload(role="psychologist"), format="json"
-        )
+        r = post_register(self.client, register_payload(role="psychologist"))
         self.assertEqual(r.status_code, status.HTTP_201_CREATED, r.data)
         self.assertEqual(r.data["approval_status"], "pending")
         self.assertEqual(r.data["profile"]["license_number"], "PMDC-12345")
@@ -192,13 +189,10 @@ class RegisterWithProfileAPITests(APITestCase):
         self.assertFalse(User.objects.filter(email="typo@example.com").exists())
 
     def test_duplicate_license_is_generic_400(self):
-        self.client.post(
-            REGISTER_URL, register_payload(role="psychologist"), format="json"
-        )
-        r = self.client.post(
-            REGISTER_URL,
+        post_register(self.client, register_payload(role="psychologist"))
+        r = post_register(
+            self.client,
             register_payload(role="psychologist", email="second@example.com"),
-            format="json",
         )
         self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(

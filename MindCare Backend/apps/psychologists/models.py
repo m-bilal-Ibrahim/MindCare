@@ -97,3 +97,34 @@ class PsychologistProfile(ValidatedModelMixin, models.Model):
 
     def __str__(self):
         return f"Psychologist profile #{self.pk}"
+
+
+class DocumentKind(models.TextChoices):
+    LICENSE = "license", "License"
+    DEGREE = "degree", "Degree certificate"
+    OTHER = "other", "Other credential"
+
+
+class CredentialDocument(models.Model):
+    """A credential file uploaded at registration for admin verification (6.2).
+
+    The file lives in private storage (integrations/storage_client); only its key
+    is stored. Never shown to patients. Admins open it through an audited,
+    short-lived signed URL (6.3). The uploaded filename is not kept: it isn't
+    needed, and it can contain personal details.
+    """
+
+    profile = models.ForeignKey(
+        PsychologistProfile, on_delete=models.CASCADE, related_name="documents"
+    )
+    kind = models.CharField(max_length=20, choices=DocumentKind.choices)
+    storage_key = models.CharField(max_length=255, unique=True)
+    file_type = models.CharField(max_length=10)  # detected from content: pdf/jpg/png
+    size = models.PositiveIntegerField()
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["uploaded_at", "id"]
+
+    def __str__(self):
+        return f"{self.get_kind_display()} #{self.pk}"

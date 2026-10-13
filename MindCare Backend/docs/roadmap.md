@@ -1,7 +1,9 @@
 # Roadmap
 
 Backend build order, in dependency order. Each phase builds on the ones before it.
-Update the status column as phases land. See @architecture.md for the module layout
+Update the status column as phases land. Since 2026-10-08, work is planned and
+reported by the official module list (@modules.md, status in @status/module-tracker.md);
+this table stays as the backend's dependency order. See @architecture.md for the module layout
 and @decisions.md for the reasoning behind scope and ordering choices.
 
 | Phase | Scope | Status |
@@ -41,7 +43,8 @@ Phase 1 (see @decisions.md, 2026-09-15).
 - **Invariant:** at least one super-admin must always exist. The check is done
   atomically (inside the same transaction as the demotion, with row locking) so
   two concurrent demotions cannot leave the system with zero super-admins.
-- **Credential document upload** (deferred from Phase 2, which ships text
+- **Credential document upload** (*psychologists: shipped 2026-10-11 with module 6.2,
+  storage and audit in the Phase 1 foundations PR; NGO documents still open*) (deferred from Phase 2, which ships text
   credentials only): psychologists upload license / degree certificates and NGOs
   their registration certificate, for admin review. Includes the
   `integrations/storage_client/` integration (private object storage; Render's disk
