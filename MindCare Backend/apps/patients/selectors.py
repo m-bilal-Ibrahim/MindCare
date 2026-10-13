@@ -70,3 +70,35 @@ def get_patient_display_identity(*, patient_profile, viewer):
         log_identity_reveal(viewer_id=viewer.pk, patient_id=patient_profile.user_id)
         return real
     return pseudonymous
+
+
+def can_see_patient_photo(*, patient_profile, viewer):
+    """A patient's photo identifies them, so it follows the display-identity rule
+    (Q15, docs/decisions.md 2026-10-11): the patient, their current psychologist
+    and admins always; anyone else only if the profile is public."""
+    if patient_profile.is_profile_public:
+        return True
+    if viewer is None or not viewer.is_authenticated:
+        return False
+    if viewer.pk == patient_profile.user_id or viewer.role == Role.ADMIN:
+        return True
+    return viewer.role == Role.PSYCHOLOGIST and _is_assigned_psychologist(
+        viewer=viewer, patient_profile=patient_profile
+    )
+
+
+def patient_photo_url(*, patient_profile, viewer):
+    from integrations.storage_client.client import url_or_none
+
+    if not patient_profile.photo_key:
+        return None
+    if not can_see_patient_photo(patient_profile=patient_profile, viewer=viewer):
+        return None
+    return url_or_none(patient_profile.photo_key)
+
+
+def get_mental_health_history(*, patient_profile):
+    """The patient's own history (owner reads aren't audited), or None."""
+    from apps.patients.models import MentalHealthHistory
+
+    return MentalHealthHistory.objects.filter(profile=patient_profile).first()

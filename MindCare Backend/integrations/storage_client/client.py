@@ -33,6 +33,22 @@ def store_checked(checked, *, folder):
     return default_storage.save(f"{folder}/{checked.storage_name}", checked.content)
 
 
+def replace_file(*, old_key, checked, folder):
+    """Store a new validated upload in place of `old_key` (e.g. a profile photo).
+
+    Call inside the transaction that saves the new key: the old file is deleted
+    only after that transaction commits. If the caller's save fails, it must
+    delete the returned key itself (Django has no rollback hook). Returns the new
+    key.
+    """
+    from django.db import transaction
+
+    new_key = store_checked(checked, folder=folder)
+    if old_key:
+        transaction.on_commit(lambda: delete_file(old_key))
+    return new_key
+
+
 def signed_url(key, *, expires=None):
     """A URL that works for `expires` seconds (default SIGNED_URL_EXPIRY_SECONDS).
     On local disk this is just the media URL (development only)."""
@@ -41,6 +57,11 @@ def signed_url(key, *, expires=None):
         return default_storage.url(key, expire=expires)
     except TypeError:  # FileSystemStorage.url() takes no expiry
         return default_storage.url(key)
+
+
+def url_or_none(key):
+    """A signed URL for an optional file (e.g. a profile photo), or None."""
+    return signed_url(key) if key else None
 
 
 def delete_file(key):

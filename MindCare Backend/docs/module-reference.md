@@ -264,4 +264,19 @@ new service, selector, or API endpoint. Keep entries one row per function/class.
 | `core/permissions.py` | `IsPatientOrApprovedPsychologist` | Patients, or approved and active psychologists | `POST /api/v1/moderation/reports/` | — |
 | `apps/accounts/demo.py` | `DEMO_APPLICANT`, `_ensure_demo_report()` | Demo data for 6.3: a pending applicant with two fictional PDF documents and one open report; removal deletes reports and document files | — | neither (tooling) |
 
+### 6.1 User onboarding and profile
+
+| File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
+|------|-------------------|---------|--------------|--------------------|
+| `apps/patients/models.py` | `MentalHealthHistory`, `YesNoUnsure`, `YesNo`, `PatientProfile.photo_key` | The optional history, every field encrypted (concerns as encrypted slugs); the patient's private photo key | — | — |
+| `apps/patients/services.py` | `set_patient_photo()`, `remove_patient_photo()`, `save_mental_health_history()`, `delete_mental_health_history()`, `read_history_for_psychologist()` | Photo replace/remove (old file deleted after commit); history save (PUT semantics) and delete, audited; the current psychologist's read, audited and fail closed | `/api/v1/patients/me/photo/`, `/me/history/`, `/api/v1/relationships/patients/{id}/history/` | MindCare App, MindCare Web |
+| `apps/patients/selectors.py` | `can_see_patient_photo()`, `patient_photo_url()`, `get_mental_health_history()` | Photo visibility (self, current psychologist, admins, or public); the owner's history | — | MindCare App, MindCare Web |
+| `apps/patients/api/views.py`, `serializers.py` | `MyPatientPhotoView`, `MyMentalHealthHistoryView`, `MentalHealthHistoryInputSerializer`, `MentalHealthHistorySerializer`; `photo_url`, `privacy`, `profile_completion` on the owner profile | Patient photo and history endpoints; privacy info and completion hint | `/api/v1/patients/me/`, `/me/photo/`, `/me/history/` | MindCare App |
+| `apps/psychologists/services.py`, `api/views.py` | `set_psychologist_photo()`, `remove_psychologist_photo()`, `MyPsychologistPhotoView`; `photo_url` on owner profile and directory card | Psychologist photo shown to patients | `/api/v1/psychologists/me/photo/`, `/directory/` | MindCare Web, MindCare App |
+| `apps/relationships/api/views.py`, `serializers.py` | `PatientHistoryView`; `photo_url` on `AssignedPatientSerializer` | The current psychologist's audited read of the patient's history; the patient's photo in patient detail | `/api/v1/relationships/patients/{id}/history/`, `/patients/{id}/` | MindCare Web |
+| `core/files.py` | `check_photo()`, `PHOTO_KINDS`, `PHOTO_MAX_MB`, `PHOTO_MAX_SIDE`; `max_image_side` on `check_upload()` | Photo rules: JPG/PNG/WEBP, 5 MB, re-encoded and shrunk to 1024 px | photo endpoints | — |
+| `core/serializers.py` | `PhotoUploadSerializer` | Multipart `photo` field checked by content | photo endpoints | MindCare App, MindCare Web |
+| `integrations/storage_client/client.py` | `replace_file()`, `url_or_none()` | Store a new file in place of an old one (old deleted after commit); signed URL or None | photo endpoints | — |
+| `apps/accounts/demo.py` | `_ensure_demo_photos_and_history()`, `DEMO_HISTORY` | Demo initials avatars for the demo psychologists and patient 1, and a fictional history for patient 1 | — | neither (tooling) |
+
 <!-- Add new `### apps/<app_name>` sections below as modules are implemented. -->

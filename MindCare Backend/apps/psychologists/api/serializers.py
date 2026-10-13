@@ -26,6 +26,7 @@ from apps.reference.models import Country, Language, Specialization
 from apps.relationships.selectors import last_active_band
 from core.choices import Gender
 from core.files import check_upload
+from integrations.storage_client.client import url_or_none
 from apps.psychologists.models import MAX_YEARS_OF_EXPERIENCE, MIN_YEARS_OF_EXPERIENCE
 from core.serializers import (
     RejectUnknownFieldsMixin,
@@ -95,6 +96,7 @@ class PsychologistProfileOwnerSerializer(serializers.ModelSerializer):
     country = CountrySerializer(read_only=True)
     city = CitySerializer(read_only=True)
     documents = serializers.SerializerMethodField()
+    photo_url = serializers.SerializerMethodField()
 
     class Meta:
         model = PsychologistProfile
@@ -112,11 +114,15 @@ class PsychologistProfileOwnerSerializer(serializers.ModelSerializer):
             "timezone",
             "gender",
             "bio",
+            "photo_url",
             "documents",
             "created_at",
             "updated_at",
         ]
         read_only_fields = fields
+
+    def get_photo_url(self, obj) -> str | None:
+        return url_or_none(obj.photo_key)
 
     @extend_schema_field(CredentialDocumentSerializer(many=True))
     def get_documents(self, obj):
@@ -139,6 +145,7 @@ DIRECTORY_CARD_FIELDS = [
     "timezone",
     "is_accepting_patients",
     "last_active",
+    "photo_url",
 ]
 
 
@@ -153,6 +160,9 @@ class DirectoryCardSerializer(serializers.ModelSerializer):
     country = CountrySerializer(read_only=True)
     city = CitySerializer(read_only=True)
     last_active = serializers.SerializerMethodField()
+    photo_url = serializers.SerializerMethodField(
+        help_text="Signed link to the psychologist's photo (a few minutes); null if none."
+    )
 
     class Meta:
         model = PsychologistProfile
@@ -162,6 +172,9 @@ class DirectoryCardSerializer(serializers.ModelSerializer):
     @extend_schema_field(OpenApiTypes.STR)
     def get_last_active(self, obj):
         return last_active_band(obj.user.last_active_at)
+
+    def get_photo_url(self, obj) -> str | None:
+        return url_or_none(obj.photo_key)
 
 
 class MinimalCardSerializer(serializers.ModelSerializer):

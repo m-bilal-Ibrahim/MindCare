@@ -244,3 +244,17 @@ class SeedDemoAdminDataTests(TestCase):
         self.assertFalse(User.objects.filter(email__in=demo.DEMO_EMAILS).exists())
         for key in keys:
             self.assertFalse(default_storage.exists(key))
+
+    def test_demo_avatars_and_fictional_history(self):
+        from apps.patients.models import MentalHealthHistory
+
+        demo.seed_demo_accounts(password=PASSWORD)
+        demo.seed_demo_accounts(password=PASSWORD)  # idempotent
+        for spec in demo.DEMO_PSYCHOLOGISTS:
+            self.assertTrue(
+                User.objects.get(email=spec["email"]).psychologist_profile.photo_key
+            )
+        hina = User.objects.get(email=demo.DEMO_PATIENT_EMAILS[0]).patient_profile
+        self.assertTrue(hina.photo_key)
+        history = MentalHealthHistory.objects.get(profile=hina)
+        self.assertTrue(history.notes.startswith("Demo history (fictional)"))

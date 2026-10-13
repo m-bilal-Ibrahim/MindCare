@@ -201,11 +201,15 @@ class AdminUserDetailSerializer(serializers.ModelSerializer):
     def get_patient(self, obj) -> dict | None:
         if obj.role != Role.PATIENT:
             return None
+        from integrations.storage_client.client import url_or_none
+
         profile = obj.patient_profile
+        self._identity(obj)  # the photo identifies them too: after the audited reveal
         return {
             "pseudonym": profile.pseudonym,
             "is_profile_public": profile.is_profile_public,
             "country": profile.country.code if profile.country_id else None,
+            "photo_url": url_or_none(profile.photo_key),
         }
 
     def get_psychologist_profile(self, obj) -> PsychologistProfileOwnerSerializer:

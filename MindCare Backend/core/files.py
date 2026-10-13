@@ -72,11 +72,12 @@ class CheckedUpload:
         return f"{uuid.uuid4().hex}.{self.kind.extension}"
 
 
-def check_upload(upload, *, label, allowed, max_mb):
+def check_upload(upload, *, label, allowed, max_mb, max_image_side=None):
     """Validate an uploaded file and return what to store.
 
     Raises django ValidationError with the messages in validation-rules.md.
     `allowed` is a sequence of FileKind; `max_mb` the size limit in MB.
+    `max_image_side` (pixels) shrinks larger images, keeping their proportions.
     """
     size = getattr(upload, "size", None)
     if not size:
@@ -96,11 +97,11 @@ def check_upload(upload, *, label, allowed, max_mb):
 
     data = upload.read()
     if kind.is_image:
-        data = _reencode_image(data, kind, label=label)
+        data = _reencode_image(data, kind, label=label, max_side=max_image_side)
     return CheckedUpload(content=ContentFile(data), kind=kind, size=len(data))
 
 
-def _reencode_image(data, kind, *, label):
+def _reencode_image(data, kind, *, label, max_side=None):
     from PIL import Image, ImageOps
 
     Image.MAX_IMAGE_PIXELS = MAX_IMAGE_PIXELS
@@ -110,6 +111,8 @@ def _reencode_image(data, kind, *, label):
             probe.verify()  # structure check; the image must be reopened after
         with Image.open(io.BytesIO(data)) as image:
             image = ImageOps.exif_transpose(image)  # keep orientation, drop EXIF
+            if max_side:
+                image.thumbnail((max_side, max_side))
             out = io.BytesIO()
             if kind is JPEG:
                 image.convert("RGB").save(out, format="JPEG", quality=90)
@@ -124,3 +127,21 @@ def _reencode_image(data, kind, *, label):
     except Exception as exc:  # any Pillow decode error means "not an image"
         raise invalid from exc
     return out.getvalue()
+
+
+# --- Profile photos (6.1) -----------------------------------------------------
+PHOTO_KINDS = (JPEG, PNG, WEBP)
+PHOTO_MAX_MB = 5
+PHOTO_MAX_SIDE = 1024  # pixels; larger photos are shrunk on upload
+
+
+def check_photo(upload):
+    """A profile photo: JPG, PNG or WEBP, 5 MB, re-encoded (EXIF/GPS removed) and
+    shrunk to at most 1024 px on its longest side."""
+    return check_upload(
+        upload,
+        label="Photo",
+        allowed=PHOTO_KINDS,
+        max_mb=PHOTO_MAX_MB,
+        max_image_side=PHOTO_MAX_SIDE,
+    )

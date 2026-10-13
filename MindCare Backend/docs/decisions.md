@@ -1094,3 +1094,41 @@ schedule, and live signup must keep working); a header-based client IP
 designed with 6.8); unencrypted descriptions (rejected: people write about health and
 harassment there); letting admins search patients by real name (rejected: it would
 reveal private identities without an audited reveal).
+
+## 2026-10-11 - 6.1: photos, one privacy switch, completion hint, encrypted mental health history
+**Decision (Q13–Q18):**
+- **Registration is unchanged** (Q13): name, email, password, 18+ declaration and
+  device timezone. `GET /patients/me/` now returns `profile_completion.missing` (date
+  of birth, gender, phone, city, language, photo, history), so the App can offer a
+  skippable "complete your profile" step right after signup using the existing
+  `PATCH /patients/me/`.
+- **One privacy switch** (Q14): `is_profile_public` now covers the real name **and the
+  photo**. `GET /patients/me/` returns a `privacy` object listing what the switch
+  reveals (`full_name`, `photo`) and what is always private (date of birth, gender,
+  phone, mental health history), so the App shows exactly what changes. No
+  per-field switches: age, gender and city next to a pseudonym re-identify people.
+- **Profile photos** for patients and psychologists (Q15, Q16):
+  `PUT`/`DELETE /patients/me/photo/` and `/psychologists/me/photo/`. JPG, PNG or WEBP,
+  5 MB, re-encoded (EXIF/GPS removed) and shrunk to 1024 px, stored privately, served
+  through 5-minute signed URLs, with 20 uploads an hour per user. **Who sees a patient's
+  photo:** the patient, their current psychologist and admins always; anyone else only
+  if the profile is public (`can_see_patient_photo()`). It's never on a pending
+  request. Psychologists' photos appear on directory cards.
+- **Mental health history** (Q17, Q18): optional, `GET`/`PUT`/`DELETE
+  /patients/me/history/`. Concerns come from the existing Specialization list, plus
+  previous diagnosis (yes / no / prefer not to say), current medication (same), previous
+  therapy (yes / no) and optional notes (10–1000 characters, free-text rule). **Every
+  field is encrypted at rest**, including the concerns, which are stored as encrypted
+  slugs rather than a relation, so which conditions a patient has is never readable in
+  plain form. Readers: the patient, and **only their current assigned psychologist**
+  (`GET /relationships/patients/{id}/history/`, approved and active). Never on a
+  pending request, never for admins, and access ends when care ends. **Every
+  psychologist read and every write is audited, fail closed.** The patient's own reads
+  aren't audited: reading your own record isn't a privacy event, and auditing every
+  App screen load would bury the reads that matter. `PUT` replaces the whole history;
+  `DELETE` removes it.
+- Psychologists who aren't approved yet may set their photo, like the other `/me/`
+  endpoints.
+**Alternatives considered:** per-field visibility switches (re-identification risk);
+storing concerns as a relation (fast to query, but readable in plain form);
+auditing the patient's own reads (noise without a privacy benefit).

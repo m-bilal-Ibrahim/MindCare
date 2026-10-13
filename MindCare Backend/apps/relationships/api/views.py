@@ -10,6 +10,8 @@ from rest_framework.throttling import UserRateThrottle
 from rest_framework.views import APIView
 
 from apps.psychologists.api.serializers import DirectoryCardSerializer
+from apps.patients import services as patient_services
+from apps.patients.api.serializers import MentalHealthHistorySerializer
 from apps.relationships import selectors, services
 from apps.relationships.api.serializers import (
     AssignedPatientSerializer,
@@ -220,3 +222,22 @@ class HistoryView(APIView):
     def get(self, request):
         rows = selectors.psychologist_history(psychologist_user=request.user)
         return Response(HistoryItemSerializer(rows, many=True).data)
+
+
+class PatientHistoryView(APIView):
+    """The patient's mental health history, for their CURRENT assigned
+    psychologist only. Every read is in the access audit trail (fail closed)."""
+
+    permission_classes = PSYCHOLOGIST_PERMISSIONS
+
+    @extend_schema(responses={200: MentalHealthHistorySerializer, 404: None})
+    def get(self, request, pk):
+        try:
+            _, history = patient_services.read_history_for_psychologist(
+                psychologist_user=request.user,
+                relationship_id=pk,
+                ip=request.META.get("REMOTE_ADDR"),
+            )
+        except patient_services.NotYourPatient as exc:
+            raise NotFound() from exc
+        return Response(MentalHealthHistorySerializer.data_for(history))

@@ -80,6 +80,9 @@ class PsychologistProfile(ValidatedModelMixin, models.Model):
     )
     # Set by the psychologist (Phase 3); never changes on its own. Patients see
     # only on/off; the reason stays on the psychologist's availability endpoint.
+    # Private storage key of the profile photo ("" = none); shown to patients in
+    # the directory (6.1, docs/decisions.md 2026-10-11).
+    photo_key = models.CharField(max_length=255, blank=True, default="")
     is_accepting_patients = models.BooleanField(default=True)
     not_accepting_reason = models.CharField(
         max_length=20, choices=NotAcceptingReason.choices, null=True, blank=True

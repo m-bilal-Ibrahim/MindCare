@@ -197,6 +197,7 @@ REST_FRAMEWORK = {
         "motivation": "60/min",
         "admin": "120/min",
         "reports": "10/day",
+        "uploads": "20/hour",
     },
     "NUM_PROXIES": env.int("NUM_PROXIES", default=0),
 }
@@ -254,6 +255,8 @@ SPECTACULAR_SETTINGS = {
         "RejectReasonEnum": "apps.accounts.services.RejectReason.CHOICES",
         "DeactivateReasonEnum": "apps.accounts.services.DeactivateReason.CHOICES",
         "RelationshipStatusEnum": "apps.relationships.models.RelationshipStatus",
+        "YesNoUnsureEnum": "apps.patients.models.YesNoUnsure",
+        "YesNoEnum": "apps.patients.models.YesNo",
     },
 }
 

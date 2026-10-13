@@ -88,6 +88,7 @@ ASSIGNED_PATIENT_FIELDS = [
     "city",
     "preferred_language",
     "timezone",
+    "photo_url",
 ]
 
 
@@ -140,6 +141,14 @@ class AssignedPatientSerializer(serializers.Serializer):
         source="patient.preferred_language", read_only=True, allow_null=True
     )
     timezone = serializers.CharField(source="patient.timezone", read_only=True)
+    photo_url = serializers.SerializerMethodField()
+
+    def get_photo_url(self, obj) -> str | None:
+        # This serializer only ever renders the CURRENT assigned psychologist's
+        # view (psychologist_patient() checks it), who may see the photo (Q15).
+        from integrations.storage_client.client import url_or_none
+
+        return url_or_none(obj.patient.photo_key)
 
     @extend_schema_field(OpenApiTypes.INT)
     def get_age(self, obj):
