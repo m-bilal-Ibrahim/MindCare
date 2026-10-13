@@ -9,6 +9,7 @@ from django.test import TestCase
 from apps.accounts.models import ApprovalStatus, Role, User
 from apps.accounts.services import register_user
 from core.audit import log_auth_event
+from core.exceptions import DomainValidationError
 from core.testing import (
     PATIENT_PROFILE_DATA,
     ngo_profile_data,
@@ -427,3 +428,62 @@ class RegisterUserProfileOrchestrationTests(TestCase):
                     is_adult_confirmed=True,
                     profile_data={"timezone": "Nope/Nope"},
                 )
+
+
+class AdminAccountServicesTests(TestCase):
+    """6.3: one review/deactivation service used by the API and Django admin."""
+
+    def setUp(self):
+        from core.testing import make_admin
+
+        self.admin = make_admin()
+
+    def _pending(self):
+        from core.testing import make_psychologist
+
+        return make_psychologist(approval_status=ApprovalStatus.PENDING).user
+
+    def test_review_approves_and_rejects_pending_accounts_only(self):
+        from apps.accounts import services
+
+        user = self._pending()
+        services.review_pending_account(
+            admin=self.admin, user_id=user.pk, decision=ApprovalStatus.APPROVED
+        )
+        user.refresh_from_db()
+        self.assertEqual(user.approval_status, ApprovalStatus.APPROVED)
+        with self.assertRaises(DomainValidationError):
+            services.review_pending_account(
+                admin=self.admin, user_id=user.pk, decision=ApprovalStatus.REJECTED
+            )
+        with self.assertRaises(ValueError):
+            services.review_pending_account(
+                admin=self.admin, user_id=user.pk, decision=ApprovalStatus.PENDING
+            )
+
+    def test_review_refuses_patients_and_missing_users(self):
+        from apps.accounts import services
+        from core.testing import make_patient
+
+        for user_id in (make_patient().user_id, 999999):
+            with self.assertRaises(services.AccountNotFound):
+                services.review_pending_account(
+                    admin=self.admin, user_id=user_id, decision=ApprovalStatus.APPROVED
+                )
+
+    def test_deactivate_and_reactivate(self):
+        from apps.accounts import services
+
+        user = self._pending()
+        services.deactivate_account(admin=self.admin, user_id=user.pk)
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+        with self.assertRaises(DomainValidationError):
+            services.review_pending_account(
+                admin=self.admin, user_id=user.pk, decision=ApprovalStatus.APPROVED
+            )
+        services.reactivate_account(admin=self.admin, user_id=user.pk)
+        user.refresh_from_db()
+        self.assertTrue(user.is_active)
+        with self.assertRaises(services.AccountNotFound):
+            services.deactivate_account(admin=self.admin, user_id=self.admin.pk)

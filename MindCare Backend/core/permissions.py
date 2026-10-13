@@ -57,6 +57,18 @@ class IsAdmin(BasePermission):
         )
 
 
+class IsPatientOrApprovedPsychologist(BasePermission):
+    """Patients, or psychologists who are approved and active (6.3 reports)."""
+
+    def has_permission(self, request, view):
+        user = request.user
+        if not (user and user.is_authenticated):
+            return False
+        if user.role == Role.PATIENT:
+            return True
+        return IsApprovedPsychologist().has_permission(request, view)
+
+
 class IsNGO(BasePermission):
     def has_permission(self, request, view):
         return bool(

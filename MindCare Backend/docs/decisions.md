@@ -1051,3 +1051,46 @@ log in to upload (reverses the 2026-09-26 decision).
 together with a Web upload step (rejected: the Web is the partner's, on her own
 schedule, and live signup must keep working); a header-based client IP
 (`CF-Connecting-IP`), rejected 2026-10-10.
+
+## 2026-10-11 - 6.3 Admin panel: approvals, document review, monitoring, reports
+**Decision (Q22, Q23; approvals option A agreed on 2026-10-07):**
+- **Approvals** follow `MindCare Web/docs/admin-approvals-api-contract.md`:
+  `GET /accounts/admin/pending/?role=psychologist|ngo`, `POST
+  /accounts/admin/{id}/approve/`, `POST /accounts/admin/{id}/reject/` with an
+  optional reason. **One shared service** (`review_pending_account`) is used by the
+  API and by Django admin. It locks the row, refuses a non-pending account and a
+  **deactivated pending account (400)**, ends relationships on rejection, and writes
+  an audit log line. **No migration:** the reject reason lives only in that line.
+  The pending list also carries `ngo_profile` for NGO rows, and the psychologist's
+  `documents`.
+- **Credential document review:** `GET /accounts/admin/documents/{id}/` returns a
+  5-minute signed URL. Every call writes a `download` audit row first (fail closed).
+  Django admin lists documents but has no file link, so all file access goes through
+  the audited path.
+- **Monitoring:** `GET /accounts/admin/overview/` (counts by role and status,
+  pending approvals, relationships by status, open reports, weekly signups for 12
+  weeks; numbers only). `GET /accounts/admin/users/` lists every non-admin account.
+  A private patient shows only the pseudonym and no email, and **search never matches
+  a patient's real name or email** (pseudonym only), so a search can't reveal an
+  identity. Opening one account (`/admin/users/{id}/`) reveals a private patient's
+  name and email through `get_patient_display_identity()`, which is audited. It never
+  shows health data. Admins can **deactivate** (ends relationships) and
+  **reactivate** (ended relationships stay ended) any non-admin account. Admin
+  accounts stay with Django admin until Phase 2's super-admin workflow.
+- **Reports and complaints** (`apps/moderation`): only people who are or were in care
+  together can report each other. A patient sends `psychologist` (directory id) and
+  needs an accepted or ended relationship with them; a psychologist sends
+  `relationship`. There's a fixed reason list and an **optional description of 10–1000
+  characters, encrypted at rest**, never logged, admin-only, with every write and
+  admin read audited (fail closed). One open report per reporter per relationship;
+  10 reports a day per user. Admins **dismiss** a report, or **uphold** it, which
+  deactivates the reported account and closes every open report about them.
+  Time-limited bans and community content reports belong to 6.8.
+- **Storage switch moved to `base.py`:** the `SUPABASE_S3_*` variables turn on the
+  bucket in any environment, so `seed_demo` run locally against production writes
+  demo documents to the real bucket. Tests always use local disk. Production still
+  refuses to start without the bucket.
+**Alternatives considered:** time-limited suspensions now (rejected: the ban model is
+designed with 6.8); unencrypted descriptions (rejected: people write about health and
+harassment there); letting admins search patients by real name (rejected: it would
+reveal private identities without an audited reveal).

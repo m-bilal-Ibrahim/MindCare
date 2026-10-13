@@ -245,4 +245,23 @@ new service, selector, or API endpoint. Keep entries one row per function/class.
 | `apps/accounts/services.py` | `register_user(credential_documents=...)` | Stores a psychologist's documents in the registration transaction; removes stored files if registration fails | `POST /api/v1/accounts/register/` | MindCare Web |
 | `apps/psychologists/admin.py` | `CredentialDocumentInline` | Read-only list of a profile's documents in Django admin (no file link; opening files is the audited 6.3 review) | `/admin/psychologists/psychologistprofile/` | neither (Django admin) |
 
+### 6.3 Admin panel
+
+| File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
+|------|-------------------|---------|--------------|--------------------|
+| `apps/accounts/services.py` | `review_pending_account()`, `deactivate_account()`, `reactivate_account()`, `RejectReason`, `DeactivateReason`, `AccountNotFound` | One shared approve/reject service for pending psychologist/NGO accounts (row lock; non-pending or deactivated → 400; rejection ends relationships; audit line), used by the API and Django admin; deactivate (ends relationships) and reactivate for non-admin accounts | `POST /api/v1/accounts/admin/{id}/approve/`, `/reject/`, `/admin/users/{id}/deactivate/`, `/reactivate/` | MindCare Web (admin console) |
+| `apps/accounts/selectors.py` | `pending_accounts()`, `admin_users()`, `admin_user()`, `platform_overview()` | Pending applications with profiles and documents; the Users list (patients searchable by pseudonym only); counts for the Overview | `GET /api/v1/accounts/admin/pending/`, `/admin/users/`, `/admin/users/{id}/`, `/admin/overview/` | MindCare Web (admin console) |
+| `apps/accounts/api/admin_views.py`, `admin_serializers.py` | `PendingAccountsView`, `ApproveAccountView`, `RejectAccountView`, `CredentialDocumentLinkView`, `OverviewView`, `AdminUsersView`, `AdminUserDetailView`, `DeactivateUserView`, `ReactivateUserView`, `party_summary()` | Admin console API: IsAuthenticated + IsAdmin, throttle `admin` (120/min); private patients show pseudonyms in lists; opening one reveals (audited) | `/api/v1/accounts/admin/...` | MindCare Web (admin console) |
+| `apps/accounts/admin.py` | `UserAdmin.save_model()` | Approving/rejecting a pending account in Django admin goes through `review_pending_account()` | `/admin/accounts/user/` | neither (Django admin) |
+| `apps/psychologists/services.py` | `open_credential_document()` | Audited (fail closed) 5-minute signed URL to a credential file for an admin | `GET /api/v1/accounts/admin/documents/{id}/` | MindCare Web (admin console) |
+| `apps/moderation/models.py` | `Report`, `ReportReason`, `ReportStatus` | A report between people in care together; encrypted optional description; one open report per reporter per relationship | — | — |
+| `apps/moderation/services.py` | `submit_report()`, `read_report_for_admin()`, `dismiss_report()`, `uphold_report()` | Standing check (accepted/ended relationship), encrypted description with audited write/read, dismiss, uphold = deactivate + close all open reports about that person | `POST /api/v1/moderation/reports/`, `/admin/reports/{id}/`, `/dismiss/`, `/uphold/` | MindCare App (patients), MindCare Web (psychologists, admins) |
+| `apps/moderation/selectors.py` | `reports_by()`, `reports_for_admin()` | A reporter's own reports; the admin list with status filter | `GET /api/v1/moderation/reports/`, `/admin/reports/` | MindCare App, MindCare Web |
+| `apps/moderation/api/views.py` | `ReportCreateView`, `AdminReportsView`, `AdminReportDetailView`, `DismissReportView`, `UpholdReportView` | Patients and approved psychologists submit (throttle `reports`, 10/day) and see their own; admins review | `/api/v1/moderation/...` | MindCare App, MindCare Web |
+| `apps/patients/selectors.py` | `list_display_identity()` | A patient's identity for any list (real name only if public), with no reveal and no audit | admin lists | MindCare Web |
+| `core/audit.py` | `log_admin_event()` | Structured audit line for admin decisions and report submissions (ids and reason codes only) | — | neither |
+| `core/encryption.py` | `EncryptedFreeTextField` | Free text validated in plain form, stored encrypted | — | neither |
+| `core/permissions.py` | `IsPatientOrApprovedPsychologist` | Patients, or approved and active psychologists | `POST /api/v1/moderation/reports/` | — |
+| `apps/accounts/demo.py` | `DEMO_APPLICANT`, `_ensure_demo_report()` | Demo data for 6.3: a pending applicant with two fictional PDF documents and one open report; removal deletes reports and document files | — | neither (tooling) |
+
 <!-- Add new `### apps/<app_name>` sections below as modules are implemented. -->

@@ -29,6 +29,13 @@ def _is_assigned_psychologist(*, viewer, patient_profile):
     return is_assigned_psychologist(viewer=viewer, patient_profile=patient_profile)
 
 
+def list_display_identity(*, patient_profile):
+    """What any list shows for a patient (admin lists included): the real name only
+    if the profile is public, otherwise the pseudonym. Never reveals, so nothing is
+    audited; opening the patient goes through get_patient_display_identity()."""
+    return get_patient_display_identity(patient_profile=patient_profile, viewer=None)
+
+
 def get_patient_display_identity(*, patient_profile, viewer):
     """The ONE place that decides whether a viewer sees a patient's real name or
     pseudonym. Phases 3 and 11 must call this, not reimplement it. Never add

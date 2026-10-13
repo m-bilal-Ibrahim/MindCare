@@ -158,9 +158,37 @@ DEMO_PATIENTS = [
     },
 ]
 
+# 6.3: one pending application, with fictional documents, for the admin review
+# screen. Created through the real registration service; left pending.
+DEMO_APPLICANT = {
+    "email": "demo.applicant.nadia@example.com",
+    "full_name": "Dr. Nadia Siddiqui",
+    "profile": {
+        "license_number": "DEMO-0007",
+        "license_issuing_country": "PK",
+        "specializations": ["anxiety", "sleep-issues"],
+        "languages": ["en", "ur"],
+        "country": "PK",
+        "city": "Islamabad",
+        "timezone": "Asia/Karachi",
+        "gender": "female",
+        "years_of_experience": 3,
+        "bio": "Demo account, not a real psychologist. Applicant waiting for review.",
+    },
+}
+# 6.3: one open report for the admin moderation screen (fictional).
+DEMO_REPORT_DESCRIPTION = (
+    "Demo report (fictional): messages were sent outside the agreed hours."
+)
+
 DEMO_PSYCHOLOGIST_EMAILS = [p["email"] for p in DEMO_PSYCHOLOGISTS]
 DEMO_PATIENT_EMAILS = [p["email"] for p in DEMO_PATIENTS]
-DEMO_EMAILS = DEMO_PSYCHOLOGIST_EMAILS + DEMO_PATIENT_EMAILS
+DEMO_EMAILS = DEMO_PSYCHOLOGIST_EMAILS + DEMO_PATIENT_EMAILS + [DEMO_APPLICANT["email"]]
+# A minimal valid PDF, clearly marked fictional in its content.
+DEMO_PDF = (
+    b"%PDF-1.4\n% MindCare demo document - fictional, not a real credential\n"
+    b"1 0 obj << /Type /Catalog >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF\n"
+)
 DEMO_INBOX_PSYCHOLOGIST = "demo.psych.sara@example.com"
 
 
@@ -254,7 +282,75 @@ def seed_demo_accounts(*, password):
         )
 
     _ensure_demo_relationships()
+    applicant = User.objects.filter(email=DEMO_APPLICANT["email"]).first()
+    if applicant is not None:
+        existing += 1
+        _sync_name(applicant, DEMO_APPLICANT["full_name"])
+    else:
+        register_user(
+            email=DEMO_APPLICANT["email"],
+            password=password,
+            full_name=DEMO_APPLICANT["full_name"],
+            role=Role.PSYCHOLOGIST,
+            is_adult_confirmed=True,
+            profile_data=_psychologist_profile_data(DEMO_APPLICANT),
+            credential_documents=_demo_documents(),
+        )
+        created += 1
+    _ensure_demo_report()
     return {"created": created, "existing": existing}
+
+
+def _demo_documents():
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    from apps.psychologists.models import DocumentKind
+    from core.files import PDF, check_upload
+
+    def checked(name):
+        return check_upload(
+            SimpleUploadedFile(name, DEMO_PDF),
+            label="Demo document",
+            allowed=(PDF,),
+            max_mb=1,
+        )
+
+    return {
+        DocumentKind.LICENSE: [checked("license.pdf")],
+        DocumentKind.DEGREE: [checked("degree.pdf")],
+    }
+
+
+def _ensure_demo_report():
+    """The inbox psychologist reports their accepted demo patient (fictional),
+    unless an open report already exists."""
+    from apps.moderation.models import Report, ReportReason, ReportStatus
+    from apps.moderation.services import submit_report
+
+    psych_user = User.objects.get(email=DEMO_INBOX_PSYCHOLOGIST)
+    patient = User.objects.get(email=DEMO_PATIENT_EMAILS[0])
+    rel = (
+        CareRelationship.objects.filter(
+            psychologist__user=psych_user,
+            patient__user=patient,
+            status=RelationshipStatus.ACCEPTED,
+        )
+        .order_by("-id")
+        .first()
+    )
+    if (
+        rel is None
+        or Report.objects.filter(
+            reporter=psych_user, relationship=rel, status=ReportStatus.OPEN
+        ).exists()
+    ):
+        return
+    submit_report(
+        reporter=psych_user,
+        reason=ReportReason.INAPPROPRIATE_CONTENT,
+        description=DEMO_REPORT_DESCRIPTION,
+        relationship_id=rel.pk,
+    )
 
 
 def _ensure_demo_relationships():
@@ -282,9 +378,21 @@ def _ensure_demo_relationships():
 
 @transaction.atomic
 def remove_demo_accounts():
-    """Delete the demo accounts only: their relationship rows first (PROTECT),
-    then the users (profiles cascade)."""
+    """Delete the demo accounts only: reports and relationship rows first
+    (PROTECT), document files from storage, then the users (profiles cascade).
+    Audit rows stay: they are append-only and hold only ids."""
+    from apps.moderation.models import Report
+    from apps.psychologists.models import CredentialDocument
+    from integrations.storage_client.client import delete_file
+
     users = User.objects.filter(email__in=DEMO_EMAILS)
+    Report.objects.filter(Q(reporter__in=users) | Q(reported_user__in=users)).delete()
+    keys = list(
+        CredentialDocument.objects.filter(profile__user__in=users).values_list(
+            "storage_key", flat=True
+        )
+    )
+    transaction.on_commit(lambda: [delete_file(key) for key in keys])
     rels = CareRelationship.objects.filter(
         Q(patient__user__in=users) | Q(psychologist__user__in=users)
     )

@@ -74,3 +74,36 @@ class EncryptedTextField(models.TextField):
         if lookup_name != "isnull":
             return None
         return super().get_lookup(lookup_name)
+
+
+class EncryptedFreeTextField(EncryptedTextField):
+    """Free text that is validated in plain form (normalised, the free-text rule
+    in docs/validation-rules.md) and then stored encrypted."""
+
+    def __init__(
+        self, *args, label="Text", min_length=1, rule_max_length=1000, **kwargs
+    ):
+        from core.validators import FreeTextValidator
+
+        self.label = label
+        self.min_length = min_length
+        self.rule_max_length = rule_max_length
+        super().__init__(*args, **kwargs)
+        self.validators.append(FreeTextValidator(label, min_length, rule_max_length))
+
+    def to_python(self, value):
+        from core.validators import normalize_multiline_text
+
+        value = super().to_python(value)
+        if isinstance(value, str):
+            value = normalize_multiline_text(value)
+        return value
+
+    def deconstruct(self):
+        name, path, args, kwargs = super().deconstruct()
+        kwargs.update(
+            label=self.label,
+            min_length=self.min_length,
+            rule_max_length=self.rule_max_length,
+        )
+        return name, path, args, kwargs

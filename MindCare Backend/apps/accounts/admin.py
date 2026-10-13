@@ -17,6 +17,7 @@ psychologist back to pending only pauses them).
 """
 
 from django.contrib import admin
+from django.contrib import messages as messages_module
 
 from apps.accounts.models import ApprovalStatus, User
 
@@ -65,8 +66,37 @@ class UserAdmin(admin.ModelAdmin):
         return False
 
     def save_model(self, request, obj, form, change):
+        """Approving or rejecting a pending application goes through the same
+        service as the admin API (one rule set, audit line included). Every other
+        change keeps the earlier behaviour: deactivating or rejecting ends care
+        relationships, moving back to pending only pauses them."""
+        changed = set(form.changed_data) if change else set()
+        old_status = form.initial.get("approval_status")
+        review = (
+            "approval_status" in changed
+            and old_status == ApprovalStatus.PENDING
+            and obj.approval_status
+            in (ApprovalStatus.APPROVED, ApprovalStatus.REJECTED)
+        )
+        decision = obj.approval_status
+        if review:
+            obj.approval_status = ApprovalStatus.PENDING  # the service applies it
         super().save_model(request, obj, form, change)
-        if change and {"is_active", "approval_status"} & set(form.changed_data):
+        if review:
+            from apps.accounts.services import review_pending_account
+            from core.exceptions import DomainValidationError
+
+            try:
+                review_pending_account(
+                    admin=request.user, user_id=obj.pk, decision=decision
+                )
+            except DomainValidationError as exc:
+                for messages in exc.errors.values():
+                    for message in messages:
+                        self.message_user(request, message, level=messages_module.ERROR)
+            obj.refresh_from_db()
+            return
+        if change and {"is_active", "approval_status"} & changed:
             if not obj.is_active or obj.approval_status == ApprovalStatus.REJECTED:
                 # Deactivated or rejected: end their relationships. Becoming
                 # pending (re-review) is a pause and ends nothing.
