@@ -942,7 +942,7 @@ The Scientist gap above (and the analogous flag in the 5-class fairness report,
 `reports/fairness_report.md`) was investigated directly by comparing Scientist vs. non-Scientist
 feature distributions (Stress Level, Sleep Hours, Therapy Sessions — the top SHAP features) among
 True-High(/Severe) validation rows (`CLAUDE.md`, "Known finding: Scientist occupation fairness
-flag..."):
+gap"):
 
 - On the validation set itself, none of these feature differences are statistically significant
   (Stress Level Welch t-test p=0.36 for 3-class, n=16; p=0.16 for 5-class, n=39) — sample sizes
