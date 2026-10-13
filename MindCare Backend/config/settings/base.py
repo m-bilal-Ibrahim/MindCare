@@ -44,6 +44,7 @@ LOCAL_APPS = [
     "apps.ngo",
     "apps.rewards",
     "apps.emergency",
+    "apps.audit",
 ]
 
 THIRD_PARTY_APPS = [
@@ -122,6 +123,27 @@ USE_TZ = True
 # Static files
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Uploaded files (credential documents, photos, audio). Local disk here; prod.py
+# switches the default storage to a private Supabase Storage bucket. The
+# database stores only keys; files are served through short-lived signed URLs
+# from integrations/storage_client (docs/decisions.md, 2026-10-11).
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+}
+MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = "/media/"
+SIGNED_URL_EXPIRY_SECONDS = 300
+# prod.py sets this: a deploy fails its system check if uploads would land on
+# Render's temporary disk.
+REQUIRE_OBJECT_STORAGE = False
+
+# Field-level encryption for health data at rest (core/encryption.py). A Fernet
+# key; never committed. Previous keys (comma-separated) still decrypt during a
+# rotation. Production refuses to start without a valid key.
+FIELD_ENCRYPTION_KEY = env("FIELD_ENCRYPTION_KEY", default="")
+FIELD_ENCRYPTION_PREVIOUS_KEYS = env.list("FIELD_ENCRYPTION_PREVIOUS_KEYS", default=[])
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

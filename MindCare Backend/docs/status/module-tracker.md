@@ -59,7 +59,7 @@ Last updated: 2026-10-10 (input-validation-hardening, backend part). Re-checked 
 
 | Bullet | Backend | Web | App | Notes |
 |---|---|---|---|---|
-| AI analyses mental health and sensor data to recommend exercises, sleep schedule and diet | partial | partial | — | `/ai/anxiety-prediction/` live (form input, nothing stored). `/patient-summary` forwarding and Web display on branch `web/ai-recommendations` |
+| AI analyses mental health and sensor data to recommend exercises, sleep schedule and diet | partial | partial | — | `/ai/anxiety-prediction/` forwards to `/patient-summary` (PR ai-patient-summary): prediction, estimated tier and exercise/sleep/nutrition bundle from form input; nothing stored. Web display on branch `web/ai-recommendations`, needs no change. Sensor data and stored, approved recommendations are Phase 6/7 |
 | AI learns from psychologist feedback (approval or update) | not started | not started | — | Needs the stored triple and separate training consent (decisions.md 2026-09-27) |
 | Psychologist approves or updates recommendations | not started | mock only | not started | Care plan editor is mock |
 
@@ -132,7 +132,7 @@ Last updated: 2026-10-10 (input-validation-hardening, backend part). Re-checked 
 | Item | Status | Notes |
 |---|---|---|
 | Patient ↔ psychologist relationships | Backend done, Web done, App mock only | Patient side in the App is Phase 1 item (f) |
-| File storage (`integrations/storage_client`) | not started | Phase 1 item (b) |
-| DB-backed PHI access audit trail | not started | Phase 1 item (b); required before any health data is stored |
+| File storage (`integrations/storage_client`) | backend done (PR foundations) | Private Supabase bucket, signed URLs, magic-byte checks, EXIF removal. Used by 6.1, 6.2, 6.10 |
+| DB-backed PHI access audit trail | backend done (PR foundations) | `apps/audit`, append-only, fail closed; field encryption for health data ready too |
 | Web lint / typecheck / tests | missing | `package.json` has only `dev`, `build`, `preview` |
 | Input validation (docs/validation-rules.md) | Backend done; Web and App not started | Backend enforces every rule on models and serializers. The Web/App part waits for the frontend partner's branches |

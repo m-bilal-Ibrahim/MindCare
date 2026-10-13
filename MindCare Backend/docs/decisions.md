@@ -935,3 +935,63 @@ commands would stay open, which is how a name with digits got in); Postgres CHEC
 constraints (Unicode matching depends on the database locale, so local and Supabase
 could behave differently); rewriting the invalid names with a data migration (would
 silently change people's names).
+
+## 2026-10-11 - Foundations: private object storage, a DB audit trail that fails closed, field encryption
+**Decision:**
+- **Storage:** uploads go to a **private Supabase Storage bucket** through its
+  S3-compatible API, using `django-storages` + `boto3`, with **storage-only S3
+  access keys** (not the `service_role` key, which reaches the whole database).
+  `integrations/storage_client` is the only entry point: it validates, stores under
+  `<folder>/<uuid>.<ext>`, and hands out **signed URLs valid for 5 minutes**. The
+  database stores only keys. Development and tests use local disk. A production
+  deploy without the bucket variables fails its system check (`mindcare.E002`), so
+  uploads can never land on Render's temporary disk.
+- **Upload checks** (`core/files.py`): type from magic bytes, never the extension or
+  Content-Type; size limit per field; random stored names; images re-encoded with
+  **Pillow**, which drops EXIF/GPS and anything appended to the file, with a pixel
+  limit against decompression bombs.
+- **Audit trail:** a new `apps/audit` app with an append-only `AccessLog` (actor id
+  and role, action, resource type and id, patient user id, IP, time; no content and
+  no names; ids are plain integers so rows outlive the people they mention). It can't
+  be updated or deleted through the ORM or Django admin. `record_access()` must run
+  **inside the transaction of the access it records**, so if the audit row can't be
+  written the data isn't returned (**fail closed**). It covers health-data reads and
+  writes, credential document downloads, and admin reveals of a private patient's
+  identity (now written to the table as well as the log line). Auth and relationship
+  events stay as structured log lines (2026-09-15).
+- **Field encryption:** `core.encryption.EncryptedTextField` stores Fernet tokens
+  (`cryptography`), key from `FIELD_ENCRYPTION_KEY`, with
+  `FIELD_ENCRYPTION_PREVIOUS_KEYS` for rotation. Encrypted columns can't be searched
+  (only `isnull` lookups work). A production deploy without a valid key fails its
+  system check (`mindcare.E001`). Losing the key loses the data, so a copy lives in a
+  password manager, never in the repo.
+- **Static files:** `prod.py`'s `STATICFILES_STORAGE` line was removed. Django 5.1
+  dropped that setting, so it had silently had no effect; static files keep the
+  default storage they actually use today (WhiteNoise middleware still serves them).
+**Alternatives considered:** Supabase's REST API with stdlib `urllib` (no packages,
+but needs the `service_role` key on Render); logging-only audit (decisions.md
+2026-09-15 rules it out for health data); fail-open auditing (data could be read
+with no trace); relying only on Supabase disk encryption (doesn't protect against a
+leaked database dump or an over-broad query).
+
+## 2026-10-11 - The AI gateway forwards to `/patient-summary` on the same endpoint
+**Decision:** `POST /api/v1/ai/anxiety-prediction/` now forwards to the AI service's
+`POST /patient-summary` instead of `/predict`. Same URL, permissions (approved,
+active psychologists only), throttle, and **no storage or logging**. It accepts two
+optional keys, `Gender` (`Female` / `Male` / `Other`) and `Alcohol Consumption
+(drinks/week)` (0–100), which the model never uses; they only fill the
+recommendation wording. The response adds `caveat`, `estimated_severity_tier`,
+`severity_tier_basis` and `recommendation_bundle`.
+**Why the same endpoint (Q27 option A):** `/patient-summary`'s response is a strict
+superset of `/predict`'s: the AI builds it from the `/predict` result
+(`**prediction.model_dump()` in `MindCare AI/src/api/main.py`) plus the summary
+fields, with the same validation and 422s. The Web's AI form merged in PR #28 keeps
+working unchanged, and `web/ai-recommendations` already reads the new fields when
+present, so the Web needs no change.
+**Rules that stay:** psychologist-facing only. The tier is an estimate (about 78%
+right with this model's predictions), and the bundle is the dataset's template text,
+never clinically validated. The Web shows `caveat` first. Nothing here reaches a
+patient: Phase 6's approval workflow (stored triple, separate training consent,
+age gate) is still required before any recommendation can.
+**Alternatives considered:** a new `/ai/patient-summary/` endpoint (option B, only if
+the response weren't a superset; it is, so the Web would have changed for nothing).

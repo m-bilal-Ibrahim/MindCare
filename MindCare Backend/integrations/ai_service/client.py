@@ -1,7 +1,9 @@
 """
 Client for the separate AI inference service (MindCare AI, FastAPI on Render).
 
-Thin HTTP wrapper around the service's `POST /predict`, using only the standard
+Thin HTTP wrapper around the service's `POST /patient-summary` (everything
+`/predict` returns, plus a caveat, an estimated severity tier and the dataset's
+recommendation bundle; docs/decisions.md, 2026-10-11), using only the standard
 library (no HTTP package in requirements/base.txt). It knows nothing about
 users or permissions; apps/ai/services.py decides who may call it. Per the
 project's hard rule, model output must never reach a patient without
@@ -18,7 +20,10 @@ from urllib.request import Request, urlopen
 
 logger = logging.getLogger("mindcare.integrations.ai_service")
 
-PREDICT_PATH = "/predict"
+# /patient-summary returns a strict superset of /predict's fields (its response is
+# built from the /predict result plus the summary fields), with the same
+# validation and 422s, so existing callers keep working.
+PREDICT_PATH = "/patient-summary"
 # Statuses that mean "this input was refused". Any other 4xx (404 from a wrong
 # URL or a missing Render service, 429, ...) is a service problem, not the input's.
 REJECTION_STATUSES = {400, 422}

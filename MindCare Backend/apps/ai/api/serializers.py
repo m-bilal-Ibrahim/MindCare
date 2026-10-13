@@ -1,6 +1,6 @@
 """Serializers for the AI gateway.
 
-The request keys are exactly the AI service's own `POST /predict` keys (column
+The request keys are exactly the AI service's own `POST /patient-summary` keys (column
 names with spaces, see "MindCare AI/docs/api_usage.md"), so the body can be
 forwarded unchanged. Bounds mirror the AI's Pydantic schema; the AI's own
 plausibility and 18-49 age rules stay on its side and come back as a 400.
@@ -25,6 +25,7 @@ OCCUPATIONS = [
     "Student",
     "Teacher",
 ]
+GENDERS = ["Female", "Male", "Other"]
 MAX_SERVINGS = 20
 PSS_MIN, PSS_MAX = 0, 4
 
@@ -68,6 +69,14 @@ class AnxietyPredictionRequestSerializer(
             "Diet Quality (1-10)": number_field("Diet quality", 1, 10),
             "Occupation": serializers.ChoiceField(choices=OCCUPATIONS),
             "Family History of Anxiety": serializers.ChoiceField(choices=["Yes", "No"]),
+            # Optional: the model never uses these; they only fill the
+            # recommendation wording ("not provided" when missing).
+            "Gender": serializers.ChoiceField(
+                choices=GENDERS, required=False, allow_null=True
+            ),
+            "Alcohol Consumption (drinks/week)": number_field(
+                "Alcohol consumption", 0, 100, required=False, allow_null=True
+            ),
         }
 
 
@@ -77,9 +86,35 @@ class _Probabilities(serializers.Serializer):
     High = serializers.FloatField()
 
 
-class AnxietyPredictionResponseSerializer(serializers.Serializer):
-    """Documents the AI service's response, which is returned unchanged."""
+class _SeverityTierBasis(serializers.Serializer):
+    method = serializers.CharField()
+    share_of_matching_patients = serializers.FloatField(allow_null=True)
+    matching_patients = serializers.IntegerField()
 
+
+class _RecommendationBundle(serializers.Serializer):
+    exercises = serializers.CharField()
+    sleep_schedule = serializers.CharField()
+    nutrition = serializers.CharField()
+
+
+SEVERITY_TIERS = [
+    "Minimal (1-2)",
+    "Mild (3-4)",
+    "Moderate (5-6)",
+    "High (7-8)",
+    "Severe (9-10)",
+]
+
+
+class AnxietyPredictionResponseSerializer(serializers.Serializer):
+    """Documents the AI service's /patient-summary response, returned unchanged.
+    Psychologist-facing only: never shown to a patient."""
+
+    caveat = serializers.CharField(
+        help_text="Always first: the tier and bundle are an estimate for clinician "
+        "review, not validated advice. Show it before the results."
+    )
     predicted_class = serializers.ChoiceField(choices=["Low", "Medium", "High"])
     probabilities = _Probabilities()
     uncertainty_flag = serializers.BooleanField(
@@ -93,6 +128,16 @@ class AnxietyPredictionResponseSerializer(serializers.Serializer):
     borderline_reasons = serializers.ListField(child=serializers.CharField())
     borderline_between = serializers.ListField(
         child=serializers.CharField(), allow_null=True
+    )
+    estimated_severity_tier = serializers.ChoiceField(
+        choices=SEVERITY_TIERS,
+        help_text="An estimate from the predicted level and stress level, not a model "
+        "prediction.",
+    )
+    severity_tier_basis = _SeverityTierBasis()
+    recommendation_bundle = _RecommendationBundle(
+        help_text="The dataset's template text for the estimated tier. Decision support "
+        "for the psychologist; never sent to a patient without review."
     )
 
 

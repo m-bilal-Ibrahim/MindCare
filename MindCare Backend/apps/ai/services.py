@@ -1,7 +1,8 @@
 """Write-path logic for the AI gateway.
 
-Forwards a psychologist-entered set of features to the AI service and returns its
-prediction. Nothing is stored and the features are never logged: they are health
+Forwards a psychologist-entered set of features to the AI service's
+/patient-summary and returns its prediction, estimated severity tier and
+recommendation bundle. Nothing is stored and the features are never logged: they are health
 data, and no health data is stored before the Phase 5 audit trail (see
 docs/decisions.md, 2026-10-07). Who may call this is decided by the view's
 permissions (approved, active psychologists only): the prediction is decision
