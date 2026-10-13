@@ -405,7 +405,7 @@ features) among True-High(/Severe) rows. **At the time, it did not replicate:**
 **Update 2026-10-12 (served v2 XGBoost, `reports/fairness_11feature_v2.md`): the cross-validated check
 was run and the gap PERSISTS** - out-of-fold over 9,350 rows, Scientist balanced accuracy
 0.760 (95% CI 0.719-0.797) vs
-0.811, High recall 0.747 (0.645-0.847)
+0.811, model High recall 0.747 (0.645-0.847)
 vs 0.877. This supersedes the "likely noise" conclusion below: describe it as an unexplained,
 persistent gap, still not established bias (13 occupations tested; no Occupation-Stress relationship;
 synthetic data).
@@ -585,7 +585,7 @@ preprocessing (Phase 10) is shared between the two targets.
       (Brier 0.1518 and 0.1646 respectively, both roughly calibrated on a count-weighted
       average but with real per-bin over/under-confidence patterns — see report). Not yet
       done for 5-class Severity. **These are the earlier Random Forest's numbers.** For the served
-      v2 XGBoost (2026-10-12, out-of-fold): already well calibrated (ECE at most 0.010 per class),
+      v2 XGBoost (2026-10-12, out-of-fold): already well calibrated on this dataset (very likely synthetic) (ECE at most 0.010 per class),
       calibration not deployed (`reports/calibration_review_flag_11feature_v2.md`).
 
 ### Input validation (fixes a Phase 19 finding, 3-class target)
@@ -698,7 +698,7 @@ preprocessing (Phase 10) is shared between the two targets.
 - [x] Re-tuning on the 11 features (`src/models/tune_models_11feature.py`): no gain, v2 params kept.
 - [x] Derived features (`src/experiments/derived_features_11feature.py`): null result, not adopted.
 - [x] Calibration and review threshold (`src/experiments/calibration_review_flag_11feature_v2.py`): already
-      well calibrated, calibration not deployed; threshold stays 0.025, with 0.0302 / 0.0349 documented as
+      well calibrated on this dataset (very likely synthetic), calibration not deployed; threshold stays 0.025, with 0.0302 / 0.0349 documented as
       alternatives. **The threshold is an open clinical decision.**
 - [x] Fairness by Gender and Occupation (`src/fairness/fairness_11feature_v2.py`): Scientist gap persists
       out-of-fold (see "Known finding" above).

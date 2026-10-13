@@ -40,18 +40,19 @@ held-out part of each fold. The best trial, refitted as it would be deployed, sc
 (sleep deficit, stress × sleep deficit, arousal index, lifestyle score, caffeine per sleep hour) lowered
 balanced accuracy on all 5 folds (0.8113 → 0.8087, paired difference -0.0026 ± 0.0022). Not adopted.
 
-**Calibration: not needed** (`reports/calibration_review_flag_11feature_v2.md`, out-of-fold). The served v2
-probabilities are already well calibrated: expected calibration error 0.010 (Low), 0.010 (Medium), 0.005
-(High); Brier score summed over classes 0.2994. Isotonic calibration (better than sigmoid) lowers the
-calibration error but not the Brier score (0.2997), changes the predicted class for 137 of 9,350 patients
-and labels 2 fewer true-High patients High, so it is not deployed. (The older "Calibration Status" section
+**Calibration: not needed on this dataset (very likely synthetic)** (`reports/calibration_review_flag_11feature_v2.md`, out-of-fold). The
+served v2 probabilities are already well calibrated on this dataset (very likely synthetic): expected calibration error 0.010 (Low), 0.010
+(Medium), 0.005 (High); mean Brier score per class 0.0998 (the same averaging as the Random Forest's
+0.1098 → 0.1019 below). Isotonic calibration (better than sigmoid) lowers the calibration error but not
+the mean Brier score (0.0999), changes the predicted class for 137 of 9,350 patients and lowers model
+High recall (2 fewer true-High patients labelled High), so it is not deployed. (The older "Calibration Status" section
 below is about the earlier Random Forest.)
 
 **Review flag: 0.025 kept; the threshold is an open decision needing clinical review.** The flag marks a
 patient for priority review when P(High) ≥ 0.025; it never changes the prediction. Out-of-fold over 9,350
 rows (968 true High), with bootstrap 95% intervals (2,000 resamples; the threshold held fixed):
 
-| Threshold | True-High patients caught | Patients flagged |
+| Threshold | Review-flag catch rate (true High with P(High) ≥ threshold) | Patients flagged |
 |---|---|---|
 | **0.025 (served)** | 96.2% [94.9, 97.3] | 25.3% [24.4, 26.1] |
 | 0.0302 (evaluated alternative) | 95.4% [94.0, 96.7] | 22.6% [21.8, 23.4] |
@@ -67,12 +68,12 @@ accuracy 0.807 / 0.817 /
 0.810 for Female / Male / Other). Occupation: **Scientist** is below the
 overall value in both views; out-of-fold balanced accuracy 0.760 (95% CI
 0.719-0.797) vs 0.811,
-High recall 0.747 (0.645-0.847) vs
+model High recall 0.747 (0.645-0.847) vs
 0.877. Both intervals exclude the overall value, so the gap persists under
 cross-validation (see "Scientist flag" below for what that does and does not show). Engineer (out-of-fold
-High recall 0.818, interval 0.726-0.903)
-and Nurse (validation only) are within noise. The review flag still catches 93.3% of
-true-High Scientists out-of-fold.
+model High recall 0.818, interval 0.726-0.903)
+and Nurse (validation only) are within noise. The review-flag catch rate for true-High
+Scientists is still 93.3% out-of-fold.
 
 **Library versions** (all analyses above): Python 3.13.13, xgboost 3.4.1, scikit-learn 1.9.1, numpy 2.5.3,
 pandas 3.0.5. Python, xgboost and scikit-learn match the versions the served pickles were built with (`data/processed/deploy_artifacts.json`).
@@ -765,7 +766,7 @@ conflated.
 
 ## Calibration Status (Phase 15 — `reports/calibration_3class.md`, `reports/calibration_3class_full.md`)
 
-> **Earlier Random Forest.** For the served v2 XGBoost, see "Current Status Summary" above: it is already well calibrated and calibration is not deployed (`reports/calibration_review_flag_11feature_v2.md`).
+> **Earlier Random Forest.** For the served v2 XGBoost, see "Current Status Summary" above: it is already well calibrated on this dataset (very likely synthetic) and calibration is not deployed (`reports/calibration_review_flag_11feature_v2.md`).
 
 10-bin reliability diagrams and Brier scores were computed for all 3 classes (one-vs-rest, tuned
 Random Forest, validation set):
@@ -930,13 +931,13 @@ the model predicts High, it is almost never wrong, regardless of occupation.
 > **Update 2026-10-12 (served v2 XGBoost, `reports/fairness_11feature_v2.md`).** The cross-validated check this
 > section asked for has now been run. Out-of-fold over 9,350 rows, Scientist balanced accuracy is
 > 0.760 (95% CI 0.719-0.797) against
-> 0.811 overall, and High recall 0.747
+> 0.811 overall, and model High recall 0.747
 > (0.645-0.847) against 0.877: the gap
 > persists with a larger sample, so "validation-set sampling noise" no longer explains it on its own. It is
 > still **not** established bias: with 13 occupations, about one interval in 20 excludes the overall value by
 > chance, the dataset shows no Occupation–Stress Level relationship (below), and the data are very likely
 > synthetic. Treat it as an unexplained, persistent gap to watch in real data, and keep the review flag
-> (which still catches 93.3% of true-High Scientists) in place.
+> (review-flag catch rate for true-High Scientists still 93.3%) in place.
 
 The Scientist gap above (and the analogous flag in the 5-class fairness report,
 `reports/fairness_report.md`) was investigated directly by comparing Scientist vs. non-Scientist
@@ -981,8 +982,8 @@ Not yet done for the 5-class Severity target beyond what's already in `reports/f
    occupation High-class validation samples are as small as 9-18 rows, making subgroup fairness
    metrics (and the two flags above) inherently noisy at this sample size.
 4. **Calibration (updated 2026-10-12).** The served v2 XGBoost's probabilities are already well calibrated
-   out-of-fold (expected calibration error at most 0.010 per class), and isotonic calibration was not deployed
-   because it changes predictions and costs High recall (`reports/calibration_review_flag_11feature_v2.md`).
+   on this dataset (very likely synthetic) out-of-fold (expected calibration error at most 0.010 per class), and isotonic calibration was not deployed
+   because it changes predictions and lowers model High recall (`reports/calibration_review_flag_11feature_v2.md`).
    The rest of this item describes the earlier Random Forest. **Miscalibrated raw probabilities, and calibration is tested but not deployed.** Predicted
    probabilities are not well-calibrated across the full range for any class (see Calibration
    Status) — raw `predict_proba` output should not be presented to a psychologist as a
@@ -990,7 +991,7 @@ Not yet done for the 5-class Severity target beyond what's already in `reports/f
    calibration quality, but was not adopted because it interacts badly with the existing
    uncertainty-flagging threshold (see "Attempted Improvements" above) — a fix requires
    re-tuning that threshold, not just applying calibration.
-5. **Review flag volume (updated 2026-10-12).** For the served v2 at 0.025 the flag marks 25.3% of patients out-of-fold and catches 96.2% of true High; 89.9% of flagged patients (2,123 of 2,361) were predicted correctly. The threshold is an open clinical decision (see "Current Status Summary"). The rest of this item describes the earlier Random Forest. **Uncertainty flag has a high false-flag rate by design (92.77%).** This is an accepted
+5. **Review flag volume (updated 2026-10-12).** For the served v2 at 0.025 the flag marks 25.3% of patients out-of-fold, with a review-flag catch rate of 96.2%; 89.9% of flagged patients (2,123 of 2,361) were predicted correctly. The threshold is an open clinical decision (see "Current Status Summary"). The rest of this item describes the earlier Random Forest. **Uncertainty flag has a high false-flag rate by design (92.77%).** This is an accepted
    tradeoff given the flag's reprioritization-not-gatekeeping purpose, but it means roughly 1 in
    5 validation rows (20.97%) get flagged, and the large majority of that review volume confirms
    correct predictions rather than catching errors.
