@@ -5,8 +5,8 @@ on:
     branches: [backend, main]
     paths:
       - 'MindCare Backend/**'
+  # Any base branch, so stacked PRs (built on an unmerged PR's branch) get CI too.
   pull_request:
-    branches: [main]
     paths:
       - 'MindCare Backend/**'
 

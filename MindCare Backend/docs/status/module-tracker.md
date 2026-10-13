@@ -132,7 +132,7 @@ Last updated: 2026-10-10 (input-validation-hardening, backend part). Re-checked 
 | Item | Status | Notes |
 |---|---|---|
 | Patient ↔ psychologist relationships | Backend done, Web done, App mock only | Patient side in the App is Phase 1 item (f) |
-| File storage (`integrations/storage_client`) | not started | Phase 1 item (b) |
-| DB-backed PHI access audit trail | not started | Phase 1 item (b); required before any health data is stored |
+| File storage (`integrations/storage_client`) | backend done (PR foundations) | Private Supabase bucket, signed URLs, magic-byte checks, EXIF removal. Used by 6.1, 6.2, 6.10 |
+| DB-backed PHI access audit trail | backend done (PR foundations) | `apps/audit`, append-only, fail closed; field encryption for health data ready too |
 | Web lint / typecheck / tests | missing | `package.json` has only `dev`, `build`, `preview` |
 | Input validation (docs/validation-rules.md) | Backend done; Web and App not started | Backend enforces every rule on models and serializers. The Web/App part waits for the frontend partner's branches |

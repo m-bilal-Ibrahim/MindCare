@@ -5,6 +5,8 @@ filtering (e.g. scoping a psychologist's queries to their own patients)
 belongs here, not just in permission classes.
 """
 
+from django.db import transaction
+
 from apps.accounts.models import Role
 from apps.patients.models import PatientProfile
 from core.audit import log_identity_reveal
@@ -46,6 +48,18 @@ def get_patient_display_identity(*, patient_profile, viewer):
     ):
         return real
     if viewer.role == Role.ADMIN:
+        # Fail closed: no audit row, no real name (docs/decisions.md, 2026-10-11).
+        from apps.audit.models import AuditAction, AuditResource
+        from apps.audit.services import record_access
+
+        with transaction.atomic():
+            record_access(
+                actor=viewer,
+                action=AuditAction.IDENTITY_REVEAL,
+                resource_type=AuditResource.PATIENT_IDENTITY,
+                resource_id=patient_profile.pk,
+                patient_user_id=patient_profile.user_id,
+            )
         log_identity_reveal(viewer_id=viewer.pk, patient_id=patient_profile.user_id)
         return real
     return pseudonymous

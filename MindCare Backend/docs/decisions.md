@@ -935,3 +935,41 @@ commands would stay open, which is how a name with digits got in); Postgres CHEC
 constraints (Unicode matching depends on the database locale, so local and Supabase
 could behave differently); rewriting the invalid names with a data migration (would
 silently change people's names).
+
+## 2026-10-11 - Foundations: private object storage, a DB audit trail that fails closed, field encryption
+**Decision:**
+- **Storage:** uploads go to a **private Supabase Storage bucket** through its
+  S3-compatible API, using `django-storages` + `boto3`, with **storage-only S3
+  access keys** (not the `service_role` key, which reaches the whole database).
+  `integrations/storage_client` is the only entry point: it validates, stores under
+  `<folder>/<uuid>.<ext>`, and hands out **signed URLs valid for 5 minutes**. The
+  database stores only keys. Development and tests use local disk. A production
+  deploy without the bucket variables fails its system check (`mindcare.E002`), so
+  uploads can never land on Render's temporary disk.
+- **Upload checks** (`core/files.py`): type from magic bytes, never the extension or
+  Content-Type; size limit per field; random stored names; images re-encoded with
+  **Pillow**, which drops EXIF/GPS and anything appended to the file, with a pixel
+  limit against decompression bombs.
+- **Audit trail:** a new `apps/audit` app with an append-only `AccessLog` (actor id
+  and role, action, resource type and id, patient user id, IP, time; no content and
+  no names; ids are plain integers so rows outlive the people they mention). It can't
+  be updated or deleted through the ORM or Django admin. `record_access()` must run
+  **inside the transaction of the access it records**, so if the audit row can't be
+  written the data isn't returned (**fail closed**). It covers health-data reads and
+  writes, credential document downloads, and admin reveals of a private patient's
+  identity (now written to the table as well as the log line). Auth and relationship
+  events stay as structured log lines (2026-09-15).
+- **Field encryption:** `core.encryption.EncryptedTextField` stores Fernet tokens
+  (`cryptography`), key from `FIELD_ENCRYPTION_KEY`, with
+  `FIELD_ENCRYPTION_PREVIOUS_KEYS` for rotation. Encrypted columns can't be searched
+  (only `isnull` lookups work). A production deploy without a valid key fails its
+  system check (`mindcare.E001`). Losing the key loses the data, so a copy lives in a
+  password manager, never in the repo.
+- **Static files:** `prod.py`'s `STATICFILES_STORAGE` line was removed. Django 5.1
+  dropped that setting, so it had silently had no effect; static files keep the
+  default storage they actually use today (WhiteNoise middleware still serves them).
+**Alternatives considered:** Supabase's REST API with stdlib `urllib` (no packages,
+but needs the `service_role` key on Render); logging-only audit (decisions.md
+2026-09-15 rules it out for health data); fail-open auditing (data could be read
+with no trace); relying only on Supabase disk encryption (doesn't protect against a
+leaked database dump or an over-broad query).
