@@ -355,6 +355,10 @@ def _ensure_demo_photos_and_history():
             profile=hina.patient_profile,
             checked=_initials_avatar(hina.full_name, "#4A7C59"),
         )
+    # 6.10: the fictional patient 1 has opted in, so the demo shows duas/surahs.
+    from apps.motivation.services import set_religious_opt_in
+
+    set_religious_opt_in(user=hina, opted_in=True)
     if not MentalHealthHistory.objects.filter(profile=hina.patient_profile).exists():
         save_mental_health_history(
             profile=hina.patient_profile,

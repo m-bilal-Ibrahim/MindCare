@@ -210,3 +210,14 @@ as GPS location. Audio types: MP3, M4A, OGG. Documents: PDF.
 | Country `code` | Django admin | — | 2 uppercase letters | yes | `Enter a two-letter ISO country code, e.g. PK.` |
 | Language `code` | Django admin | — | 2 lowercase letters | yes | `Enter a two-letter ISO 639-1 code, e.g. ur.` |
 | City `name` | Django admin | City | Person name | yes | |
+| `opted_in` | patient `motivation/religious/preference/` | — | Choice (true/false) | yes | `false` deletes the opt-in |
+| Dua `title` | Django admin | Title | Organisation name 2–120 | yes | |
+| Dua `reference` | Django admin | Reference | Letters, numbers, spaces, `. : , ( ) ' -`, 3–60 | yes | `Reference can only contain letters, numbers, spaces and . : , ( ) ' - (3–60 characters), e.g. Quran 21:87.` |
+| Dua / Surah `arabic` | Django admin | Arabic text | Free text 3–5000 (surah 3–50000) | yes | |
+| Dua / Surah `translation` | Django admin | Translation | Free text 10–5000 (surah 10–50000) | yes | |
+| Dua / Surah `transliteration` | Django admin | Transliteration | Free text 3–20000 | no | |
+| Surah `number` | Django admin | Surah number | Number 1–114 | yes | unique |
+| Surah `name_arabic` | Django admin | Arabic name | Free text 3–100 | yes | |
+| Surah `name_english`, `name_meaning` | Django admin | English name / Meaning | Organisation name 2–100 | yes | |
+| Surah `ayah_count` | Django admin | Ayah count | Number 1–286 | yes | |
+| Recitation upload | Django admin (dua / surah) | Recitation | File: MP3, M4A, OGG; 15 MB | no | replaces the current audio |

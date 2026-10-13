@@ -45,8 +45,8 @@ docs/               This file, decisions.md, roadmap.md, deployment.md
   nothing stored). The approval workflow stays in `recommendations`.
 - **audit** — the database-backed access audit trail (`AccessLog`, append-only):
   every access to health data, credential documents and private identities.
-- **motivation** — Motivation Corner content: admin-managed text quotes today;
-  opt-in religious content later, in its own model.
+- **motivation** — Motivation Corner content: admin-managed text quotes, plus
+  opt-in duas and surahs (with audio) in their own tables, for patients only.
 
 ## Shared modules
 

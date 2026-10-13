@@ -279,4 +279,17 @@ new service, selector, or API endpoint. Keep entries one row per function/class.
 | `integrations/storage_client/client.py` | `replace_file()`, `url_or_none()` | Store a new file in place of an old one (old deleted after commit); signed URL or None | photo endpoints | — |
 | `apps/accounts/demo.py` | `_ensure_demo_photos_and_history()`, `DEMO_HISTORY` | Demo initials avatars for the demo psychologists and patient 1, and a fictional history for patient 1 | — | neither (tooling) |
 
+### 6.10 Motivation Corner (religious content)
+
+| File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
+|------|-------------------|---------|--------------|--------------------|
+| `apps/motivation/models.py` | `Dua`, `Surah`, `ReligiousContent`, `ReligiousContentPreference`, `SOURCE_REFERENCE_VALIDATOR` | Religious content tables (text, optional private audio) and the minimal opt-in (row only while opted in) | — | — |
+| `apps/motivation/migrations/0006_seed_religious_content.py`, `data/religious_content.json` | `forwards()` | Seeds 10 Quranic duas and 5 short surahs: Tanzil Simple Arabic (CC BY 3.0, verbatim) + Pickthall 1930 (public domain) | — | — |
+| `apps/motivation/services.py` | `set_religious_opt_in()`, `set_content_audio()`, `remove_content_audio()` | Opt in (create) / out (delete); replace or remove a recitation (old file deleted after commit) | `PUT /api/v1/motivation/religious/preference/`, Django admin | MindCare App |
+| `apps/motivation/selectors.py` | `has_opted_in_to_religious_content()`, `active_duas()`, `active_surahs()` | Opt-in check and active content | `/api/v1/motivation/duas/`, `/surahs/` | MindCare App |
+| `apps/motivation/permissions.py` | `HasReligiousOptIn` | 403 with a "turn it on" message unless the patient opted in | duas/surahs endpoints | MindCare App |
+| `apps/motivation/api/views.py`, `serializers.py` | `ReligiousPreferenceView`, `DuaListView`, `DuaDetailView`, `SurahListView`, `SurahDetailView`; `DuaSerializer`, `SurahListSerializer`, `SurahSerializer` | Patients only (IsPatient + opt-in), throttle `motivation`; `audio_url` signed or null | `/api/v1/motivation/religious/preference/`, `/duas/`, `/duas/{id}/`, `/surahs/`, `/surahs/{number}/` | MindCare App |
+| `apps/motivation/admin.py` | `DuaAdmin`, `SurahAdmin`, `ReligiousContentForm` | Edit, order, show/hide; recitation upload checked by content; the opt-in is deliberately not registered | `/admin/motivation/` | neither (Django admin) |
+| `core/files.py` | `check_audio()`, `AUDIO_KINDS`, `AUDIO_MAX_MB` | Recitation rules: MP3, M4A, OGG, 15 MB | Django admin | — |
+
 <!-- Add new `### apps/<app_name>` sections below as modules are implemented. -->
