@@ -54,10 +54,10 @@ new service, selector, or API endpoint. Keep entries one row per function/class.
 
 | File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
 |------|-------------------|---------|--------------|--------------------|
-| `integrations/ai_service/client.py` | `predict()`, `AIServiceUnavailable`, `AIServiceRejected` | Stdlib HTTP call to the AI service's `POST /predict` (base URL from `AI_SERVICE_URL`); 400/422 → rejected with the AI's flattened `detail`; timeout, connection error, 5xx, other 4xx, non-JSON or no URL → unavailable; never logs the body | — | neither (internal) |
-| `apps/ai/services.py` | `predict_anxiety_risk()` | Forwards the features with a 60 s timeout; nothing stored or logged (health data, no audit trail before Phase 5) | `POST /api/v1/ai/anxiety-prediction/` | MindCare Web |
-| `apps/ai/api/serializers.py` | `AnxietyPredictionRequestSerializer`, `AnxietyPredictionResponseSerializer`, `OCCUPATIONS` | Request keys exactly as the AI expects (17 fields, same bounds as its schema, unknown keys rejected); response documents the AI's shape | — | MindCare Web |
-| `apps/ai/api/views.py` | `AnxietyPredictionView`, `AIPredictionRateThrottle` | Approved, active psychologists only (patients 403); AI rejection → 400 `{detail}`; AI unavailable → 503 "waking up"; throttled (`ai_prediction`, 20/min per user) | `POST /api/v1/ai/anxiety-prediction/` | MindCare Web |
+| `integrations/ai_service/client.py` | `predict()`, `AIServiceUnavailable`, `AIServiceRejected` | Stdlib HTTP call to the AI service's `POST /patient-summary` (a superset of `/predict`) (base URL from `AI_SERVICE_URL`); 400/422 → rejected with the AI's flattened `detail`; timeout, connection error, 5xx, other 4xx, non-JSON or no URL → unavailable; never logs the body | — | neither (internal) |
+| `apps/ai/services.py` | `predict_anxiety_risk()` | Forwards the features to the AI's `/patient-summary` with a 60 s timeout; returns the prediction plus caveat, estimated severity tier and recommendation bundle; nothing stored or logged | `POST /api/v1/ai/anxiety-prediction/` | MindCare Web |
+| `apps/ai/api/serializers.py` | `AnxietyPredictionRequestSerializer`, `AnxietyPredictionResponseSerializer`, `OCCUPATIONS`, `GENDERS`, `SEVERITY_TIERS` | Request keys exactly as the AI expects (17 required fields with explicit bounds, plus optional `Gender` and `Alcohol Consumption (drinks/week)`; unknown keys rejected); response documents the `/patient-summary` shape (`caveat`, `estimated_severity_tier`, `severity_tier_basis`, `recommendation_bundle`) | — | MindCare Web |
+| `apps/ai/api/views.py` | `AnxietyPredictionView`, `AIPredictionRateThrottle` | Approved, active psychologists only (patients 403); invalid input → 400 `{field: [message]}`; AI rejection → 400 `{detail}`; AI unavailable → 503 "waking up"; throttled (`ai_prediction`, 20/min per user) | `POST /api/v1/ai/anxiety-prediction/` | MindCare Web |
 
 ---
 
