@@ -48,11 +48,34 @@ so explicitly rather than skipping the question or implying otherwise.
 > - **Caveat:** in one of five folds the tuning step chose balanced class weights on a near-tie,
 >   which needs a much higher review threshold (0.081). The deployed model is unweighted and keeps
 >   0.025 (Q22 item 14).
-> - **Not re-run:** calibration, SHAP, fairness and robustness still describe the 12-feature
->   XGBoost.
+> - **Not re-run:** SHAP and robustness still describe the 12-feature XGBoost. Calibration, the
+>   review threshold and fairness were re-run for v2 on 2026-10-12 (next note).
 >
 > Wherever an answer below says "12-feature" for the current model, read it as the model's
 > predecessor. Q9, Q22 and Q23 carry update notes.
+>
+> **Update 2026-10-11/12 — validation/CV checks of the served v2, and a third test-set use for a
+> different model.** Evidence: `reports/tuning_results_11feature.md`, `reports/derived_features_11feature.md`,
+> `reports/calibration_review_flag_11feature_v2.md`, `reports/fairness_11feature_v2.md`,
+> `reports/final_test_evaluation_11feature_v3.md`. Out-of-fold = the 9,350 train + validation rows on
+> one shared set of 5 folds.
+> - **Re-tuning: no gain.** 60 trials; the best scored balanced accuracy 0.8098 vs v2's 0.8113 on the
+>   same folds, so v2's hyperparameters stay.
+> - **Derived features: null result.** Five stateless features lowered balanced accuracy on all 5
+>   folds (0.8113 → 0.8087).
+> - **Calibration: not needed on this dataset (very likely synthetic).** v2's out-of-fold calibration error is 0.010 / 0.010 / 0.005
+>   (Low / Medium / High) and its mean Brier score per class is 0.0998; isotonic calibration (0.0999)
+>   is not deployed because it changes 137 predicted classes and lowers model High recall.
+> - **Review threshold: 0.025 kept; an open clinical decision.** Review-flag catch rate (true-High
+>   patients with P(High) ≥ threshold) and share flagged, out-of-fold with bootstrap 95% intervals:
+>   0.025 → 96.2% [94.9, 97.3] / 25.3%; 0.0302 → 95.4% [94.0, 96.7] / 22.6%; 0.0349 → 95.1%
+>   [93.8, 96.5] / 20.7%.
+> - **Fairness (Gender, Occupation):** no Gender gap; the Scientist gap persists out-of-fold and is
+>   now described as unexplained and persistent, not established bias (Q15).
+> - **Third, disclosed test-set use (2026-10-11), for the v3 retrain** (untuned XGBoost with balanced
+>   weights, **not** the served model): balanced accuracy 0.8030, model High recall 0.8994. The served
+>   v2 still has no test-set number; the set is treated as spent again.
+> - **Still not re-run for v2:** SHAP and robustness.
 
 ---
 
@@ -346,6 +369,13 @@ so no number can honestly be given here.
 
 ### 13. Is it calibrated?
 
+> **Current v2 (2026-10-12, out-of-fold, `reports/calibration_review_flag_11feature_v2.md`): yes,
+> well calibrated on this dataset (very likely synthetic).** Expected calibration error 0.010 (Low), 0.010 (Medium), 0.005 (High); mean
+> Brier score per class 0.0998 (the same averaging as the 0.1098 → 0.1019 Random Forest figures in
+> Q25). Isotonic calibration was tested (mean Brier 0.0999) and not deployed: it changes 137 predicted
+> classes and labels 2 fewer true-High patients High. **The rest of this answer is the earlier Random
+> Forest.**
+
 **No, not well, across most of the probability range — and this is explicitly documented rather
 than assumed.** Phase 15 was completed for all 3 classes on this target (`model_card.md`,
 "Calibration Status", citing `reports/calibration_3class.md` and
@@ -366,6 +396,13 @@ regression per class. This has **not** been done for the 5-class Severity target
 
 ### 14. How uncertain is it?
 
+> **Current rule (since 2026-09-28): P(High) ≥ 0.025 on the v2 XGBoost.** The served files flag 411 of
+> 1,650 validation rows, a review-flag catch rate of 158/165 true-High patients. Out-of-fold (9,350 rows)
+> the flag marks 25.3% of patients with a review-flag catch rate of 96.2%, and 89.9% of flagged patients
+> (2,123 of 2,361) were predicted correctly. The threshold is an open clinical decision: 0.0302 and
+> 0.0349 were evaluated with bootstrap intervals (top note; `reports/calibration_review_flag_11feature_v2.md`).
+> The 0.10 figures below are the Random Forest's history.
+
 Uncertainty is handled via one specific, documented mechanism (Phase 16) — not via a general
 uncertainty quantification method like ensembling or conformal prediction, neither of which has
 been implemented. The production rule: flag a row **"borderline — recommend review"** if **P(High)
@@ -381,6 +418,15 @@ Measured effect on the validation set (n=1650):
 This has **not** been done for the 5-class Severity target.
 
 ### 15. How does it perform across subgroups?
+
+> **Update 2026-10-12 (served v2, `reports/fairness_11feature_v2.md`, validation split and out-of-fold):**
+> Gender and Occupation were checked on model outputs. **Gender:** no group more than 5 points below
+> overall (out-of-fold balanced accuracy 0.807 / 0.817 / 0.810, Female / Male / Other). **Scientist:**
+> the gap persists out-of-fold — balanced accuracy 0.760 (95% CI 0.719–0.797) vs 0.811, model High
+> recall 0.747 (0.645–0.847) vs 0.877 — so it is now described as an **unexplained, persistent gap, not
+> established bias** (13 occupations tested; no Occupation–Stress relationship; synthetic data). Its
+> review-flag catch rate is still 93.3%. Engineer and Nurse are within noise. The text below is the
+> 2026-09 Random Forest finding, kept as history.
 
 **Only one subgroup dimension — Occupation — has been evaluated. No age, gender, or other
 demographic subgroup fairness analysis has been performed on model *outputs*** (Gender was
@@ -402,8 +448,8 @@ The Scientist flag was investigated directly and **found not to replicate**: the
 differences that would explain it (Stress Level, Sleep Hours, Therapy Sessions) are not
 statistically significant on the validation set (Welch t-test p=0.36 for 3-class), and the full
 dataset shows essentially no Occupation↔Stress Level relationship at all (ANOVA F=0.47, p=0.93).
-The documented conclusion is that this gap is **likely validation-set sampling noise, not a real
-fairness issue**, pending a larger sample. This is an honest, checked finding — not a dismissal
+The documented conclusion *at the time* was that this gap is **likely validation-set sampling noise,
+not a real fairness issue**, pending a larger sample (superseded 2026-10-12, see the update above). This is an honest, checked finding — not a dismissal
 without evidence.
 
 ### 16. How robust is it?
@@ -425,8 +471,8 @@ run against the saved final model, validation split only.)
   impossible values (Age=-5, Stress Level=250, Heart Rate=9000) with no error or warning. **This
   specific gap has since been fixed**: `src/inference/input_validation.py` now rejects
   physically-implausible values before they reach the model, verified against these exact inputs
-  (see Q18 and Q21). It is wired into `src/inference/predict_single.py` only — not into every
-  conceivable entry point.
+  (see Q18 and Q21). It is wired into the API (`src/api/main.py` calls `validate_patient()` before
+  every `/predict` and `/patient-summary` prediction) and into `src/inference/predict_single.py`.
 - **Distribution shift** (Stress Level shifted by a constant across all validation rows): shifting
   down 3 points nearly halves the predicted-High rate (0.0903 → 0.0418); shifting up 1-3 points
   changes nothing at all (stays at 0.0903) — an asymmetry `reports/robustness_3class.md` notes as
@@ -467,13 +513,15 @@ Documented, evidence-backed failure modes:
 - **Unexplained asymmetric sensitivity to Stress Level distribution shift (Phase 19)** — open,
   not fixed, and not yet root-caused. Shifting Stress Level down 3 points nearly halves the
   predicted-High rate; shifting it up 1-3 points changes nothing at all.
-- **Miscalibrated probabilities**, especially Medium's most populated probability bin
-  under-stating true likelihood by 13.7 points (see Q13).
+- **Miscalibrated probabilities** *(Random Forest history)*, especially Medium's most populated
+  probability bin under-stating true likelihood by 13.7 points (see Q13). The served v2 is well
+  calibrated out-of-fold on this dataset (very likely synthetic).
 - **Small-sample subgroup instability** — occupation-level High-class recall figures are computed
   on samples as small as 9-18 rows, so subgroup metrics (including the two flags above) are
   inherently noisy (`model_card.md`, "Known Limitations" #3).
-- **The uncertainty flag has a high false-flag rate by design (92.77%)** — most flagged rows were
-  already correct, so the mechanism trades review workload for coverage of misses (see Q14).
+- **The review flag mostly marks correct predictions, by design** — 92.77% for the Random Forest
+  at 0.10 (history); for the served v2 at 0.025, 89.9% of flagged patients out-of-fold were predicted
+  correctly. The mechanism trades review workload for review-flag catch rate (see Q14).
 - ~~No input validation~~ **— fixed.** Phase 19 originally found the pipeline silently accepted
   physically impossible values (Age=-5, Stress Level=250, Heart Rate=9000) and predicted on them
   anyway with no warning. `src/inference/input_validation.py` now rejects such values before they
@@ -514,9 +562,9 @@ represented otherwise.
   Level=250, Heart Rate=9000) and predicted on them anyway with no warning. Two-tier bounds per
   numeric feature: physically-impossible values are rejected with a clear error; valid-but-
   outside-the-training-distribution values are allowed through with a warning. Verified against
-  the exact inputs that exposed the original gap. Currently wired into
-  `src/inference/predict_single.py` only — not a universal gate in front of every possible
-  entry point to the model.
+  the exact inputs that exposed the original gap. Wired into the API (`src/api/main.py` calls
+  `validate_patient()` before every `/predict` and `/patient-summary` prediction) and into
+  `src/inference/predict_single.py`.
 - No OOD detection and no confidence-based abstention beyond the Phase 16 uncertainty flag are
   documented.
 
@@ -534,10 +582,12 @@ report (Q16, Q17, Q19, Q20). **Scope note: unless stated otherwise, "the model" 
    12-feature and current 11-feature v2 models** (`model_card.md`, "Known Limitations" #2).
 3. Imbalanced target with small per-occupation High-class samples (9-18 rows) — subgroup metrics
    are inherently noisy at this scale.
-4. Predicted probabilities are not well-calibrated across the full range for any class. (This
-   analysis, like most Phase 15-19 analyses below, was run against the 17-feature model and has
-   not been separately re-run for the 11-feature or 12-feature models — see item 7.)
-5. The uncertainty flag has a 92.77% false-flag rate by design.
+4. *(Random Forest history)* Predicted probabilities were not well-calibrated across the full
+   range for any class (17-feature model). **Updated 2026-10-12:** the served v2 is well calibrated
+   out-of-fold on this dataset (very likely synthetic) (ECE ≤ 0.010 per class, mean Brier 0.0998; Q13).
+5. *(Random Forest history)* The uncertainty flag had a 92.77% false-flag rate by design (0.10).
+   **Updated 2026-10-12:** for the served v2 at 0.025, 89.9% of flagged patients out-of-fold were
+   predicted correctly, with a review-flag catch rate of 96.2% (Q14).
 6. **The 3-class test set has been evaluated twice, and is fully spent — for the 17-feature and
    11-feature configurations only.** First (2026-09-15, 17-feature model) — see Q11/Q12/Q25.
    Second (2026-09-22, 11-feature model, since superseded) — justified because it evaluated a
@@ -547,7 +597,10 @@ report (Q16, Q17, Q19, Q20). **Scope note: unless stated otherwise, "the model" 
    12-feature models and the current 11-feature v2 model deliberately have no test-set evaluation at
    all** — restoring Age was a clinical/UX decision, not a performance claim, so it was not
    treated as justifying a third one-way-door use. This is a genuine, disclosed evidentiary gap
-   for the currently-deployed model, not an oversight (Q9/Q10).
+   for the currently-deployed model, not an oversight (Q9/Q10). **Update 2026-10-11:** a third,
+   disclosed use scored the v3 retrain (untuned XGBoost with balanced weights, not served): balanced
+   accuracy 0.8030, model High recall 0.8994. The served v2 still has no test-set number, and the set
+   is treated as spent again.
 7. Phase 12 (advanced models) and Phase 19 (robustness testing) are done for the 3-class target,
    but **only against the original 17-feature model** — see Q16 and Q18 for the Phase 19
    findings, several of which remain open (Stress Level/Therapy Sessions single-feature
@@ -557,7 +610,9 @@ report (Q16, Q17, Q19, Q20). **Scope note: unless stated otherwise, "the model" 
    specifically, the currently-deployed one, only headline accuracy/balanced-accuracy/macro-F1/
    recall metrics exist, on validation only (Q9/Q10, Q11/Q12). Phase 15 (calibration) and Phase
    16 (uncertainty) are also still not done for the 5-class reference target, which remains on
-   the original 17 features throughout.
+   the original 17 features throughout. **Updated 2026-10-12:** calibration, the review threshold,
+   fairness (Gender, Occupation) and re-tuning were re-run for the served v2 (validation/CV only);
+   SHAP and robustness were not.
 8. This is a prototype/research model and must never be represented as having clinical
    diagnostic validity.
 9. Phase 19 robustness testing has been performed for the 17-feature configuration of the 3-class
@@ -571,8 +626,9 @@ report (Q16, Q17, Q19, Q20). **Scope note: unless stated otherwise, "the model" 
     of model outputs exists, and the fairness check has not been re-run for the 11-feature or
     12-feature models. **Updated 2026-09-28:** both 12-feature models now have occupation,
     age-band and gender fairness checks on validation data (`reports/model_comparison_12feature.md`).
-    Most occupations still have too few High cases (under 15) for a reliable High-recall
-    comparison.
+    Most occupations still have too few High cases (under 15) for a reliable model-High-recall
+    comparison on the validation split alone. **Updated 2026-10-12:** the served v2 was checked by
+    Gender and Occupation on the validation split and out-of-fold (Q15).
 11. The choice of Random Forest over XGBoost is now backed by a documented rationale
     (`model_card.md`, "Model Selection Rationale"), but that rationale was written up *after*
     the model was already selected, and the full SHAP/calibration/uncertainty/fairness analysis
@@ -607,8 +663,9 @@ report (Q16, Q17, Q19, Q20). **Scope note: unless stated otherwise, "the model" 
     weights.** In the 11-feature v2 nested cross-validation, one of five folds chose balanced
     weights on an inner-CV margin of 0.0001, and needed a review threshold of 0.081 instead of
     about 0.027. The deployed model is unweighted with a 0.025 threshold. If it is ever re-tuned and
-    balanced weights win, the threshold must be re-derived. Calibration, SHAP, fairness and
-    robustness were not re-run for the 11-feature v2 model.
+    balanced weights win, the threshold must be re-derived. **Updated 2026-10-12:** the 60-trial
+    re-tune put unweighted trials ahead (best 0.8107 vs 0.8073 balanced accuracy), and kept v2;
+    calibration, the review threshold and fairness were re-run for v2; SHAP and robustness were not.
 
 ### 23. What claims can we legitimately make?
 
@@ -663,11 +720,14 @@ report (Q16, Q17, Q19, Q20). **Scope note: unless stated otherwise, "the model" 
   per-class AUROC/AUPRC, a 10-bin calibration analysis per class with documented over/under-
   confidence patterns, a threshold-justified uncertainty-flagging mechanism, SHAP-based feature
   attribution, and an occupation-subgroup fairness check with at least one flagged finding
-  actively investigated (and found not to replicate) rather than left unexamined. **This full
+  actively investigated (at the time found not to replicate; the 2026-10-12 cross-validated check
+  found the Scientist gap persists, Q15) rather than left unexamined. **This full
   analysis depth exists only for the superseded 17-feature model. The 11-feature model (also
   superseded) has headline metrics plus two test evaluations. The current, deployed 12-feature
   model has the least depth of the three: headline validation metrics only, no test-set
-  evaluation at all** (Q22 items 6, 7, 12).
+  evaluation at all** (Q22 items 6, 7, 12). **Updated 2026-10-12:** the served v2 now has nested
+  cross-validation plus validation/CV checks of calibration, the review threshold, fairness and
+  tuning; SHAP and robustness still come from its predecessors, and it has no test-set number.
 - The project has an explicit, enforced workflow constraint requiring psychologist review of
   every prediction before it reaches a patient.
 
@@ -683,9 +743,8 @@ report (Q16, Q17, Q19, Q20). **Scope note: unless stated otherwise, "the model" 
   (Q22 item 13).
 - **No claim of clinical effectiveness** — no clinical evaluation, trial, or real-outcome
   comparison has occurred (Q20).
-- **No claim the model is calibrated** — it is measurably not, across most of the probability
-  range for Low and Medium, and below P≈0.3 for High (Q13). (Calibration was measured against the
-  17-feature model; not re-measured for the 11-feature or 12-feature models.)
+- **No claim of calibration on real patients.** The served v2 is well calibrated out-of-fold
+  on this dataset (very likely synthetic) (Q13); the earlier "measurably not calibrated" finding was the 17-feature Random Forest.
 - **No claim of robustness** to noisy or missing inputs — the opposite is documented for the
   17-feature model: it is measurably fragile to losing or corrupting its top 1-2 features, and to
   realistic-magnitude input noise (Q16, Q18). No claim of robustness to adversarial inputs
@@ -694,10 +753,9 @@ report (Q16, Q17, Q19, Q20). **Scope note: unless stated otherwise, "the model" 
   12-feature XGBoost (`reports/model_comparison_12feature.md`), but not for the current 11-feature
   v2 model.
 - **No claim about behavior on out-of-distribution inputs** — untested and undocumented (Q17).
-- **No claim of fairness across patient subgroups in general** — only Occupation has been
-  checked, only for the 17-feature model, and even that check surfaced one low-confidence flag
-  that hasn't been resolved with more data, plus one flag investigated and attributed to sampling
-  noise rather than confirmed absent (Q15).
+- **No claim of fairness across patient subgroups in general** — Gender and Occupation have been
+  checked for the served v2 on this synthetic dataset only, and the Scientist gap is persistent and
+  unexplained (Q15).
 - **No claim that dropping the 6 originally-removed features, or that the 11-feature model
   generally, was an *improvement*** — the honest, tested result on held-out data was a tiny,
   direction-reversing regression versus the 17-feature model, not a gain (Q10, Q11/Q12, Q25). The
@@ -727,7 +785,14 @@ Based strictly on the gaps this report surfaced:
    ideally real (non-synthetic) patient data.
 4. **Formal clinical evaluation** — a prospective, clinician-in-the-loop study comparing
    model-assisted to unassisted outcomes, before any deployment claim can be made.
-5. **A resolved plan for probability calibration, not just a tested-and-shelved experiment.**
+5. **Resolved 2026-10-12 for the served v2** (`reports/calibration_review_flag_11feature_v2.md`).
+   v2 is already well calibrated out-of-fold on this dataset (very likely synthetic), so calibration is not needed; mean Brier per
+   class 0.0998 (isotonic 0.0999, not deployed). The review threshold was re-swept on out-of-fold
+   probabilities; review-flag catch rate / share flagged: 0.025 → 96.2% [94.9, 97.3] / 25.3%;
+   0.0302 → 95.4% [94.0, 96.7] / 22.6%; 0.0349 → 95.1% [93.8, 96.5] / 20.7%. **Still open:** a
+   clinical decision on how many High patients may be missed vs how many patients are flagged.
+   The original item (Random Forest, 0.10 threshold) follows as history.
+   **A resolved plan for probability calibration, not just a tested-and-shelved experiment.**
    Isotonic calibration was tested (`model_card.md`, "Attempted Improvements") and does measurably
    improve calibration quality (mean Brier 0.1098 → 0.1019) with negligible classification impact
    — but adopting it as-is was found to silently cut the uncertainty-flagging mechanism's coverage
@@ -739,8 +804,9 @@ Based strictly on the gaps this report surfaced:
 6. **Broader subgroup fairness analysis** — beyond Occupation, at minimum age and gender (gender
    was excluded as a predictive feature for lack of signal, which is a separate question from
    whether the model's *errors* are distributed fairly by gender). *Partly done 2026-09-28:* age
-   and gender checks exist for both 12-feature models on validation data. Nothing has been
-   checked on real data.
+   and gender checks exist for both 12-feature models on validation data. *2026-10-12:* the
+   served v2 was checked by Gender and Occupation on the validation split and out-of-fold (Q15).
+   Nothing has been checked on real data.
 7. **A re-run of the full Phase 15-18 analysis stack (SHAP, calibration, uncertainty, fairness)
    on tuned XGBoost**, to validate the now-documented Random Forest selection rationale (Q10)
    against an equivalent depth of evidence on the alternative — the rationale exists, but was
@@ -760,20 +826,28 @@ Based strictly on the gaps this report surfaced:
     results showed a small, consistent regression versus the 17-feature model's test performance
     that validation alone had not predicted, again with no retraining or model change triggered
     in response. **Both uses are complete and disclosed; the 3-class test set must not be
-    evaluated again for either of those two configurations.** The 12-feature models and the
+    evaluated again for either of those two configurations.** *Update 2026-10-11:* a third,
+    disclosed use went to the v3 retrain (not the served model); the served v2 still has no
+    test-set number. The 12-feature models and the
     current 11-feature v2 model were deliberately NOT given a third test-set evaluation — see item 12
     below, which is a distinct, still-open item, not resolved by this one. The remaining gap for
     this item specifically is the analogous evaluation for the 5-class target, if that target is
     ever finalized (it retains its own, never-touched test split — see Q7).
 11. **Re-running the Phase 15-19 analysis stack (calibration, uncertainty flagging, SHAP,
     fairness, robustness) against the deployed model.** *Done 2026-09-28 for the 12-feature XGBoost
-    (`reports/model_comparison_12feature.md`); not re-run for the current 11-feature v2 model.* The
+    (`reports/model_comparison_12feature.md`). **Partly done 2026-10-12 for the served v2:**
+    calibration, the review threshold, fairness and re-tuning. **Still not re-run for v2:** SHAP
+    and robustness.* The
     original text follows. All of that depth currently
     exists only for the superseded 17-feature model (Q22 item 7, Q23) — the model actually
     deployed today has only headline accuracy/balanced-accuracy/macro-F1/recall figures, on
     validation only, with no test-set evaluation at all. This is a gap in evidentiary depth for
     the currently-deployed configuration, separate from the earlier items in this list.
-12. *(Surfaced here.)* **A deliberate decision on whether the 12-feature model's clinical/UX
+12. **Overtaken 2026-10-11:** a third test-set use was authorized, but for the v3 retrain, not the
+    served model. The served v2 and the 12-feature models still have no test-set number, and the
+    set is treated as spent; any test evidence for the served model would now need a new held-out
+    source. The original item follows as history.
+    *(Surfaced here.)* **A deliberate decision on whether the 12-feature model's clinical/UX
     justification for Age is sufficient on its own, or whether a third, disclosed test-set use
     should eventually be authorized for it.** As documented (Q9/Q10, Q22 item 6), the current
     position is that Age's restoration did not require test-set confirmation because it was not
@@ -796,7 +870,9 @@ documents cites (`reports/baseline_results_3class.json`, `reports/tuning_results
 `reports/postprocessing_3class.md`, `reports/calibrated_uncertainty_flagging_3class.md`,
 `reports/final_test_evaluation.md`, `reports/feature_reduction_3class.md`,
 `reports/feature_reduction_caffeine_3class.md`, `reports/final_test_evaluation_11feature.md`,
-`reports/feature_addition_age_3class.md`,
-`src/inference/input_validation.py`). No number in this report was invented, estimated, or newly
+`reports/feature_addition_age_3class.md`, `reports/tuning_results_11feature.md`,
+`reports/derived_features_11feature.md`, `reports/calibration_review_flag_11feature_v2.md`,
+`reports/fairness_11feature_v2.md`, `reports/train_11feature_v3_balanced.md`,
+`reports/final_test_evaluation_11feature_v3.md`, `src/inference/input_validation.py`). No number in this report was invented, estimated, or newly
 computed — where a question cannot be answered from these sources (Q4, Q12's specificity half,
 Q17, Q19, Q20), this report says so explicitly rather than filling the gap.

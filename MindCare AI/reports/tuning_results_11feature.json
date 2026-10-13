@@ -1,0 +1,376 @@
+{
+  "rows": 9350,
+  "folds": 5,
+  "trials": 60,
+  "seed": 42,
+  "procedure": "5-fold stratified CV on train+val; preprocessing fitted inside each fold; early stopping (50 rounds, mlogloss) on a 15% split of each fold's training part",
+  "search_space": {
+    "max_depth": [
+      3,
+      4,
+      6,
+      8
+    ],
+    "learning_rate": [
+      0.03,
+      0.05,
+      0.1,
+      0.2
+    ],
+    "subsample": [
+      0.8,
+      1.0
+    ],
+    "colsample_bytree": [
+      0.8,
+      1.0
+    ],
+    "min_child_weight": [
+      1,
+      3,
+      5
+    ],
+    "gamma": [
+      0,
+      0.1
+    ],
+    "sample_weighting": [
+      "none",
+      "balanced"
+    ]
+  },
+  "library_versions": {
+    "python": "3.13.13",
+    "xgboost": "3.4.1",
+    "scikit-learn": "1.9.1",
+    "numpy": "2.5.3",
+    "pandas": "3.0.5"
+  },
+  "best_trial": {
+    "trial": 9,
+    "params": {
+      "subsample": 0.8,
+      "sample_weighting": "none",
+      "min_child_weight": 3,
+      "max_depth": 3,
+      "learning_rate": 0.2,
+      "gamma": 0,
+      "colsample_bytree": 0.8
+    },
+    "balanced_accuracy": {
+      "mean": 0.8106659611465774,
+      "std": 0.005308353381630868,
+      "folds": [
+        0.805637698499481,
+        0.815308510886802,
+        0.8056190294668161,
+        0.8098011218842025,
+        0.8169634449955856
+      ]
+    },
+    "macro_f1_mean": 0.8226908897157659,
+    "high_recall_mean": 0.8760269216388015,
+    "rounds": [
+      48,
+      35,
+      49,
+      65,
+      55
+    ],
+    "deployable_params": {
+      "subsample": 0.8,
+      "min_child_weight": 3,
+      "max_depth": 3,
+      "learning_rate": 0.2,
+      "gamma": 0,
+      "colsample_bytree": 0.8,
+      "n_estimators": 49
+    }
+  },
+  "top_5": [
+    {
+      "trial": 9,
+      "params": {
+        "subsample": 0.8,
+        "sample_weighting": "none",
+        "min_child_weight": 3,
+        "max_depth": 3,
+        "learning_rate": 0.2,
+        "gamma": 0,
+        "colsample_bytree": 0.8
+      },
+      "balanced_accuracy": {
+        "mean": 0.8106659611465774,
+        "std": 0.005308353381630868,
+        "folds": [
+          0.805637698499481,
+          0.815308510886802,
+          0.8056190294668161,
+          0.8098011218842025,
+          0.8169634449955856
+        ]
+      },
+      "macro_f1_mean": 0.8226908897157659,
+      "high_recall_mean": 0.8760269216388015,
+      "rounds": [
+        48,
+        35,
+        49,
+        65,
+        55
+      ]
+    },
+    {
+      "trial": 15,
+      "params": {
+        "subsample": 0.8,
+        "sample_weighting": "none",
+        "min_child_weight": 5,
+        "max_depth": 4,
+        "learning_rate": 0.2,
+        "gamma": 0.1,
+        "colsample_bytree": 0.8
+      },
+      "balanced_accuracy": {
+        "mean": 0.809839859312669,
+        "std": 0.005456469685530943,
+        "folds": [
+          0.8034469673239341,
+          0.8142462356653978,
+          0.8061713094308608,
+          0.8088360160828323,
+          0.8164987680603205
+        ]
+      },
+      "macro_f1_mean": 0.822949932305176,
+      "high_recall_mean": 0.8749853106137493,
+      "rounds": [
+        38,
+        28,
+        46,
+        38,
+        41
+      ]
+    },
+    {
+      "trial": 11,
+      "params": {
+        "subsample": 0.8,
+        "sample_weighting": "none",
+        "min_child_weight": 5,
+        "max_depth": 4,
+        "learning_rate": 0.03,
+        "gamma": 0.1,
+        "colsample_bytree": 0.8
+      },
+      "balanced_accuracy": {
+        "mean": 0.8097450849645167,
+        "std": 0.004675353708128107,
+        "folds": [
+          0.8034902381000881,
+          0.8134487124102475,
+          0.8108623122267756,
+          0.806442168100749,
+          0.8144819939847229
+        ]
+      },
+      "macro_f1_mean": 0.8228931632799951,
+      "high_recall_mean": 0.8760162384488008,
+      "rounds": [
+        286,
+        249,
+        281,
+        332,
+        261
+      ]
+    },
+    {
+      "trial": 2,
+      "params": {
+        "subsample": 0.8,
+        "sample_weighting": "none",
+        "min_child_weight": 1,
+        "max_depth": 3,
+        "learning_rate": 0.05,
+        "gamma": 0.1,
+        "colsample_bytree": 1.0
+      },
+      "balanced_accuracy": {
+        "mean": 0.8091554229345042,
+        "std": 0.00541423176724372,
+        "folds": [
+          0.8004612837693017,
+          0.8132041337824248,
+          0.8082585468122158,
+          0.8097920317447302,
+          0.8140611185638474
+        ]
+      },
+      "macro_f1_mean": 0.8208480840007942,
+      "high_recall_mean": 0.8760215800438012,
+      "rounds": [
+        249,
+        167,
+        182,
+        247,
+        219
+      ]
+    },
+    {
+      "trial": 5,
+      "params": {
+        "subsample": 0.8,
+        "sample_weighting": "none",
+        "min_child_weight": 1,
+        "max_depth": 4,
+        "learning_rate": 0.03,
+        "gamma": 0.1,
+        "colsample_bytree": 0.8
+      },
+      "balanced_accuracy": {
+        "mean": 0.8091491503288069,
+        "std": 0.005207199664988293,
+        "folds": [
+          0.8018521301456832,
+          0.8138253602445223,
+          0.8087670252618707,
+          0.8068630435216244,
+          0.8144381924703331
+        ]
+      },
+      "macro_f1_mean": 0.8224234325732356,
+      "high_recall_mean": 0.8749853106137493,
+      "rounds": [
+        289,
+        271,
+        270,
+        314,
+        240
+      ]
+    }
+  ],
+  "v2_served": {
+    "params": {
+      "subsample": 0.8,
+      "n_estimators": 300,
+      "min_child_weight": 3,
+      "max_depth": 3,
+      "learning_rate": 0.03,
+      "gamma": 0,
+      "colsample_bytree": 1.0
+    },
+    "sample_weighting": "none"
+  },
+  "comparison_same_folds": {
+    "balanced_accuracy": {
+      "v2_served": {
+        "mean": 0.8112642861045376,
+        "std": 0.006955333862088457,
+        "folds": [
+          0.8024331948540381,
+          0.8196721614434797,
+          0.8095211730748421,
+          0.8079066622123019,
+          0.8167882389380267
+        ]
+      },
+      "best_trial": {
+        "mean": 0.8098191483609904,
+        "std": 0.007524766477797645,
+        "folds": [
+          0.7994598743783069,
+          0.8162615440432249,
+          0.8090126946251871,
+          0.806442168100749,
+          0.8179194606574837
+        ]
+      },
+      "paired_diff_best_minus_v2": {
+        "mean": -0.0014451377435473534,
+        "std": 0.001851606473329635,
+        "folds": [
+          -0.002973320475731178,
+          -0.003410617400254723,
+          -0.0005084784496549588,
+          -0.0014644941115529164,
+          0.0011312217194570096
+        ]
+      }
+    },
+    "macro_f1": {
+      "v2_served": {
+        "mean": 0.8239281905858666,
+        "std": 0.008236633184257278,
+        "folds": [
+          0.8133980903929299,
+          0.8354818662968015,
+          0.8216660268766668,
+          0.8212983588497716,
+          0.8277966105131632
+        ]
+      },
+      "best_trial": {
+        "mean": 0.822453852404573,
+        "std": 0.008691584005663087,
+        "folds": [
+          0.8103473972600602,
+          0.831997502623735,
+          0.8211914205316589,
+          0.8190930913406369,
+          0.8296398502667746
+        ]
+      },
+      "paired_diff_best_minus_v2": {
+        "mean": -0.0014743381812934997,
+        "std": 0.002183182435796726,
+        "folds": [
+          -0.003050693132869653,
+          -0.0034843636730665928,
+          -0.00047460634500784415,
+          -0.002205267509134745,
+          0.0018432397536113365
+        ]
+      }
+    },
+    "high_recall": {
+      "v2_served": {
+        "mean": 0.877057849473853,
+        "std": 0.012441981173819614,
+        "folds": [
+          0.8860103626943006,
+          0.8601036269430051,
+          0.8711340206185567,
+          0.8762886597938144,
+          0.8917525773195877
+        ]
+      },
+      "best_trial": {
+        "mean": 0.8760215800438012,
+        "std": 0.014286182957162257,
+        "folds": [
+          0.8860103626943006,
+          0.8549222797927462,
+          0.8711340206185567,
+          0.8762886597938144,
+          0.8917525773195877
+        ]
+      },
+      "paired_diff_best_minus_v2": {
+        "mean": -0.001036269430051795,
+        "std": 0.002317168888600777,
+        "folds": [
+          0.0,
+          -0.005181347150258975,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    }
+  },
+  "decision": {
+    "keep_v2": true,
+    "rule": "keep v2 if the mean paired balanced-accuracy difference (best - v2) is within one std of the paired differences, or not positive"
+  },
+  "test_set_used": false
+}
