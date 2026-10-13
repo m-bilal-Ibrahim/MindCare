@@ -139,6 +139,11 @@ the original filename is never used as a path.
 - Wrong type → `{Label} must be one of: {types}.`
 - Too big → `{Label} must be {max} MB or smaller.`
 - Empty → `{Label} is empty.`
+- Image that can't be decoded → `{Label} isn't a readable image.`
+- Image with too many pixels (over 40 million) → `{Label} is too large in pixels.`
+
+Images (JPG, PNG, WEBP) are re-encoded on the server, which removes EXIF data such
+as GPS location. Audio types: MP3, M4A, OGG. Documents: PDF.
 
 ## Field table
 
@@ -187,6 +192,8 @@ the original filename is never used as a path.
 | AI form: caffeine servings (4 fields) | AI assessment | Cups of coffee / Cups of tea / Energy drinks / Cans of soda | Number 0–20 | yes | |
 | AI form: PSS answers (4 fields) | AI assessment | Stress question 1–4 | Number 0–4 (radio) | yes | |
 | AI form: `Occupation`, `Family History of Anxiety` | AI assessment | — | Choice | yes | |
+| AI form: `Gender` | AI assessment | — | Choice (`Female`, `Male`, `Other`) | no | may be null; only fills recommendation wording |
+| AI form: `Alcohol Consumption (drinks/week)` | AI assessment | Alcohol consumption | Decimal 0–100 | no | may be null |
 | Quote `text` | Django admin | Quote | Free text 10–500 | yes | |
 | Quote `author` | Django admin | Author | Person name | no | |
 | Quote `category` | Django admin | — | Choice | no | |

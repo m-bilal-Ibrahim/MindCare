@@ -54,10 +54,10 @@ new service, selector, or API endpoint. Keep entries one row per function/class.
 
 | File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
 |------|-------------------|---------|--------------|--------------------|
-| `integrations/ai_service/client.py` | `predict()`, `AIServiceUnavailable`, `AIServiceRejected` | Stdlib HTTP call to the AI service's `POST /predict` (base URL from `AI_SERVICE_URL`); 400/422 → rejected with the AI's flattened `detail`; timeout, connection error, 5xx, other 4xx, non-JSON or no URL → unavailable; never logs the body | — | neither (internal) |
-| `apps/ai/services.py` | `predict_anxiety_risk()` | Forwards the features with a 60 s timeout; nothing stored or logged (health data, no audit trail before Phase 5) | `POST /api/v1/ai/anxiety-prediction/` | MindCare Web |
-| `apps/ai/api/serializers.py` | `AnxietyPredictionRequestSerializer`, `AnxietyPredictionResponseSerializer`, `OCCUPATIONS` | Request keys exactly as the AI expects (17 fields, same bounds as its schema, unknown keys rejected); response documents the AI's shape | — | MindCare Web |
-| `apps/ai/api/views.py` | `AnxietyPredictionView`, `AIPredictionRateThrottle` | Approved, active psychologists only (patients 403); AI rejection → 400 `{detail}`; AI unavailable → 503 "waking up"; throttled (`ai_prediction`, 20/min per user) | `POST /api/v1/ai/anxiety-prediction/` | MindCare Web |
+| `integrations/ai_service/client.py` | `predict()`, `AIServiceUnavailable`, `AIServiceRejected` | Stdlib HTTP call to the AI service's `POST /patient-summary` (a superset of `/predict`) (base URL from `AI_SERVICE_URL`); 400/422 → rejected with the AI's flattened `detail`; timeout, connection error, 5xx, other 4xx, non-JSON or no URL → unavailable; never logs the body | — | neither (internal) |
+| `apps/ai/services.py` | `predict_anxiety_risk()` | Forwards the features to the AI's `/patient-summary` with a 60 s timeout; returns the prediction plus caveat, estimated severity tier and recommendation bundle; nothing stored or logged | `POST /api/v1/ai/anxiety-prediction/` | MindCare Web |
+| `apps/ai/api/serializers.py` | `AnxietyPredictionRequestSerializer`, `AnxietyPredictionResponseSerializer`, `OCCUPATIONS`, `GENDERS`, `SEVERITY_TIERS` | Request keys exactly as the AI expects (17 required fields with explicit bounds, plus optional `Gender` and `Alcohol Consumption (drinks/week)`; unknown keys rejected); response documents the `/patient-summary` shape (`caveat`, `estimated_severity_tier`, `severity_tier_basis`, `recommendation_bundle`) | — | MindCare Web |
+| `apps/ai/api/views.py` | `AnxietyPredictionView`, `AIPredictionRateThrottle` | Approved, active psychologists only (patients 403); invalid input → 400 `{field: [message]}`; AI rejection → 400 `{detail}`; AI unavailable → 503 "waking up"; throttled (`ai_prediction`, 20/min per user) | `POST /api/v1/ai/anxiety-prediction/` | MindCare Web |
 
 ---
 
@@ -219,5 +219,19 @@ new service, selector, or API endpoint. Keep entries one row per function/class.
 | `core/fields.py` | `PersonNameField`, `OrganisationNameField`, `FreeTextField`, `IdentifierField`, `PhoneField`, `HttpsUrlField` | Model fields that normalise in `to_python()` and carry the matching validator, so Django admin forms and `full_clean()` apply the rules | all write endpoints, Django admin | neither (internal) |
 | `core/models.py` | `ValidatedModelMixin` | `save()` runs the field rules (relations, uniqueness and constraints left to the database); `save(update_fields=…)` validates only those fields; failures raise `DomainValidationError` (400). Used by `User`, the three profiles, reference tables and `Quote` | all write endpoints, management commands | neither (internal) |
 | `core/serializers.py` | `NormalizedCharField`, `person_name_field()`, `organisation_name_field()`, `free_text_field()`, `identifier_field()`, `phone_field()`, `https_url_field()`, `search_field()`, `whole_number_field()`, `number_field()` | DRF fields that normalise and validate exactly like the model fields, so errors come back under the request's own key | register, `/me/` profiles, directory search, AI form | MindCare Web, MindCare App |
+
+### Foundations (storage, audit, encryption)
+
+| File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
+|------|-------------------|---------|--------------|--------------------|
+| `core/files.py` | `check_upload()`, `detect_kind()`, `FileKind` (`PDF`, `JPEG`, `PNG`, `WEBP`, `MP3`, `M4A`, `OGG`) | Upload checks: type from magic bytes, size limit, random stored name; images re-encoded with Pillow (EXIF/GPS removed, pixel limit) | upload endpoints (6.1 photo, 6.2 credentials, 6.10 audio) | neither (internal) |
+| `integrations/storage_client/client.py` | `save_private_file()`, `signed_url()`, `delete_file()`, `exists()` | The only entry point to file storage: validates and stores under `<folder>/<uuid>.<ext>`, returns 5-minute signed URLs; local disk in dev/tests, private Supabase bucket (S3 API) in prod | upload / download endpoints | neither (internal) |
+| `core/encryption.py` | `EncryptedTextField`, `encrypt_text()`, `decrypt_text()` | Fernet field encryption for health data at rest; key rotation via previous keys; only `isnull` lookups | fields holding health data (6.1 history) | neither (internal) |
+| `core/checks.py` | `check_field_encryption_key()`, `check_object_storage()` | System checks `mindcare.E001` / `E002`: a production build without a valid encryption key or without object storage fails | `migrate` / `check` | neither (deployment) |
+| `apps/audit/models.py` | `AccessLog`, `AuditAction`, `AuditResource` | Append-only access audit rows (ids and codes only); update/delete refused | — | neither |
+| `apps/audit/services.py` | `record_access()` | Writes an audit row; must run inside the caller's transaction (fail closed) | health-data and document access paths; admin identity reveals | neither |
+| `apps/audit/selectors.py` | `access_log_for_patient()` | Audit rows for one patient (admins) | — (Django admin today) | neither |
+| `apps/audit/admin.py` | `AccessLogAdmin` | Read-only list with filters; no add, change or delete, even for superusers | `/admin/audit/accesslog/` | neither (Django admin) |
+| `apps/patients/selectors.py` | `get_patient_display_identity()` | Admin reveals of a private patient's real name now also write an `identity_reveal` audit row, fail closed | patient-identity reads | MindCare Web |
 
 <!-- Add new `### apps/<app_name>` sections below as modules are implemented. -->

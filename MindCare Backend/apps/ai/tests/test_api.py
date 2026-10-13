@@ -1,5 +1,7 @@
 """API tests for POST /api/v1/ai/anxiety-prediction/ (HTTP mocked; no network)."""
 
+import json
+
 from unittest import mock
 
 from django.conf import settings
@@ -40,6 +42,49 @@ class AnxietyPredictionAPITests(APITestCase):
             r = self.post(VALID_FEATURES)
         self.assertEqual(r.status_code, status.HTTP_200_OK)
         self.assertEqual(r.json(), AI_RESPONSE)
+
+    def test_optional_gender_and_alcohol_are_forwarded_unchanged(self):
+        body = {
+            **VALID_FEATURES,
+            "Gender": "Female",
+            "Alcohol Consumption (drinks/week)": 6,
+        }
+        with mock.patch(URLOPEN, return_value=FakeResponse(AI_RESPONSE)) as urlopen:
+            r = self.post(body)
+        self.assertEqual(r.status_code, status.HTTP_200_OK, r.json())
+        sent = json.loads(urlopen.call_args.args[0].data)
+        self.assertEqual(sent["Gender"], "Female")
+        self.assertEqual(sent["Alcohol Consumption (drinks/week)"], 6)
+
+    def test_optional_keys_may_be_null_or_left_out(self):
+        with mock.patch(URLOPEN, return_value=FakeResponse(AI_RESPONSE)) as urlopen:
+            r = self.post(
+                {
+                    **VALID_FEATURES,
+                    "Gender": None,
+                    "Alcohol Consumption (drinks/week)": None,
+                }
+            )
+            self.assertEqual(r.status_code, status.HTTP_200_OK, r.json())
+            r = self.post(VALID_FEATURES)
+            self.assertEqual(r.status_code, status.HTTP_200_OK, r.json())
+        self.assertNotIn("Gender", json.loads(urlopen.call_args.args[0].data))
+
+    def test_optional_keys_are_validated(self):
+        cases = {
+            "Gender": ("female", '"female" is not a valid choice.'),
+            "Alcohol Consumption (drinks/week)": (
+                101,
+                "Alcohol consumption must be a number between 0 and 100.",
+            ),
+        }
+        with mock.patch(URLOPEN) as urlopen:
+            for key, (value, message) in cases.items():
+                with self.subTest(key=key):
+                    r = self.post({**VALID_FEATURES, key: value})
+                    self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
+                    self.assertEqual(r.json(), {key: [message]})
+        urlopen.assert_not_called()
 
     def test_patient_pending_and_anonymous_are_refused_without_a_call(self):
         pending = make_psychologist(approval_status=ApprovalStatus.PENDING)
@@ -135,5 +180,21 @@ class AnxietyPredictionAPITests(APITestCase):
         op = schema["paths"][URL]["post"]
         ref = op["requestBody"]["content"]["application/json"]["schema"]["$ref"]
         props = schema["components"]["schemas"][ref.rsplit("/", 1)[-1]]["properties"]
-        self.assertEqual(set(props), set(VALID_FEATURES))
+        optional = {"Gender", "Alcohol Consumption (drinks/week)"}
+        self.assertEqual(set(props), set(VALID_FEATURES) | optional)
         self.assertTrue({"200", "400", "403", "503"} <= set(op["responses"]))
+        response_ref = op["responses"]["200"]["content"]["application/json"]["schema"][
+            "$ref"
+        ]
+        response_props = schema["components"]["schemas"][
+            response_ref.rsplit("/", 1)[-1]
+        ]["properties"]
+        self.assertTrue(
+            {
+                "caveat",
+                "estimated_severity_tier",
+                "severity_tier_basis",
+                "recommendation_bundle",
+            }
+            <= set(response_props)
+        )
