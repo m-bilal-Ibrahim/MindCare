@@ -64,6 +64,52 @@ export async function getPendingPsychologists(): Promise<ApiResponse<PendingPsyc
   return { ...res, data: Array.isArray(res.data) ? res.data : res.data.results ?? [] };
 }
 
+// ——— NGO applications (same approve / reject endpoints as psychologists) ———
+
+/** Django admin, pre-filtered to pending NGOs. */
+export const DJANGO_ADMIN_PENDING_NGO_URL = DJANGO_ADMIN_PENDING_URL.replace('role__exact=psychologist', 'role__exact=ngo');
+
+export interface PendingNgo {
+  id: number;
+  email: string;
+  full_name: string;
+  role: 'ngo';
+  approval_status: 'pending';
+  created_at: string;
+  /** NGOProfileOwnerSerializer */
+  ngo_profile: {
+    representative_name: string;
+    organization_name: string;
+    registration_number: string;
+    registration_country: CodeName | null;
+    registering_authority: string;
+    country: CodeName | null;
+    city: { id?: number; name: string } | null;
+    timezone: string;
+    official_phone: string;
+    official_email: string;
+    website: string | null;
+    description: string;
+    service_areas: { country: CodeName | null; city: { id?: number; name: string } | null }[];
+  } | null;
+}
+
+/** Same reason codes as psychologists; NGO wording. */
+export const NGO_REJECT_REASONS = [
+  { value: 'license_unverified', label: 'Registration couldn’t be verified' },
+  { value: 'incomplete_details', label: 'Details incomplete or incorrect' },
+  { value: 'not_eligible', label: 'Not eligible' },
+  { value: 'other', label: 'Other' },
+] as const;
+
+/** GET /accounts/admin/pending/?role=ngo — oldest first. */
+export async function getPendingNgos(): Promise<ApiResponse<PendingNgo[]>> {
+  const res = explain(await apiFetch<PendingNgo[] | { results: PendingNgo[] }>('/accounts/admin/pending/?role=ngo'));
+  if (res.status === 404) return { ...res, data: null, error: APPROVAL_API_MISSING };
+  if (!res.data) return { ...res, data: null };
+  return { ...res, data: Array.isArray(res.data) ? res.data : res.data.results ?? [] };
+}
+
 /** POST /accounts/admin/{id}/approve/ */
 export async function approveAccount(userId: number) {
   return explain(
