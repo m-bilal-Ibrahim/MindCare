@@ -402,7 +402,8 @@ def write_markdown(r: dict) -> None:
         f"patients. So the training data contain very few High patients with high stress but lower values on the "
         f"model's other risk signals ({cov['High']['caffeine_le_limit']} in 9,350 rows), and high stress alone does not move the model to "
         f"High. This is likely an artifact of the (very likely synthetic) data; real patients with that profile could be "
-        f"under-detected in the same way. Small sample: a pattern to review, not an established effect.")
+        f"under-detected in the same way. Small sample: a pattern to review, not an established effect. "
+        f'The under-detected group is better described as "high reported stress with otherwise lower-risk lifestyle signals (more sleep, fewer therapy sessions, more activity)"; low caffeine is a correlate, not the cause.')
     missed_lines = ["| Val row | Age | P(High) | P(Medium) | Flagged at 0.025 | Pulled toward Medium (contribution to High − Medium margin; raw value) |",
                     "|---|---|---|---|---|---|"]
     for m in th["rows"]:

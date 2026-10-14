@@ -991,7 +991,9 @@ Not yet done for the 5-class Severity target beyond what's already in `reports/f
     the model, which has seen almost no such High patients, gives them a median P(High) of 0.027.
     The model does not *require* high caffeine (with caffeine set to 0 mg/day, 128 of 165 true-High
     validation patients are still predicted High). No threshold was changed. Caffeine is only
-    estimated from drink counts in the API.
+    estimated from drink counts in the API. The under-detected group is better described as "high
+    reported stress with otherwise lower-risk lifestyle signals (more sleep, fewer therapy sessions,
+    more activity)"; low caffeine is a correlate, not the cause.
 
 ### Items needing psychologist review
 
