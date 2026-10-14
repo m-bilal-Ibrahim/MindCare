@@ -6,6 +6,7 @@
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Check, ExternalLink, ShieldCheck, X } from 'lucide-react';
 import AdminLayout from '../components/admin/AdminLayout';
 import Avatar from '../components/common/Avatar';
@@ -379,7 +380,9 @@ const TABS: { id: Tab; label: string; title: string; intro: string }[] = [
 ];
 
 const AdminVerificationsPage: React.FC = () => {
-  const [tab, setTab] = useState<Tab>('psychologist');
+  // ?type=ngo opens the NGO tab (used by "Continue review" on NGO partners).
+  const [params] = useSearchParams();
+  const [tab, setTab] = useState<Tab>(params.get('type') === 'ngo' ? 'ngo' : 'psychologist');
   const current = TABS.find((t) => t.id === tab)!;
 
   return (
