@@ -494,7 +494,8 @@ preprocessing (Phase 10) is shared between the two targets.
       `src/evaluation/full_evaluation_3class.py`, `reports/full_evaluation_3class.md`)
 - [x] Phase 17 — Explainability (SHAP) (`src/explainability/shap_analysis_3class.py`,
       `reports/shap_summary_3class.md`, `reports/shap_summary_3class.png`) — NOTE: also
-      already done, not "not started"
+      already done, not "not started" (17-feature Random Forest; for the served v2 see
+      "Phase 17 — SHAP for the served 11-feature v2 XGBoost" below)
 - [x] Phase 18 — Fairness / subgroup analysis (`src/fairness/occupation_fairness_3class.py`,
       `reports/fairness_report_3class.md`) — NOTE: also already done, not "not started"
 
@@ -650,6 +651,25 @@ preprocessing (Phase 10) is shared between the two targets.
       review attention rather than gatekeeping access to review. Not yet done for 5-class Severity.
       **Superseded 2026-09-28:** the production threshold is now 0.025 on XGBoost; see "Model
       switched from Random Forest to XGBoost" above.
+
+### Phase 17 — SHAP for the served 11-feature v2 XGBoost (2026-10-14, validation/CV only, test set NOT used)
+- [x] `src/explainability/shap_v2.py` -> `reports/shap_v2.md`, `reports/shap_v2.json`, `reports/shap_v2_summary.png`.
+      Guard first: the served files reproduce balanced accuracy 0.8055, 411 flagged, 158/165 true High flagged.
+      Exact TreeSHAP (`pred_contribs`), additivity error <= 5.3e-6; validation (served files) and 5-fold
+      out-of-fold (9,350 rows, seed 42).
+- Ranking for High (validation): Stress Level 41.3% of total mean |SHAP|, then Therapy Sessions 17.3%,
+  Sleep 15.9%, Caffeine 10.7%, Physical Activity 6.4%, Diet 2.9%; Occupation 0.3% and Family History 0.1%.
+  Same order out-of-fold. All-class view: Stress 46.0% (12-feature XGBoost 44.3%, 17-feature RF 32.9%).
+- Caffeine: no hard shortcut (caffeine set to 0 mg/day: 128/165 true High still predicted High), but true-High
+  patients who actually report <= 200 mg/day are never labelled High (0/23 out-of-fold) and the review flag
+  catches only 12/23 of them (vs 96.2% overall). Coverage gap: only 2.4% of true-High rows report <= 200 mg
+  (Low 39.2%, Medium 30.1%), and those 23 differ on therapy, sleep and activity, not stress. **Small sample;
+  model card Known Limitations item 15 and its psychologist-review list.**
+- The 17 true-High validation rows predicted Medium are pulled mainly by Sleep, Physical Activity and
+  Therapy Sessions (each among the top 2 pulls in 8-10 of 17); 4 of the 17 are aged 50+, which the API refuses.
+- Direction check (recommendation engine): Sleep, Caffeine, Physical Activity and Diet all match the clinical
+  direction on both views (|Spearman| 0.735-0.945); Caffeine (out-of-fold) and Diet are not monotonic across
+  quintiles. Association on synthetic data, not cause.
 
 ### Phase 21/22 — Clinical validation comparison tool (built, no data yet)
 - [x] Clinical scoring scales and agreement metrics built in `src/evaluation/clinical_scales.py` and `src/evaluation/clinical_agreement.py`

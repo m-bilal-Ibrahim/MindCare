@@ -1,0 +1,1370 @@
+{
+  "model": "served 11-feature v2 XGBoost (data/processed/mindcare_final_model_11feature_v2_xgb.pkl)",
+  "guard": {
+    "balanced_accuracy": 0.8055,
+    "flagged": 411,
+    "flagged_true_high": 158,
+    "true_high": 165
+  },
+  "units": "contributions to the raw class margin (softmax logit); exact TreeSHAP",
+  "additivity_max_error": {
+    "validation": 5.245208740234375e-06,
+    "oof_folds": [
+      3.337860107421875e-06,
+      3.814697265625e-06,
+      3.814697265625e-06,
+      4.76837158203125e-06,
+      4.76837158203125e-06
+    ]
+  },
+  "rows": {
+    "validation": 1650,
+    "oof": 9350
+  },
+  "ranking_high": {
+    "validation": [
+      {
+        "rank": 1,
+        "feature": "Stress Level (1-10)",
+        "mean_abs_shap": 1.5997535448634264,
+        "share": 0.41303879961200735
+      },
+      {
+        "rank": 2,
+        "feature": "Therapy Sessions (per month)",
+        "mean_abs_shap": 0.6696199284539078,
+        "share": 0.1728885129418434
+      },
+      {
+        "rank": 3,
+        "feature": "Sleep Hours",
+        "mean_abs_shap": 0.6142924674260289,
+        "share": 0.1586035700130336
+      },
+      {
+        "rank": 4,
+        "feature": "Caffeine Intake (mg/day)",
+        "mean_abs_shap": 0.4135520002336919,
+        "share": 0.10677458556170992
+      },
+      {
+        "rank": 5,
+        "feature": "Physical Activity (hrs/week)",
+        "mean_abs_shap": 0.2488590293659857,
+        "share": 0.06425266885138313
+      },
+      {
+        "rank": 6,
+        "feature": "Diet Quality (1-10)",
+        "mean_abs_shap": 0.11396354909485319,
+        "share": 0.029424137029607764
+      },
+      {
+        "rank": 7,
+        "feature": "Heart Rate (bpm)",
+        "mean_abs_shap": 0.0811052963430076,
+        "share": 0.020940496960456436
+      },
+      {
+        "rank": 8,
+        "feature": "Age",
+        "mean_abs_shap": 0.08024953029647638,
+        "share": 0.02071954756375537
+      },
+      {
+        "rank": 9,
+        "feature": "Breathing Rate (breaths/min)",
+        "mean_abs_shap": 0.03590457188332397,
+        "share": 0.009270166219595546
+      },
+      {
+        "rank": 10,
+        "feature": "Occupation",
+        "mean_abs_shap": 0.010103328991476838,
+        "share": 0.0026085686086609345
+      },
+      {
+        "rank": 11,
+        "feature": "Family History of Anxiety",
+        "mean_abs_shap": 0.0057281546647462885,
+        "share": 0.0014789466379464798
+      }
+    ],
+    "oof": [
+      {
+        "rank": 1,
+        "feature": "Stress Level (1-10)",
+        "mean_abs_shap": 1.6174137531276693,
+        "share": 0.41580978014222647
+      },
+      {
+        "rank": 2,
+        "feature": "Therapy Sessions (per month)",
+        "mean_abs_shap": 0.6812086979196192,
+        "share": 0.17512726002557422
+      },
+      {
+        "rank": 3,
+        "feature": "Sleep Hours",
+        "mean_abs_shap": 0.5957711993160851,
+        "share": 0.15316272099433406
+      },
+      {
+        "rank": 4,
+        "feature": "Caffeine Intake (mg/day)",
+        "mean_abs_shap": 0.44794639078188186,
+        "share": 0.11515945744021124
+      },
+      {
+        "rank": 5,
+        "feature": "Physical Activity (hrs/week)",
+        "mean_abs_shap": 0.2146430560924551,
+        "share": 0.05518110736369781
+      },
+      {
+        "rank": 6,
+        "feature": "Diet Quality (1-10)",
+        "mean_abs_shap": 0.12548430179425374,
+        "share": 0.032259896293988566
+      },
+      {
+        "rank": 7,
+        "feature": "Age",
+        "mean_abs_shap": 0.09449763557487846,
+        "share": 0.024293747345951303
+      },
+      {
+        "rank": 8,
+        "feature": "Heart Rate (bpm)",
+        "mean_abs_shap": 0.06265853565638033,
+        "share": 0.0161084520797053
+      },
+      {
+        "rank": 9,
+        "feature": "Breathing Rate (breaths/min)",
+        "mean_abs_shap": 0.029074647769056924,
+        "share": 0.0074746012720530875
+      },
+      {
+        "rank": 10,
+        "feature": "Occupation",
+        "mean_abs_shap": 0.014533819152445521,
+        "share": 0.0037363996285545552
+      },
+      {
+        "rank": 11,
+        "feature": "Family History of Anxiety",
+        "mean_abs_shap": 0.006560436129485342,
+        "share": 0.001686577413703428
+      }
+    ]
+  },
+  "ranking_all_classes": {
+    "validation": [
+      {
+        "rank": 1,
+        "feature": "Stress Level (1-10)",
+        "mean_abs_shap": 1.0202898427080174,
+        "share": 0.45977506045997185
+      },
+      {
+        "rank": 2,
+        "feature": "Sleep Hours",
+        "mean_abs_shap": 0.349265809756453,
+        "share": 0.15739028467749772
+      },
+      {
+        "rank": 3,
+        "feature": "Therapy Sessions (per month)",
+        "mean_abs_shap": 0.3206398582812162,
+        "share": 0.14449052029748738
+      },
+      {
+        "rank": 4,
+        "feature": "Caffeine Intake (mg/day)",
+        "mean_abs_shap": 0.22585920487447603,
+        "share": 0.10177934272185163
+      },
+      {
+        "rank": 5,
+        "feature": "Physical Activity (hrs/week)",
+        "mean_abs_shap": 0.1072982337161595,
+        "share": 0.04835199747079455
+      },
+      {
+        "rank": 6,
+        "feature": "Diet Quality (1-10)",
+        "mean_abs_shap": 0.04830894992718174,
+        "share": 0.021769549635597095
+      },
+      {
+        "rank": 7,
+        "feature": "Heart Rate (bpm)",
+        "mean_abs_shap": 0.04038614879714473,
+        "share": 0.018199283407221482
+      },
+      {
+        "rank": 8,
+        "feature": "Age",
+        "mean_abs_shap": 0.03870088720603498,
+        "share": 0.017439850922931727
+      },
+      {
+        "rank": 9,
+        "feature": "Family History of Anxiety",
+        "mean_abs_shap": 0.02538953510150691,
+        "share": 0.011441332205525628
+      },
+      {
+        "rank": 10,
+        "feature": "Breathing Rate (breaths/min)",
+        "mean_abs_shap": 0.024767933723874237,
+        "share": 0.011161218850457316
+      },
+      {
+        "rank": 11,
+        "feature": "Occupation",
+        "mean_abs_shap": 0.018200133977422938,
+        "share": 0.008201559350663783
+      }
+    ],
+    "oof": [
+      {
+        "rank": 1,
+        "feature": "Stress Level (1-10)",
+        "mean_abs_shap": 1.0212256260076091,
+        "share": 0.4617566235312243
+      },
+      {
+        "rank": 2,
+        "feature": "Sleep Hours",
+        "mean_abs_shap": 0.3344873704468033,
+        "share": 0.15124156196037614
+      },
+      {
+        "rank": 3,
+        "feature": "Therapy Sessions (per month)",
+        "mean_abs_shap": 0.3250962483708266,
+        "share": 0.1469952791502538
+      },
+      {
+        "rank": 4,
+        "feature": "Caffeine Intake (mg/day)",
+        "mean_abs_shap": 0.2380574791532707,
+        "share": 0.10763989365397109
+      },
+      {
+        "rank": 5,
+        "feature": "Physical Activity (hrs/week)",
+        "mean_abs_shap": 0.09431051289311641,
+        "share": 0.04264337173683395
+      },
+      {
+        "rank": 6,
+        "feature": "Diet Quality (1-10)",
+        "mean_abs_shap": 0.055455713823326334,
+        "share": 0.025074814535042046
+      },
+      {
+        "rank": 7,
+        "feature": "Age",
+        "mean_abs_shap": 0.044225697961160826,
+        "share": 0.01999705887100919
+      },
+      {
+        "rank": 8,
+        "feature": "Heart Rate (bpm)",
+        "mean_abs_shap": 0.03442038852331793,
+        "share": 0.015563497409770017
+      },
+      {
+        "rank": 9,
+        "feature": "Family History of Anxiety",
+        "mean_abs_shap": 0.024573737076469614,
+        "share": 0.011111242776324652
+      },
+      {
+        "rank": 10,
+        "feature": "Breathing Rate (breaths/min)",
+        "mean_abs_shap": 0.021150335223923327,
+        "share": 0.009563319927382618
+      },
+      {
+        "rank": 11,
+        "feature": "Occupation",
+        "mean_abs_shap": 0.018607020111642357,
+        "share": 0.008413336447812112
+      }
+    ]
+  },
+  "stress_dominance": {
+    "validation_high": {
+      "stress_share": 0.41303879961200735,
+      "stress_rank": 1,
+      "ratio_to_second": 2.3890470950545235
+    },
+    "oof_high": {
+      "stress_share": 0.41580978014222647,
+      "stress_rank": 1,
+      "ratio_to_second": 2.3743292739320245
+    },
+    "validation_all_classes": {
+      "stress_share": 0.45977506045997185,
+      "stress_rank": 1,
+      "ratio_to_second": 2.921241685292577
+    },
+    "oof_all_classes": {
+      "stress_share": 0.4617566235312243,
+      "stress_rank": 1,
+      "ratio_to_second": 3.0531066827529867
+    }
+  },
+  "earlier_rankings": {
+    "rf_17_feature (shap_full_ranking_3class.md, mean |SHAP| over 3 classes, 500 val rows)": [
+      {
+        "rank": 1,
+        "feature": "Stress Level (1-10)",
+        "share": 0.3290153406260325
+      },
+      {
+        "rank": 2,
+        "feature": "Therapy Sessions (per month)",
+        "share": 0.13781333065622667
+      },
+      {
+        "rank": 3,
+        "feature": "Sleep Hours",
+        "share": 0.12650338832559352
+      },
+      {
+        "rank": 4,
+        "feature": "Caffeine Intake (mg/day)",
+        "share": 0.08868186586300805
+      },
+      {
+        "rank": 5,
+        "feature": "Diet Quality (1-10)",
+        "share": 0.06108260283060531
+      },
+      {
+        "rank": 6,
+        "feature": "Physical Activity (hrs/week)",
+        "share": 0.04314864638836706
+      },
+      {
+        "rank": 7,
+        "feature": "Heart Rate (bpm)",
+        "share": 0.03900569719259022
+      },
+      {
+        "rank": 8,
+        "feature": "Family History of Anxiety",
+        "share": 0.034105212141161946
+      },
+      {
+        "rank": 9,
+        "feature": "Breathing Rate (breaths/min)",
+        "share": 0.02616485949052264
+      },
+      {
+        "rank": 10,
+        "feature": "Sweating Level (1-5)",
+        "share": 0.02568290030041706
+      },
+      {
+        "rank": 11,
+        "feature": "Occupation",
+        "share": 0.0251709186524631
+      },
+      {
+        "rank": 12,
+        "feature": "Age",
+        "share": 0.023621324864317114
+      },
+      {
+        "rank": 13,
+        "feature": "Alcohol Consumption (drinks/week)",
+        "share": 0.013246003394662557
+      },
+      {
+        "rank": 14,
+        "feature": "Dizziness",
+        "share": 0.009102454249686408
+      },
+      {
+        "rank": 15,
+        "feature": "Smoking",
+        "share": 0.0074843412634035215
+      },
+      {
+        "rank": 16,
+        "feature": "Recent Major Life Event",
+        "share": 0.0057114913794674435
+      },
+      {
+        "rank": 17,
+        "feature": "Medication",
+        "share": 0.004459622381474848
+      }
+    ],
+    "rf_current (model_comparison_12feature.md, 300 val rows)": [
+      {
+        "rank": 1,
+        "feature": "Stress Level (1-10)",
+        "share": 0.376
+      },
+      {
+        "rank": 2,
+        "feature": "Therapy Sessions (per month)",
+        "share": 0.132
+      },
+      {
+        "rank": 3,
+        "feature": "Sleep Hours",
+        "share": 0.125
+      },
+      {
+        "rank": 4,
+        "feature": "Caffeine Intake (mg/day)",
+        "share": 0.11
+      },
+      {
+        "rank": 5,
+        "feature": "Diet Quality (1-10)",
+        "share": 0.059000000000000004
+      },
+      {
+        "rank": 6,
+        "feature": "Physical Activity (hrs/week)",
+        "share": 0.039
+      },
+      {
+        "rank": 7,
+        "feature": "Heart Rate (bpm)",
+        "share": 0.038
+      },
+      {
+        "rank": 8,
+        "feature": "Family History of Anxiety",
+        "share": 0.027999999999999997
+      },
+      {
+        "rank": 9,
+        "feature": "Breathing Rate (breaths/min)",
+        "share": 0.025
+      },
+      {
+        "rank": 10,
+        "feature": "Occupation",
+        "share": 0.025
+      },
+      {
+        "rank": 11,
+        "feature": "Age",
+        "share": 0.023
+      },
+      {
+        "rank": 12,
+        "feature": "Sweating Level (1-5)",
+        "share": 0.02
+      }
+    ],
+    "rf_retuned (model_comparison_12feature.md, 300 val rows)": [
+      {
+        "rank": 1,
+        "feature": "Stress Level (1-10)",
+        "share": 0.368
+      },
+      {
+        "rank": 2,
+        "feature": "Therapy Sessions (per month)",
+        "share": 0.135
+      },
+      {
+        "rank": 3,
+        "feature": "Sleep Hours",
+        "share": 0.134
+      },
+      {
+        "rank": 4,
+        "feature": "Caffeine Intake (mg/day)",
+        "share": 0.10099999999999999
+      },
+      {
+        "rank": 5,
+        "feature": "Diet Quality (1-10)",
+        "share": 0.061
+      },
+      {
+        "rank": 6,
+        "feature": "Physical Activity (hrs/week)",
+        "share": 0.040999999999999995
+      },
+      {
+        "rank": 7,
+        "feature": "Heart Rate (bpm)",
+        "share": 0.036000000000000004
+      },
+      {
+        "rank": 8,
+        "feature": "Occupation",
+        "share": 0.028999999999999998
+      },
+      {
+        "rank": 9,
+        "feature": "Family History of Anxiety",
+        "share": 0.027000000000000003
+      },
+      {
+        "rank": 10,
+        "feature": "Breathing Rate (breaths/min)",
+        "share": 0.023
+      },
+      {
+        "rank": 11,
+        "feature": "Age",
+        "share": 0.023
+      },
+      {
+        "rank": 12,
+        "feature": "Sweating Level (1-5)",
+        "share": 0.022000000000000002
+      }
+    ],
+    "xgb_retuned (model_comparison_12feature.md, 300 val rows)": [
+      {
+        "rank": 1,
+        "feature": "Stress Level (1-10)",
+        "share": 0.44299999999999995
+      },
+      {
+        "rank": 2,
+        "feature": "Sleep Hours",
+        "share": 0.162
+      },
+      {
+        "rank": 3,
+        "feature": "Therapy Sessions (per month)",
+        "share": 0.147
+      },
+      {
+        "rank": 4,
+        "feature": "Caffeine Intake (mg/day)",
+        "share": 0.102
+      },
+      {
+        "rank": 5,
+        "feature": "Physical Activity (hrs/week)",
+        "share": 0.049
+      },
+      {
+        "rank": 6,
+        "feature": "Diet Quality (1-10)",
+        "share": 0.022000000000000002
+      },
+      {
+        "rank": 7,
+        "feature": "Heart Rate (bpm)",
+        "share": 0.018000000000000002
+      },
+      {
+        "rank": 8,
+        "feature": "Age",
+        "share": 0.017
+      },
+      {
+        "rank": 9,
+        "feature": "Occupation",
+        "share": 0.013999999999999999
+      },
+      {
+        "rank": 10,
+        "feature": "Family History of Anxiety",
+        "share": 0.011000000000000001
+      },
+      {
+        "rank": 11,
+        "feature": "Breathing Rate (breaths/min)",
+        "share": 0.01
+      },
+      {
+        "rank": 12,
+        "feature": "Sweating Level (1-5)",
+        "share": 0.004
+      }
+    ]
+  },
+  "caffeine_shortcut": {
+    "limit_mg": 200,
+    "observed": {
+      "validation": {
+        "true_high_low_caffeine": 4,
+        "predicted_high": 0,
+        "flagged_at_0.025": 2,
+        "true_high_all": 165,
+        "predicted_high_all": 148
+      },
+      "oof": {
+        "true_high_low_caffeine": 23,
+        "predicted_high": 0,
+        "flagged_at_0.025": 12,
+        "true_high_all": 968,
+        "predicted_high_all": 849
+      }
+    },
+    "counterfactual_validation_true_high": {
+      "0": {
+        "predicted_high": 128,
+        "flagged_at_0.025": 154,
+        "of": 165
+      },
+      "100": {
+        "predicted_high": 129,
+        "flagged_at_0.025": 155,
+        "of": 165
+      },
+      "200": {
+        "predicted_high": 129,
+        "flagged_at_0.025": 155,
+        "of": 165
+      }
+    },
+    "coverage_train_val": {
+      "Low": {
+        "rows": 4421,
+        "caffeine_le_limit": 1731,
+        "share": 0.3915403754806605
+      },
+      "Medium": {
+        "rows": 3961,
+        "caffeine_le_limit": 1191,
+        "share": 0.3006816460489775
+      },
+      "High": {
+        "rows": 968,
+        "caffeine_le_limit": 23,
+        "share": 0.023760330578512397
+      }
+    },
+    "low_caffeine_high_profile": {
+      "Stress Level (1-10)": {
+        "low_caffeine_high": {
+          "n": 23,
+          "mean": 9.304347826086957,
+          "median": 9.0
+        },
+        "other_high": {
+          "n": 945,
+          "mean": 9.055026455026455,
+          "median": 9.0
+        },
+        "mannwhitney_p": 0.1758374266115298
+      },
+      "Therapy Sessions (per month)": {
+        "low_caffeine_high": {
+          "n": 23,
+          "mean": 3.1739130434782608,
+          "median": 3.0
+        },
+        "other_high": {
+          "n": 945,
+          "mean": 6.238095238095238,
+          "median": 6.0
+        },
+        "mannwhitney_p": 1.4422343711281684e-09
+      },
+      "Sleep Hours": {
+        "low_caffeine_high": {
+          "n": 23,
+          "mean": 6.652173913043479,
+          "median": 6.9
+        },
+        "other_high": {
+          "n": 945,
+          "mean": 4.745925925925927,
+          "median": 4.6
+        },
+        "mannwhitney_p": 4.2052737512201776e-10
+      },
+      "Caffeine Intake (mg/day)": {
+        "low_caffeine_high": {
+          "n": 23,
+          "mean": 128.2173913043478,
+          "median": 143.0
+        },
+        "other_high": {
+          "n": 945,
+          "mean": 443.1862433862434,
+          "median": 446.0
+        },
+        "mannwhitney_p": 2.3484091039862174e-16
+      },
+      "Physical Activity (hrs/week)": {
+        "low_caffeine_high": {
+          "n": 23,
+          "mean": 2.6086956521739135,
+          "median": 2.2
+        },
+        "other_high": {
+          "n": 945,
+          "mean": 1.3326984126984127,
+          "median": 1.1
+        },
+        "mannwhitney_p": 0.0003054438807908142
+      },
+      "P(High), out-of-fold": {
+        "low_caffeine_high": {
+          "n": 23,
+          "mean": 0.030507798954520538,
+          "median": 0.026644695550203323
+        },
+        "other_high": {
+          "n": 945,
+          "mean": 0.8714365967066475,
+          "median": 0.9815494418144226
+        },
+        "mannwhitney_p": 1.2900160025446733e-14
+      }
+    }
+  },
+  "true_high_predicted_medium": {
+    "count": 17,
+    "rows": [
+      {
+        "val_row": 49,
+        "p_high": 0.01468252670019865,
+        "p_medium": 0.8815521597862244,
+        "flagged_at_0.025": false,
+        "age": 39,
+        "pulled_toward_medium": [
+          {
+            "feature": "Physical Activity (hrs/week)",
+            "contribution": -0.9340270161628723,
+            "value": 6.5
+          },
+          {
+            "feature": "Sleep Hours",
+            "contribution": -0.8624774254858494,
+            "value": 7.9
+          },
+          {
+            "feature": "Therapy Sessions (per month)",
+            "contribution": -0.6908285096287727,
+            "value": 2
+          }
+        ]
+      },
+      {
+        "val_row": 84,
+        "p_high": 0.030240096151828766,
+        "p_medium": 0.8828240036964417,
+        "flagged_at_0.025": true,
+        "age": 30,
+        "pulled_toward_medium": [
+          {
+            "feature": "Therapy Sessions (per month)",
+            "contribution": -0.8618612885475159,
+            "value": 0
+          },
+          {
+            "feature": "Physical Activity (hrs/week)",
+            "contribution": -0.7894400656223297,
+            "value": 5.4
+          },
+          {
+            "feature": "Sleep Hours",
+            "contribution": -0.4516467899084091,
+            "value": 6.3
+          }
+        ]
+      },
+      {
+        "val_row": 186,
+        "p_high": 0.018775852397084236,
+        "p_medium": 0.8458446264266968,
+        "flagged_at_0.025": false,
+        "age": 32,
+        "pulled_toward_medium": [
+          {
+            "feature": "Physical Activity (hrs/week)",
+            "contribution": -0.8584597148001194,
+            "value": 6.0
+          },
+          {
+            "feature": "Therapy Sessions (per month)",
+            "contribution": -0.7819643570110202,
+            "value": 0
+          },
+          {
+            "feature": "Sleep Hours",
+            "contribution": -0.4737416282296181,
+            "value": 6.7
+          }
+        ]
+      },
+      {
+        "val_row": 255,
+        "p_high": 0.1445072889328003,
+        "p_medium": 0.804218590259552,
+        "flagged_at_0.025": true,
+        "age": 42,
+        "pulled_toward_medium": [
+          {
+            "feature": "Physical Activity (hrs/week)",
+            "contribution": -0.6336933877319098,
+            "value": 4.6
+          },
+          {
+            "feature": "Sleep Hours",
+            "contribution": -0.4744758754968643,
+            "value": 5.8
+          },
+          {
+            "feature": "Diet Quality (1-10)",
+            "contribution": -0.4306969866156578,
+            "value": 6
+          }
+        ]
+      },
+      {
+        "val_row": 519,
+        "p_high": 0.175173819065094,
+        "p_medium": 0.6136971712112427,
+        "flagged_at_0.025": true,
+        "age": 20,
+        "pulled_toward_medium": [
+          {
+            "feature": "Sleep Hours",
+            "contribution": -1.3171439319849014,
+            "value": 9.9
+          },
+          {
+            "feature": "Physical Activity (hrs/week)",
+            "contribution": -0.6426107734441757,
+            "value": 4.6
+          },
+          {
+            "feature": "Family History of Anxiety",
+            "contribution": -0.08799946075305343,
+            "value": "Yes"
+          }
+        ]
+      },
+      {
+        "val_row": 575,
+        "p_high": 0.01444971188902855,
+        "p_medium": 0.7601743936538696,
+        "flagged_at_0.025": false,
+        "age": 22,
+        "pulled_toward_medium": [
+          {
+            "feature": "Sleep Hours",
+            "contribution": -0.810804471373558,
+            "value": 8.2
+          },
+          {
+            "feature": "Therapy Sessions (per month)",
+            "contribution": -0.6798273995518684,
+            "value": 2
+          },
+          {
+            "feature": "Caffeine Intake (mg/day)",
+            "contribution": -0.6263200640678406,
+            "value": 103
+          }
+        ]
+      },
+      {
+        "val_row": 668,
+        "p_high": 0.03015480749309063,
+        "p_medium": 0.8096421360969543,
+        "flagged_at_0.025": true,
+        "age": 62,
+        "pulled_toward_medium": [
+          {
+            "feature": "Caffeine Intake (mg/day)",
+            "contribution": -0.6602707356214523,
+            "value": 101
+          },
+          {
+            "feature": "Sleep Hours",
+            "contribution": -0.6324130948632956,
+            "value": 7.6
+          },
+          {
+            "feature": "Therapy Sessions (per month)",
+            "contribution": -0.4116571843624115,
+            "value": 3
+          }
+        ]
+      },
+      {
+        "val_row": 800,
+        "p_high": 0.02055291458964348,
+        "p_medium": 0.90692538022995,
+        "flagged_at_0.025": false,
+        "age": 20,
+        "pulled_toward_medium": [
+          {
+            "feature": "Physical Activity (hrs/week)",
+            "contribution": -0.6215268196538091,
+            "value": 4.8
+          },
+          {
+            "feature": "Therapy Sessions (per month)",
+            "contribution": -0.46451789140701294,
+            "value": 3
+          },
+          {
+            "feature": "Sleep Hours",
+            "contribution": -0.43575269728899,
+            "value": 6.6
+          }
+        ]
+      },
+      {
+        "val_row": 804,
+        "p_high": 0.17441435158252716,
+        "p_medium": 0.7491054534912109,
+        "flagged_at_0.025": true,
+        "age": 64,
+        "pulled_toward_medium": [
+          {
+            "feature": "Sleep Hours",
+            "contribution": -1.1106340736150742,
+            "value": 7.5
+          },
+          {
+            "feature": "Age",
+            "contribution": -0.22265459597110748,
+            "value": 64
+          },
+          {
+            "feature": "Heart Rate (bpm)",
+            "contribution": -0.1706752348691225,
+            "value": 75
+          }
+        ]
+      },
+      {
+        "val_row": 938,
+        "p_high": 0.034497737884521484,
+        "p_medium": 0.8832962512969971,
+        "flagged_at_0.025": true,
+        "age": 52,
+        "pulled_toward_medium": [
+          {
+            "feature": "Therapy Sessions (per month)",
+            "contribution": -0.9470850620418787,
+            "value": 0
+          },
+          {
+            "feature": "Sleep Hours",
+            "contribution": -0.43270695209503174,
+            "value": 6.7
+          },
+          {
+            "feature": "Physical Activity (hrs/week)",
+            "contribution": -0.3245472341077402,
+            "value": 3.2
+          }
+        ]
+      },
+      {
+        "val_row": 1083,
+        "p_high": 0.020479924976825714,
+        "p_medium": 0.9184969663619995,
+        "flagged_at_0.025": false,
+        "age": 39,
+        "pulled_toward_medium": [
+          {
+            "feature": "Sleep Hours",
+            "contribution": -1.1956004053354263,
+            "value": 7.6
+          },
+          {
+            "feature": "Physical Activity (hrs/week)",
+            "contribution": -0.9671293031424284,
+            "value": 5.5
+          },
+          {
+            "feature": "Therapy Sessions (per month)",
+            "contribution": -0.6490871161222458,
+            "value": 3
+          }
+        ]
+      },
+      {
+        "val_row": 1125,
+        "p_high": 0.01565852202475071,
+        "p_medium": 0.8130832314491272,
+        "flagged_at_0.025": false,
+        "age": 61,
+        "pulled_toward_medium": [
+          {
+            "feature": "Therapy Sessions (per month)",
+            "contribution": -0.8628803454339504,
+            "value": 1
+          },
+          {
+            "feature": "Caffeine Intake (mg/day)",
+            "contribution": -0.7733898721635342,
+            "value": 60
+          },
+          {
+            "feature": "Sleep Hours",
+            "contribution": -0.34875664860010147,
+            "value": 6.4
+          }
+        ]
+      },
+      {
+        "val_row": 1395,
+        "p_high": 0.09487351775169373,
+        "p_medium": 0.8708630800247192,
+        "flagged_at_0.025": true,
+        "age": 24,
+        "pulled_toward_medium": [
+          {
+            "feature": "Therapy Sessions (per month)",
+            "contribution": -0.9012423753738403,
+            "value": 3
+          },
+          {
+            "feature": "Caffeine Intake (mg/day)",
+            "contribution": -0.46023835614323616,
+            "value": 294
+          },
+          {
+            "feature": "Physical Activity (hrs/week)",
+            "contribution": -0.280500216409564,
+            "value": 2.9
+          }
+        ]
+      },
+      {
+        "val_row": 1540,
+        "p_high": 0.03631856292486191,
+        "p_medium": 0.9084916114807129,
+        "flagged_at_0.025": true,
+        "age": 45,
+        "pulled_toward_medium": [
+          {
+            "feature": "Therapy Sessions (per month)",
+            "contribution": -0.6831121742725372,
+            "value": 2
+          },
+          {
+            "feature": "Physical Activity (hrs/week)",
+            "contribution": -0.534937453456223,
+            "value": 4.9
+          },
+          {
+            "feature": "Sleep Hours",
+            "contribution": -0.45294158160686493,
+            "value": 6.4
+          }
+        ]
+      },
+      {
+        "val_row": 1546,
+        "p_high": 0.12499339878559113,
+        "p_medium": 0.7775842547416687,
+        "flagged_at_0.025": true,
+        "age": 34,
+        "pulled_toward_medium": [
+          {
+            "feature": "Therapy Sessions (per month)",
+            "contribution": -1.7704382538795471,
+            "value": 1
+          },
+          {
+            "feature": "Diet Quality (1-10)",
+            "contribution": -0.39948974549770355,
+            "value": 10
+          },
+          {
+            "feature": "Physical Activity (hrs/week)",
+            "contribution": -0.3279993571341038,
+            "value": 3.0
+          }
+        ]
+      },
+      {
+        "val_row": 1554,
+        "p_high": 0.07114579528570175,
+        "p_medium": 0.8637574911117554,
+        "flagged_at_0.025": true,
+        "age": 35,
+        "pulled_toward_medium": [
+          {
+            "feature": "Caffeine Intake (mg/day)",
+            "contribution": -0.7073306627571583,
+            "value": 165
+          },
+          {
+            "feature": "Therapy Sessions (per month)",
+            "contribution": -0.4685588628053665,
+            "value": 3
+          },
+          {
+            "feature": "Sleep Hours",
+            "contribution": -0.3363218456506729,
+            "value": 6.3
+          }
+        ]
+      },
+      {
+        "val_row": 1644,
+        "p_high": 0.01053597591817379,
+        "p_medium": 0.7158265113830566,
+        "flagged_at_0.025": false,
+        "age": 20,
+        "pulled_toward_medium": [
+          {
+            "feature": "Stress Level (1-10)",
+            "contribution": -1.3778173327445984,
+            "value": 7
+          },
+          {
+            "feature": "Sleep Hours",
+            "contribution": -1.014501377940178,
+            "value": 7.5
+          },
+          {
+            "feature": "Physical Activity (hrs/week)",
+            "contribution": -0.4984650509431958,
+            "value": 4.9
+          }
+        ]
+      }
+    ],
+    "summary": [
+      {
+        "feature": "Sleep Hours",
+        "mean_contribution": -0.49305460437694015,
+        "in_top_2": 9
+      },
+      {
+        "feature": "Physical Activity (hrs/week)",
+        "mean_contribution": -0.4136297239387846,
+        "in_top_2": 8
+      },
+      {
+        "feature": "Therapy Sessions (per month)",
+        "mean_contribution": -0.40806755087995794,
+        "in_top_2": 10
+      },
+      {
+        "feature": "Caffeine Intake (mg/day)",
+        "mean_contribution": -0.10747363336165161,
+        "in_top_2": 4
+      },
+      {
+        "feature": "Diet Quality (1-10)",
+        "mean_contribution": -0.08476205435769824,
+        "in_top_2": 1
+      },
+      {
+        "feature": "Heart Rate (bpm)",
+        "mean_contribution": -0.08258869419531788,
+        "in_top_2": 0
+      },
+      {
+        "feature": "Occupation",
+        "mean_contribution": -0.01846740913526232,
+        "in_top_2": 0
+      },
+      {
+        "feature": "Breathing Rate (breaths/min)",
+        "mean_contribution": -0.014676913119140355,
+        "in_top_2": 0
+      },
+      {
+        "feature": "Family History of Anxiety",
+        "mean_contribution": -0.010149868739330593,
+        "in_top_2": 0
+      },
+      {
+        "feature": "Age",
+        "mean_contribution": 0.016990546438404742,
+        "in_top_2": 1
+      },
+      {
+        "feature": "Stress Level (1-10)",
+        "mean_contribution": 0.2382836657411912,
+        "in_top_2": 1
+      }
+    ]
+  },
+  "direction_check": {
+    "Sleep Hours": {
+      "clinical_expectation": "higher -> less risk",
+      "matches": true,
+      "validation": {
+        "spearman": -0.9454324820211747,
+        "quintile_mean_shap": [
+          1.0724707393100588,
+          -0.22494294650761604,
+          -0.3535406645601508,
+          -0.6155244441780113,
+          -0.7996228107888448
+        ],
+        "quintile_bins": [
+          "(2.299, 5.6]",
+          "(5.6, 6.46]",
+          "(6.46, 7.0]",
+          "(7.0, 7.7]",
+          "(7.7, 11.3]"
+        ],
+        "monotonic": true
+      },
+      "oof": {
+        "spearman": -0.9269778508898686,
+        "quintile_mean_shap": [
+          1.0459611448225523,
+          -0.21474349772664306,
+          -0.37430689739907874,
+          -0.5958712193772105,
+          -0.7557404963376239
+        ],
+        "quintile_bins": [
+          "(2.299, 5.6]",
+          "(5.6, 6.4]",
+          "(6.4, 7.0]",
+          "(7.0, 7.7]",
+          "(7.7, 11.3]"
+        ],
+        "monotonic": true
+      }
+    },
+    "Caffeine Intake (mg/day)": {
+      "clinical_expectation": "higher -> more risk",
+      "matches": true,
+      "validation": {
+        "spearman": 0.9057177085336781,
+        "quintile_mean_shap": [
+          -0.6251564358116277,
+          -0.5682845417253986,
+          -0.31664613456475305,
+          0.08548563184063757,
+          0.4468264498268113
+        ],
+        "quintile_bins": [
+          "(-0.001, 148.0]",
+          "(148.0, 237.0]",
+          "(237.0, 311.0]",
+          "(311.0, 427.2]",
+          "(427.2, 599.0]"
+        ],
+        "monotonic": true
+      },
+      "oof": {
+        "spearman": 0.8657379332660023,
+        "quintile_mean_shap": [
+          -0.6332609352299325,
+          -0.6396318837689359,
+          -0.39156818568460555,
+          0.10547766166402682,
+          0.45340418016106643
+        ],
+        "quintile_bins": [
+          "(-0.001, 150.0]",
+          "(150.0, 237.0]",
+          "(237.0, 308.0]",
+          "(308.0, 415.0]",
+          "(415.0, 599.0]"
+        ],
+        "monotonic": false
+      }
+    },
+    "Physical Activity (hrs/week)": {
+      "clinical_expectation": "higher -> less risk",
+      "matches": true,
+      "validation": {
+        "spearman": -0.9415854542747043,
+        "quintile_mean_shap": [
+          0.24833812527358531,
+          0.12498754158835201,
+          -0.11007205994439222,
+          -0.21214623062370774,
+          -0.5086983635976045
+        ],
+        "quintile_bins": [
+          "(-0.001, 1.2]",
+          "(1.2, 2.3]",
+          "(2.3, 3.24]",
+          "(3.24, 4.4]",
+          "(4.4, 9.0]"
+        ],
+        "monotonic": true
+      },
+      "oof": {
+        "spearman": -0.9015361560559019,
+        "quintile_mean_shap": [
+          0.22637644425879433,
+          0.10565573389288631,
+          -0.11574948256123456,
+          -0.23907748670871898,
+          -0.3578284450737672
+        ],
+        "quintile_bins": [
+          "(-0.001, 1.2]",
+          "(1.2, 2.3]",
+          "(2.3, 3.3]",
+          "(3.3, 4.5]",
+          "(4.5, 10.0]"
+        ],
+        "monotonic": true
+      }
+    },
+    "Diet Quality (1-10)": {
+      "clinical_expectation": "higher -> less risk",
+      "matches": true,
+      "validation": {
+        "spearman": -0.735202617828126,
+        "quintile_mean_shap": [
+          0.07138684711563179,
+          0.028247177732306755,
+          -0.16040931139574494,
+          -0.19221276267100187,
+          -0.1430941427613731
+        ],
+        "quintile_bins": [
+          "(0.999, 2.0]",
+          "(2.0, 4.0]",
+          "(4.0, 6.0]",
+          "(6.0, 8.0]",
+          "(8.0, 10.0]"
+        ],
+        "monotonic": false
+      },
+      "oof": {
+        "spearman": -0.7715186570289164,
+        "quintile_mean_shap": [
+          0.07997222103742298,
+          0.03915135329147626,
+          -0.17911930277970237,
+          -0.1827059982391046,
+          -0.17624082386465006
+        ],
+        "quintile_bins": [
+          "(0.999, 2.0]",
+          "(2.0, 4.0]",
+          "(4.0, 6.0]",
+          "(6.0, 8.0]",
+          "(8.0, 10.0]"
+        ],
+        "monotonic": false
+      }
+    }
+  },
+  "library_versions": {
+    "python": "3.13.13",
+    "xgboost": "3.4.1",
+    "scikit-learn": "1.9.1",
+    "numpy": "2.5.3",
+    "pandas": "3.0.5"
+  },
+  "test_set_used": false
+}

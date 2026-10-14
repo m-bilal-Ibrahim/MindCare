@@ -979,7 +979,28 @@ Not yet done for the 5-class Severity target beyond what's already in `reports/f
     - **If the model is ever re-tuned and balanced weights win, the threshold must be re-derived.**
       Reusing 0.025 would flag far more patients: 41.8% of rows in that fold, against about 25%.
     - Calibration, SHAP, fairness and robustness were measured on the 12-feature XGBoost and were
-      not re-run for the 11-feature v2 model.
+      not re-run for the 11-feature v2 model. (SHAP has since been re-run for v2: item 15 and
+      `reports/shap_v2.md`.)
+15. **True-High patients with low reported caffeine are under-detected (review flag 12/23
+    out-of-fold); small sample; likely a synthetic-data coverage gap** (added 2026-10-14,
+    `reports/shap_v2.md`, section 5). Out-of-fold over the 9,350 train + validation rows, none of the
+    23 true-High patients reporting ≤ 200 mg/day of caffeine is labelled High, and the review flag
+    catches 12 of them, against 96.2% for all true-High patients. Only 2.4% of true-High rows report
+    ≤ 200 mg/day (39.2% of Low, 30.1% of Medium). These patients have the same stress level as other
+    High patients (median 9) but fewer therapy sessions, more sleep and more physical activity, so
+    the model, which has seen almost no such High patients, gives them a median P(High) of 0.027.
+    The model does not *require* high caffeine (with caffeine set to 0 mg/day, 128 of 165 true-High
+    validation patients are still predicted High). No threshold was changed. Caffeine is only
+    estimated from drink counts in the API.
+
+### Items needing psychologist review
+
+- **Low-caffeine true-High patients (item 15):** true-High patients with low reported caffeine are
+  under-detected (review flag 12/23 out-of-fold); small sample; likely a synthetic-data coverage gap.
+  A reviewer should know that a patient with high stress but low caffeine, more sleep and fewer
+  therapy sessions may be shown as Low/Medium without a priority-review flag.
+- Other open review items are tracked in their own pull requests: the alert-layer draft thresholds
+  (#54) and the 0.025 review-flag threshold with its evaluated alternatives (#57).
 
 ---
 
