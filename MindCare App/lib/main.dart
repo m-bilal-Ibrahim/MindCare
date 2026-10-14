@@ -14,6 +14,7 @@ import 'providers/settings_provider.dart';
 import 'providers/premium_provider.dart';
 import 'providers/journal_provider.dart';
 import 'providers/outings_provider.dart';
+import 'providers/motivation_provider.dart';
 import 'screens/onboarding/welcome_screen.dart';
 import 'screens/home/home_shell.dart';
 import 'screens/splash/splash_screen.dart';
@@ -41,6 +42,7 @@ class MindCareApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PremiumProvider()),
         ChangeNotifierProvider(create: (_) => JournalProvider()),
         ChangeNotifierProvider(create: (_) => OutingsProvider()),
+        ChangeNotifierProvider(create: (_) => MotivationProvider()),
       ],
       child: Consumer<SettingsProvider>(
         builder: (context, settings, _) {
