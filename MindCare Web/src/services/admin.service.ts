@@ -80,3 +80,150 @@ export async function rejectAccount(userId: number, reason: RejectReason | null)
     })
   );
 }
+
+// ============================================================
+// Overview + Users (backend PR #42, `apps/accounts/api/admin_*`).
+// Until those endpoints are deployed they answer 404, shown as
+// ADMIN_API_MISSING.
+// ============================================================
+
+export const ADMIN_API_MISSING =
+  'This part of the admin console isn’t on the backend yet. It will show real data as soon as the backend update is deployed.';
+
+const ACCOUNT_NOT_FOUND = 'This account wasn’t found. It may have been removed — refresh the list.';
+
+export type AccountRole = 'patient' | 'psychologist' | 'ngo';
+export type AccountStatus = 'active' | 'pending' | 'rejected' | 'deactivated';
+
+interface RoleCounts {
+  total: number;
+  active: number;
+  pending: number;
+  rejected: number;
+  deactivated: number;
+}
+
+export interface AdminOverview {
+  users: Record<AccountRole, RoleCounts>;
+  pending_approvals: { psychologist: number; ngo: number };
+  relationships: Record<string, number>;
+  open_reports: number;
+  weekly_signups: { week_start: string; patient: number; psychologist: number; ngo: number }[];
+}
+
+export interface AdminUserRow {
+  id: number;
+  role: AccountRole;
+  display_name: string;
+  /** false for a private patient: display_name is their pseudonym */
+  is_real_name: boolean;
+  /** null for a private patient */
+  email: string | null;
+  approval_status: 'approved' | 'pending' | 'rejected';
+  is_active: boolean;
+  created_at: string;
+  last_login: string | null;
+}
+
+export interface AdminUserDetail {
+  id: number;
+  role: AccountRole;
+  identity: { id: number; role: string; display_name: string; is_real_name: boolean };
+  email: string;
+  approval_status: 'approved' | 'pending' | 'rejected';
+  is_active: boolean;
+  created_at: string;
+  last_login: string | null;
+  patient: { pseudonym: string; is_profile_public: boolean; country: string | null } | null;
+  psychologist_profile: PendingPsychologist['psychologist_profile'];
+  ngo_profile: Record<string, unknown> | null;
+}
+
+export interface Page<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
+export interface AdminUsersQuery {
+  role?: AccountRole;
+  status?: AccountStatus;
+  search?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export const DEACTIVATE_REASONS = [
+  { value: 'policy_violation', label: 'Broke platform policies' },
+  { value: 'report_upheld', label: 'A report against them was upheld' },
+  { value: 'user_request', label: 'The user asked for it' },
+  { value: 'other', label: 'Other' },
+] as const;
+
+export type DeactivateReason = (typeof DEACTIVATE_REASONS)[number]['value'];
+
+function adminExplain<T>(res: ApiResponse<T>, notFound: string = ADMIN_API_MISSING): ApiResponse<T> {
+  if (res.status === 404) return { ...res, data: null, error: notFound };
+  if (res.status === 403) return { ...res, error: 'This account doesn’t have admin access.' };
+  return res;
+}
+
+/** GET /accounts/admin/overview/ — counts only, no names or health data. */
+export async function getAdminOverview() {
+  return adminExplain(await apiFetch<AdminOverview>('/accounts/admin/overview/'));
+}
+
+function usersParams(q: AdminUsersQuery) {
+  const p = new URLSearchParams();
+  if (q.role) p.set('role', q.role);
+  if (q.status) p.set('status', q.status);
+  if (q.search?.trim()) p.set('search', q.search.trim());
+  if (q.page && q.page > 1) p.set('page', String(q.page));
+  if (q.pageSize) p.set('page_size', String(q.pageSize));
+  const s = p.toString();
+  return s ? `?${s}` : '';
+}
+
+/** GET /accounts/admin/users/ — newest first, 20 per page. Patients are found by pseudonym only. */
+export async function listAdminUsers(q: AdminUsersQuery) {
+  return adminExplain(await apiFetch<Page<AdminUserRow>>(`/accounts/admin/users/${usersParams(q)}`));
+}
+
+/** Every row matching the filters (50 per request), for Export. */
+export async function listAllAdminUsers(q: Omit<AdminUsersQuery, 'page' | 'pageSize'>): Promise<ApiResponse<AdminUserRow[]>> {
+  const rows: AdminUserRow[] = [];
+  for (let page = 1; page <= 200; page++) {
+    const res = await listAdminUsers({ ...q, page, pageSize: 50 });
+    if (!res.data) return { ...res, data: null };
+    rows.push(...res.data.results);
+    if (!res.data.next) break;
+  }
+  return { data: rows, error: null, status: 200, loading: false };
+}
+
+/** GET /accounts/admin/users/{id}/ — opening a private patient reveals them; the backend audits it. */
+export async function getAdminUser(userId: number) {
+  return adminExplain(await apiFetch<AdminUserDetail>(`/accounts/admin/users/${userId}/`), ACCOUNT_NOT_FOUND);
+}
+
+/** POST /accounts/admin/users/{id}/deactivate/ — ends their care relationships. */
+export async function deactivateUser(userId: number, reason: DeactivateReason | null) {
+  return adminExplain(
+    await apiFetch<{ id: number; approval_status: string; is_active: boolean }>(`/accounts/admin/users/${userId}/deactivate/`, {
+      method: 'POST',
+      body: JSON.stringify(reason ? { reason } : {}),
+    }),
+    ACCOUNT_NOT_FOUND
+  );
+}
+
+/** POST /accounts/admin/users/{id}/reactivate/ — care relationships that ended stay ended. */
+export async function reactivateUser(userId: number) {
+  return adminExplain(
+    await apiFetch<{ id: number; approval_status: string; is_active: boolean }>(`/accounts/admin/users/${userId}/reactivate/`, {
+      method: 'POST',
+    }),
+    ACCOUNT_NOT_FOUND
+  );
+}

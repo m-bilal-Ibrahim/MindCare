@@ -3,9 +3,12 @@
 // ============================================================
 
 import React, { useState, type ReactNode } from 'react';
-import { Bell, Search } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Search } from 'lucide-react';
 import AdminSidebar from './AdminSidebar';
-import { sanitizeText, MAX_LENGTHS } from '../../utils/validation';
+import AdminBell from './AdminBell';
+import { ADMIN_ROUTES } from '../../constants/adminConsole';
+import { MAX_LENGTHS, normalizeSingleLine } from '../../utils/validation';
 
 interface AdminLayoutProps {
   breadcrumb: string[];
@@ -14,22 +17,21 @@ interface AdminLayoutProps {
 }
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ breadcrumb, headerAction, children }) => {
-  const [search, setSearch] = useState('');
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  // On the Users page the box shows the current search.
+  const [search, setSearch] = useState(() => params.get('search') ?? '');
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // UX-only cap; a real search endpoint must independently validate/sanitize,
-    // scope results by the admin's actual permissions, and audit-log the query
-    // since it may surface other users' PII.
     setSearch(e.target.value.slice(0, MAX_LENGTHS.shortText));
   };
 
+  // Searches accounts: names/emails for psychologists and NGOs, pseudonyms only
+  // for patients (the backend never matches a patient's real name or email).
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const query = sanitizeText(search);
-    if (!query) return;
-    // TODO: wire to real search endpoint (users, therapists, tickets)
-    // eslint-disable-next-line no-console
-    console.info('[MindCare] Admin search submitted:', query);
+    const query = normalizeSingleLine(search);
+    navigate(query ? `${ADMIN_ROUTES.USERS}?search=${encodeURIComponent(query)}` : ADMIN_ROUTES.USERS);
   };
 
   return (
@@ -49,7 +51,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ breadcrumb, headerAction, chi
 
           <form onSubmit={handleSearchSubmit} role="search" className="flex-1 max-w-md ml-4">
             <label htmlFor="admin-search" className="sr-only">
-              Search users, therapists, tickets
+              Search accounts by name, email or patient pseudonym
             </label>
             <div className="relative">
               <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true" />
@@ -59,19 +61,13 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ breadcrumb, headerAction, chi
                 value={search}
                 onChange={handleSearchChange}
                 maxLength={MAX_LENGTHS.shortText}
-                placeholder="Search users, therapists, tickets…"
+                placeholder="Search accounts: name, email or pseudonym…"
                 className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-gray-900"
               />
             </div>
           </form>
 
-          <button
-            type="button"
-            className="w-10 h-10 rounded-xl border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:border-gray-400 shrink-0"
-            aria-label="Notifications"
-          >
-            <Bell size={16} />
-          </button>
+          <AdminBell />
 
           {headerAction}
         </header>
