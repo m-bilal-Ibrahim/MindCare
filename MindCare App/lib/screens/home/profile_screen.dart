@@ -9,6 +9,7 @@ import '../../models/account_data.dart';
 import '../../models/premium_data.dart';
 import '../../providers/account_provider.dart';
 import '../../providers/journal_provider.dart';
+import '../../providers/motivation_provider.dart';
 import '../../providers/premium_provider.dart';
 import '../../providers/user_session_provider.dart';
 import '../../widgets/common/sos_button.dart';
@@ -47,6 +48,7 @@ class ProfileScreen extends StatelessWidget {
     );
 
     if (confirmed == true && context.mounted) {
+      context.read<MotivationProvider>().reset();
       await context.read<UserSessionProvider>().signOut();
       if (!context.mounted) return;
       Navigator.of(context).pushNamedAndRemoveUntil('/welcome', (route) => false);
