@@ -16,6 +16,7 @@ import Button from '../common/Button';
 import PasswordStrengthMeter from '../common/PasswordStrengthMeter';
 import { AdultConfirm, ChipGroup, SelectField, TextAreaField, TextField } from '../forms/Fields';
 import CityField from '../forms/CityField';
+import FileField from '../forms/FileField';
 import {
   ROUTES,
   THERAPIST_ONBOARDING_STEPS,
@@ -24,6 +25,9 @@ import { register, flattenFieldErrors } from '../../services/api.service';
 import {
   validateRequiredText,
   validatePersonName,
+  validateCredentialFile,
+  CREDENTIAL_FILE_ACCEPT,
+  CREDENTIAL_FILE_MAX_MB,
   normalizeSingleLine,
   validateEmail,
   validatePassword,
@@ -108,6 +112,15 @@ const initialForm: FormState = {
 
 type Errors = Record<string, string | undefined>;
 
+// Credential files (sent as multipart with the application; only admins can open them).
+type DocKey = 'license_document' | 'degree_document' | 'other_documents';
+const DOC_LABELS: Record<DocKey, string> = {
+  license_document: 'License document',
+  degree_document: 'Degree certificate',
+  other_documents: 'Other document',
+};
+const MAX_OTHER_DOCUMENTS = 3;
+
 // Which step each error key belongs to (contract paths + client-only keys),
 // so a 400 from the backend takes the user straight to the right step.
 const STEP_OF: Record<string, TherapistRegisterStep> = {
@@ -123,6 +136,9 @@ const STEP_OF: Record<string, TherapistRegisterStep> = {
   'profile.qualifications': 'credentials',
   degree: 'credentials',
   'profile.specializations': 'credentials',
+  license_document: 'credentials',
+  degree_document: 'credentials',
+  other_documents: 'credentials',
   consent: 'credentials',
   'profile.years_of_experience': 'practice',
   'profile.languages': 'practice',
@@ -147,6 +163,22 @@ const TherapistRegisterWizard: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState<{ pending: boolean } | null>(null);
+  const [docs, setDocs] = useState<Record<DocKey, File[]>>({ license_document: [], degree_document: [], other_documents: [] });
+
+  // Check each picked file (same rules as the backend) before keeping it.
+  const addDocs = async (key: DocKey, picked: File[]) => {
+    for (const file of picked) {
+      const problem = await validateCredentialFile(file, DOC_LABELS[key]);
+      if (problem) {
+        setErrors((prev) => ({ ...prev, [key]: problem }));
+        return;
+      }
+    }
+    setDocs((prev) => ({ ...prev, [key]: [...prev[key], ...picked] }));
+    setErrors((prev) => ({ ...prev, [key]: undefined }));
+  };
+  const removeDoc = (key: DocKey, index: number) =>
+    setDocs((prev) => ({ ...prev, [key]: prev[key].filter((_, i) => i !== index) }));
 
   const stepIndex = STEP_ORDER.indexOf(activeStep);
 
@@ -204,6 +236,8 @@ const TherapistRegisterWizard: React.FC = () => {
       (qualificationsOf(form).length > LIMITS.qualifications ? 'Degree and university are too long.' : undefined),
     'profile.specializations':
       form.specializations.length >= MIN_SPECIALIZATIONS ? undefined : 'Pick at least one area you work with.',
+    license_document: docs.license_document.length ? undefined : 'Upload your license document.',
+    degree_document: docs.degree_document.length ? undefined : 'Upload your degree certificate.',
     consent: form.consent ? undefined : 'Please consent to verification to continue.',
   });
 
@@ -266,7 +300,11 @@ const TherapistRegisterWizard: React.FC = () => {
 
     setSubmitting(true);
     setFormError(null);
-    const res = await register(buildPayload());
+    const res = await register(buildPayload(), {
+      license: docs.license_document[0],
+      degree: docs.degree_document[0],
+      others: docs.other_documents,
+    });
     setSubmitting(false);
 
     if (res.data) {
@@ -277,6 +315,13 @@ const TherapistRegisterWizard: React.FC = () => {
 
     if (res.status === 400 && res.errorBody) {
       const fieldErrors = flattenFieldErrors(res.errorBody);
+      // "other_documents.1" → shown on the Other documents field
+      for (const k of Object.keys(fieldErrors)) {
+        if (k.startsWith('other_documents.')) {
+          fieldErrors.other_documents ??= fieldErrors[k];
+          delete fieldErrors[k];
+        }
+      }
       // "qualifications" is built from degree/university/year
       if (fieldErrors['profile.qualifications']) fieldErrors.degree = fieldErrors['profile.qualifications'];
       setErrors(fieldErrors);
@@ -487,6 +532,44 @@ const TherapistRegisterWizard: React.FC = () => {
                 />
               </div>
               <div className="mb-8">
+                <p className="text-sm font-bold text-gray-900 mb-1">Documents for verification</p>
+                <p className="text-xs text-gray-500 mb-4">
+                  PDF, JPG or PNG, up to {CREDENTIAL_FILE_MAX_MB} MB each. Only MindCare admins can open them.
+                </p>
+                <div className="grid grid-cols-1 @lg:grid-cols-2 gap-5">
+                  <FileField
+                    label="License document"
+                    required
+                    accept={CREDENTIAL_FILE_ACCEPT}
+                    files={docs.license_document}
+                    onAdd={(f) => addDocs('license_document', f)}
+                    onRemove={(i) => removeDoc('license_document', i)}
+                    error={e('license_document')}
+                  />
+                  <FileField
+                    label="Degree certificate"
+                    required
+                    accept={CREDENTIAL_FILE_ACCEPT}
+                    files={docs.degree_document}
+                    onAdd={(f) => addDocs('degree_document', f)}
+                    onRemove={(i) => removeDoc('degree_document', i)}
+                    error={e('degree_document')}
+                  />
+                  <div className="@lg:col-span-2">
+                    <FileField
+                      label={`Other documents · up to ${MAX_OTHER_DOCUMENTS}`}
+                      hint="Optional: e.g. a transcript or experience letter."
+                      accept={CREDENTIAL_FILE_ACCEPT}
+                      max={MAX_OTHER_DOCUMENTS}
+                      files={docs.other_documents}
+                      onAdd={(f) => addDocs('other_documents', f)}
+                      onRemove={(i) => removeDoc('other_documents', i)}
+                      error={e('other_documents')}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="mb-8">
                 <ChipGroup
                   label={`I work with · pick ${MIN_SPECIALIZATIONS}–${MAX_SPECIALIZATIONS}`}
                   required
@@ -634,6 +717,7 @@ const TherapistRegisterWizard: React.FC = () => {
                 ['Issued by', form.license_issuing_authority],
                 ['Qualifications', qualificationsOf(form)],
                 ['Works with', form.specializations.map((s) => labelOf(SPECIALIZATION_OPTIONS, s)).join(', ')],
+                ['Documents', [...docs.license_document, ...docs.degree_document, ...docs.other_documents].map((f) => f.name).join(', ')],
               ]} />
               <ReviewSection title="Practice" onEdit={() => goToStep('practice')} rows={[
                 ['Experience', form.years_of_experience ? `${form.years_of_experience} years` : '—'],

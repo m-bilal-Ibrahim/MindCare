@@ -37,7 +37,30 @@ export interface PendingPsychologist {
     timezone: string;
     gender: string | null;
     bio: string;
+    /** Credential files uploaded at registration (metadata only; open with openCredentialDocument). */
+    documents?: CredentialDocument[];
   } | null;
+}
+
+export interface CredentialDocument {
+  id: number;
+  kind: 'license' | 'degree' | 'other';
+  file_type: string;
+  size: number;
+  uploaded_at: string;
+}
+
+/**
+ * GET /accounts/admin/documents/{id}/ — a signed link to one credential file,
+ * valid for a few minutes. The backend records every opening in the audit trail.
+ */
+export async function openCredentialDocument(documentId: number) {
+  const res = await apiFetch<{ id: number; kind: string; file_type: string; url: string; expires_in: number }>(
+    `/accounts/admin/documents/${documentId}/`
+  );
+  if (res.status === 404) return { ...res, data: null, error: 'This document wasn’t found.' };
+  if (res.status === 403) return { ...res, error: NOT_ADMIN_MESSAGE };
+  return res;
 }
 
 export const REJECT_REASONS = [
