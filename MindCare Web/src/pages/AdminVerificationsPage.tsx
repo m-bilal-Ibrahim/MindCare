@@ -6,11 +6,12 @@
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Check, ExternalLink, FileText, ShieldCheck, X } from 'lucide-react';
+import { Check, ExternalLink, ShieldCheck, X } from 'lucide-react';
 import AdminLayout from '../components/admin/AdminLayout';
 import Avatar from '../components/common/Avatar';
 import ConfirmSheet from '../components/therapist/ConfirmSheet';
 import { ErrorPanel, LoadingPanel, formatDate, relativeTime } from '../components/therapist/ApiStates';
+import { FileText } from 'lucide-react'; // documents list
 import {
   APPROVAL_API_MISSING,
   DJANGO_ADMIN_PENDING_NGO_URL,
