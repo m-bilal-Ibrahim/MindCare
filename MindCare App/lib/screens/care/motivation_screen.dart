@@ -108,8 +108,8 @@ class _QuoteOfTheMoment extends StatelessWidget {
     final quote = state.data;
 
     Widget body;
-    if (state.loading && quote == null) {
-      body = const MotivationLoading(label: "Finding today's words…");
+    if (state.loading) {
+      body = MotivationSkeleton(kind: MotivationSkeletonKind.quote, showWakeNote: quote == null);
     } else if (state.error != null && quote == null) {
       body = MotivationError(
         message: state.error!,
@@ -147,9 +147,7 @@ class _QuoteOfTheMoment extends StatelessWidget {
           const SizedBox(height: 10),
           TextButton.icon(
             onPressed: state.loading ? null : () => context.read<MotivationProvider>().loadQuoteOfMoment(),
-            icon: state.loading
-                ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white54))
-                : const Icon(Icons.refresh, size: 16, color: Colors.white70),
+            icon: Icon(Icons.refresh, size: 16, color: state.loading ? Colors.white38 : Colors.white70),
             label: const Text('Another quote', style: TextStyle(color: Colors.white70)),
           ),
         ],
@@ -167,18 +165,28 @@ class _QuotesSection extends StatelessWidget {
 
     Widget chip(String label, QuoteCategory? value) {
       final selected = p.category == value;
+      // A plain pill rather than ChoiceChip: the app's chip theme paints
+      // unselected chips cream, which made white labels unreadable here.
       return Padding(
         padding: const EdgeInsets.only(right: 8),
-        child: ChoiceChip(
-          label: Text(label),
+        child: Semantics(
+          button: true,
           selected: selected,
-          showCheckmark: false,
-          onSelected: (_) => context.read<MotivationProvider>().setCategory(value),
-          labelStyle: TextStyle(color: selected ? AppColors.motivationBgEnd : Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
-          selectedColor: Colors.white,
-          backgroundColor: Colors.white.withValues(alpha: 0.08),
-          side: BorderSide.none,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: GestureDetector(
+            onTap: () => context.read<MotivationProvider>().setCategory(value),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+              decoration: BoxDecoration(
+                color: selected ? Colors.white : Colors.white.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                label,
+                style: TextStyle(color: selected ? AppColors.motivationBgEnd : Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+              ),
+            ),
+          ),
         ),
       );
     }
@@ -192,7 +200,7 @@ class _QuotesSection extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         if (p.quotes.isEmpty && p.quotesLoading)
-          const MotivationLoading(label: 'Loading quotes…')
+          const MotivationSkeleton(kind: MotivationSkeletonKind.quoteCards, count: 4)
         else if (p.quotes.isEmpty && p.quotesError != null)
           MotivationError(
             message: p.quotesError!,
@@ -212,17 +220,14 @@ class _QuotesSection extends StatelessWidget {
               padding: const EdgeInsets.only(top: 6),
               child: Text(p.quotesError!, style: const TextStyle(color: Color(0xFFF5C6B8), fontSize: 12)),
             ),
-          if (p.quotesHasMore)
+          if (p.quotesLoading)
+            const MotivationSkeleton(kind: MotivationSkeletonKind.quoteCards, count: 2, showWakeNote: false)
+          else if (p.quotesHasMore)
             Center(
-              child: p.quotesLoading
-                  ? const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.2, color: Colors.white70)),
-                    )
-                  : TextButton(
-                      onPressed: () => context.read<MotivationProvider>().loadQuotes(),
-                      child: const Text('Show more', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-                    ),
+              child: TextButton(
+                onPressed: () => context.read<MotivationProvider>().loadQuotes(),
+                child: const Text('Show more', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+              ),
             ),
         ],
       ],
@@ -294,7 +299,7 @@ class _ReligiousSectionState extends State<_ReligiousSection> {
     final p = context.watch<MotivationProvider>();
     final optIn = p.optIn;
 
-    if (optIn.loading || (optIn.data == null && optIn.error == null)) return const MotivationLoading();
+    if (optIn.loading || (optIn.data == null && optIn.error == null)) return const MotivationSkeleton(kind: MotivationSkeletonKind.rows);
     if (optIn.error != null) {
       return MotivationError(
         message: optIn.error!,
@@ -308,9 +313,9 @@ class _ReligiousSectionState extends State<_ReligiousSection> {
       final duas = p.duas;
       if (!duas.hasData && !duas.loading && duas.error == null) {
         WidgetsBinding.instance.addPostFrameCallback((_) => context.read<MotivationProvider>().loadDuas());
-        return const MotivationLoading(label: 'Loading duas…');
+        return const MotivationSkeleton(kind: MotivationSkeletonKind.rows, count: 5);
       }
-      if (duas.loading) return const MotivationLoading(label: 'Loading duas…');
+      if (duas.loading) return const MotivationSkeleton(kind: MotivationSkeletonKind.rows, count: 5);
       if (duas.error != null) {
         return MotivationError(message: duas.error!, sessionExpired: duas.sessionExpired, onRetry: () => context.read<MotivationProvider>().loadDuas());
       }
@@ -337,9 +342,9 @@ class _ReligiousSectionState extends State<_ReligiousSection> {
     final surahs = p.surahs;
     if (!surahs.hasData && !surahs.loading && surahs.error == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) => context.read<MotivationProvider>().loadSurahs());
-      return const MotivationLoading(label: 'Loading surahs…');
+      return const MotivationSkeleton(kind: MotivationSkeletonKind.rows, count: 5);
     }
-    if (surahs.loading) return const MotivationLoading(label: 'Loading surahs…');
+    if (surahs.loading) return const MotivationSkeleton(kind: MotivationSkeletonKind.rows, count: 5);
     if (surahs.error != null) {
       return MotivationError(message: surahs.error!, sessionExpired: surahs.sessionExpired, onRetry: () => context.read<MotivationProvider>().loadSurahs());
     }

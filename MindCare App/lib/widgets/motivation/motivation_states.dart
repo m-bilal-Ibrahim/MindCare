@@ -3,30 +3,40 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../common/skeleton.dart';
+
 /// Arabic text style for duas and surahs.
 TextStyle arabicStyle({double size = 24, Color color = Colors.white}) =>
     GoogleFonts.amiri(fontSize: size, color: color, height: 1.9);
 
-/// Spinner that, after a few seconds, explains the server may be waking up
-/// (the backend can take ~40–50 s on the first request).
-class MotivationLoading extends StatefulWidget {
-  const MotivationLoading({super.key, this.label = 'Loading…'});
-  final String label;
+/// What the content being loaded looks like, so the skeleton matches it.
+enum MotivationSkeletonKind { quote, quoteCards, rows, verses }
+
+/// Skeleton placeholder for Motivation content. After a few seconds it also
+/// explains the server may be waking up (the first request can take ~40–50 s).
+class MotivationSkeleton extends StatefulWidget {
+  const MotivationSkeleton({super.key, required this.kind, this.count = 3, this.showWakeNote = true});
+
+  final MotivationSkeletonKind kind;
+  final int count;
+  final bool showWakeNote;
 
   @override
-  State<MotivationLoading> createState() => _MotivationLoadingState();
+  State<MotivationSkeleton> createState() => _MotivationSkeletonState();
 }
 
-class _MotivationLoadingState extends State<MotivationLoading> {
+class _MotivationSkeletonState extends State<MotivationSkeleton> {
   Timer? _timer;
   bool _slow = false;
 
   @override
   void initState() {
     super.initState();
-    _timer = Timer(const Duration(seconds: 6), () {
-      if (mounted) setState(() => _slow = true);
-    });
+    if (widget.showWakeNote) {
+      _timer = Timer(const Duration(seconds: 6), () {
+        if (mounted) setState(() => _slow = true);
+      });
+    }
   }
 
   @override
@@ -35,21 +45,94 @@ class _MotivationLoadingState extends State<MotivationLoading> {
     super.dispose();
   }
 
+  Widget _card(Widget child) => Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(18)),
+        child: child,
+      );
+
+  Widget _shape() {
+    switch (widget.kind) {
+      case MotivationSkeletonKind.quote:
+        return const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 12),
+          child: Column(
+            children: [
+              SkeletonLines(lines: 3, lineHeight: 18, gap: 12, lastWidthFactor: 0.55, center: true),
+              SizedBox(height: 16),
+              SkeletonBox(width: 110, height: 11, radius: 6),
+            ],
+          ),
+        );
+      case MotivationSkeletonKind.quoteCards:
+        return Column(
+          children: [
+            for (var i = 0; i < widget.count; i++)
+              _card(const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SkeletonLines(lines: 2, lineHeight: 13, lastWidthFactor: 0.7),
+                  SizedBox(height: 14),
+                  Row(children: [SkeletonBox(width: 90, height: 10), Spacer(), SkeletonBox(width: 64, height: 18, radius: 9)]),
+                ],
+              )),
+          ],
+        );
+      case MotivationSkeletonKind.rows:
+        return Column(
+          children: [
+            for (var i = 0; i < widget.count; i++)
+              _card(const Row(
+                children: [
+                  SkeletonBox(height: 40, circle: true),
+                  SizedBox(width: 14),
+                  Expanded(child: SkeletonLines(lines: 2, lineHeight: 12, lastWidthFactor: 0.5)),
+                  SizedBox(width: 12),
+                  SkeletonBox(width: 44, height: 16),
+                ],
+              )),
+          ],
+        );
+      case MotivationSkeletonKind.verses:
+        return Column(
+          children: [
+            for (var i = 0; i < widget.count; i++)
+              _card(const Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      SkeletonBox(height: 26, circle: true),
+                      SizedBox(width: 10),
+                      Expanded(child: SkeletonLines(lines: 1, lineHeight: 20, alignEnd: true)),
+                    ],
+                  ),
+                  SizedBox(height: 12),
+                  SkeletonLines(lines: 2, lineHeight: 12, lastWidthFactor: 0.65),
+                ],
+              )),
+          ],
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 24),
-      child: Column(
-        children: [
-          const SizedBox(width: 26, height: 26, child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white70)),
-          const SizedBox(height: 14),
-          Text(
-            _slow ? 'MindCare is waking up. This can take up to a minute the first time.' : widget.label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+    return Column(
+      children: [
+        Shimmer(base: Shimmer.darkBase, highlight: Shimmer.darkHighlight, child: _shape()),
+        if (_slow)
+          const Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Text(
+              'MindCare is waking up. This can take up to a minute the first time.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white60, fontSize: 12, height: 1.4),
+            ),
           ),
-        ],
-      ),
+      ],
     );
   }
 }

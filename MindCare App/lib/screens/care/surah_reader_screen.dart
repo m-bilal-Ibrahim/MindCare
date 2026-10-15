@@ -91,7 +91,7 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
                   ),
                   const SizedBox(height: 20),
                   if (surah == null && _error == null)
-                    const MotivationLoading(label: 'Loading the surah…')
+                    MotivationSkeleton(kind: MotivationSkeletonKind.verses, count: widget.summary.ayahCount.clamp(2, 5))
                   else if (_error != null)
                     MotivationError(message: _error!, sessionExpired: _sessionExpired, onRetry: _load)
                   else ...[
