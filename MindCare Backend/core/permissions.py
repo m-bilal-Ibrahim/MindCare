@@ -57,6 +57,33 @@ class IsAdmin(BasePermission):
         )
 
 
+class PasswordChangeNotRequired(BasePermission):
+    """Refuses an account still on a temporary password (an admin created by a
+    super-admin) until it calls POST /accounts/password/change/."""
+
+    message = "Change your temporary password before continuing."
+    code = "password_change_required"
+
+    def has_permission(self, request, view):
+        user = request.user
+        return not (user and user.is_authenticated and user.must_change_password)
+
+
+class IsSuperAdmin(BasePermission):
+    """An active admin with is_super_admin (manages other admins)."""
+
+    message = "Only a super-admin can do this."
+
+    def has_permission(self, request, view):
+        user = request.user
+        return bool(
+            user
+            and user.is_authenticated
+            and user.role == Role.ADMIN
+            and user.is_super_admin
+        )
+
+
 class IsPatientOrApprovedPsychologist(BasePermission):
     """Patients, or psychologists who are approved and active (6.3 reports)."""
 

@@ -68,6 +68,14 @@ class User(ValidatedModelMixin, AbstractBaseUser, PermissionsMixin):
     # Written only for psychologists (Phase 3 activity tracking, at most every
     # 15 minutes); shown to patients only as a band, never as a timestamp.
     last_active_at = models.DateTimeField(null=True, blank=True)
+    # Set when a super-admin creates an admin with a one-time temporary password;
+    # cleared by POST /accounts/password/change/. While set, admin endpoints
+    # answer 403 password_change_required (docs/decisions.md, 2026-10-15).
+    must_change_password = models.BooleanField(default=False)
+    # When an admin approved/rejected the account, and when it was last
+    # deactivated (NULL once reactivated). Shown on the admin Overview.
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    deactivated_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

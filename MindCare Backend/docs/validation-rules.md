@@ -203,21 +203,30 @@ as GPS location. Audio types: MP3, M4A, OGG. Documents: PDF.
 | AI form: `Occupation`, `Family History of Anxiety` | AI assessment | — | Choice | yes | |
 | AI form: `Gender` | AI assessment | — | Choice (`Female`, `Male`, `Other`) | no | may be null; only fills recommendation wording |
 | AI form: `Alcohol Consumption (drinks/week)` | AI assessment | Alcohol consumption | Decimal 0–100 | no | may be null |
-| Quote `text` | Django admin | Quote | Free text 10–500 | yes | |
-| Quote `author` | Django admin | Author | Person name | no | |
-| Quote `category` | Django admin | — | Choice | no | |
+| `current_password` | `accounts/password/change/` | — | Password (checked against the account) | yes | wrong → `Your current password is incorrect.` |
+| `new_password` | `accounts/password/change/` | — | Password | yes | the same as the current one → `Choose a password different from your current one.` |
+| new admin `email`, `full_name` | `accounts/admin/admins/` (super-admin) | Email / Full name | Email (unique) / Person name | yes | |
+| `into` | `reference/admin/cities/{id}/merge/` | — | Number ≥ 1 (a city in the same country) | yes | `Choose a different city.`, `That city doesn't exist.`, `Choose a city in the same country.` |
+| admin cities `status`, `country`, `search` | `reference/admin/cities/` (query) | — | Choice (`unverified`, `verified`, `all`) / 2-letter code / Search text | no | |
+| admin psychologists `accepting`, `status`, `search` | `accounts/admin/psychologists/` (query) | — | true/false / Choice / Search text | no | |
+| content `is_active` | `motivation/admin/...` (body and query) | — | true/false | no | |
+| Dua `sort_order` | `motivation/admin/duas/` | Sort order | Number 0–32767 | no | |
+| `audio` | `motivation/admin/duas/{id}/audio/` and `surahs/{id}/audio/` (multipart) | Recitation | File: MP3, M4A, OGG; 15 MB | yes (on PUT) | missing → `Choose an audio file to upload.` |
+| Quote `text` | Django admin, `motivation/admin/quotes/` | Quote | Free text 10–500 | yes | |
+| Quote `author` | Django admin, admin API | Author | Person name | no | |
+| Quote `category` | Django admin, admin API | — | Choice | no | |
 | Country / Language / Specialization `name` | Django admin | Name | Organisation name 2–100 | yes | |
 | Country `code` | Django admin | — | 2 uppercase letters | yes | `Enter a two-letter ISO country code, e.g. PK.` |
 | Language `code` | Django admin | — | 2 lowercase letters | yes | `Enter a two-letter ISO 639-1 code, e.g. ur.` |
 | City `name` | Django admin | City | Person name | yes | |
 | `opted_in` | patient `motivation/religious/preference/` | — | Choice (true/false) | yes | `false` deletes the opt-in |
-| Dua `title` | Django admin | Title | Organisation name 2–120 | yes | |
-| Dua `reference` | Django admin | Reference | Letters, numbers, spaces, `. : , ( ) ' -`, 3–60 | yes | `Reference can only contain letters, numbers, spaces and . : , ( ) ' - (3–60 characters), e.g. Quran 21:87.` |
-| Dua / Surah `arabic` | Django admin | Arabic text | Free text 3–5000 (surah 3–50000) | yes | |
-| Dua / Surah `translation` | Django admin | Translation | Free text 10–5000 (surah 10–50000) | yes | |
-| Dua / Surah `transliteration` | Django admin | Transliteration | Free text 3–20000 | no | |
-| Surah `number` | Django admin | Surah number | Number 1–114 | yes | unique |
-| Surah `name_arabic` | Django admin | Arabic name | Free text 3–100 | yes | |
-| Surah `name_english`, `name_meaning` | Django admin | English name / Meaning | Organisation name 2–100 | yes | |
-| Surah `ayah_count` | Django admin | Ayah count | Number 1–286 | yes | |
+| Dua `title` | Django admin, admin API | Title | Organisation name 2–120 | yes | |
+| Dua `reference` | Django admin, admin API | Reference | Letters, numbers, spaces, `. : , ( ) ' -`, 3–60 | yes | `Reference can only contain letters, numbers, spaces and . : , ( ) ' - (3–60 characters), e.g. Quran 21:87.` |
+| Dua / Surah `arabic` | Django admin, admin API | Arabic text | Free text 3–5000 (surah 3–50000) | yes | |
+| Dua / Surah `translation` | Django admin, admin API | Translation | Free text 10–5000 (surah 10–50000) | yes | |
+| Dua / Surah `transliteration` | Django admin, admin API | Transliteration | Free text 3–20000 | no | |
+| Surah `number` | Django admin, admin API | Surah number | Number 1–114 | yes | unique |
+| Surah `name_arabic` | Django admin, admin API | Arabic name | Free text 3–100 | yes | |
+| Surah `name_english`, `name_meaning` | Django admin, admin API | English name / Meaning | Organisation name 2–100 | yes | |
+| Surah `ayah_count` | Django admin, admin API | Ayah count | Number 1–286 | yes | |
 | Recitation upload | Django admin (dua / surah) | Recitation | File: MP3, M4A, OGG; 15 MB | no | replaces the current audio |

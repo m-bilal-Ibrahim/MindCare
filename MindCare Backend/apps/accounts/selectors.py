@@ -95,6 +95,72 @@ def admin_user(*, user_id):
     )
 
 
+RECENT_ACTION_DAYS = 30
+RECENT_ACTION_LIMIT = 10
+
+
+def recent_account_actions(*, now=None):
+    """Accounts deactivated or rejected in the last 30 days, newest first (at most
+    10). Rows only: callers show patients by their list identity (pseudonym)."""
+    since = (now or timezone.now()) - timedelta(days=RECENT_ACTION_DAYS)
+    base = User.objects.exclude(role=Role.ADMIN).select_related("patient_profile")
+    deactivated = base.filter(is_active=False, deactivated_at__gte=since).order_by(
+        "-deactivated_at"
+    )[:RECENT_ACTION_LIMIT]
+    rejected = base.filter(
+        approval_status=ApprovalStatus.REJECTED, reviewed_at__gte=since
+    ).order_by("-reviewed_at")[:RECENT_ACTION_LIMIT]
+    actions = [(user, "deactivated", user.deactivated_at) for user in deactivated]
+    actions += [(user, "rejected", user.reviewed_at) for user in rejected]
+    actions.sort(key=lambda item: item[2], reverse=True)
+    return actions[:RECENT_ACTION_LIMIT]
+
+
+def admin_accounts():
+    """Every admin account for the super-admin's Admins page, oldest first."""
+    return User.objects.filter(role=Role.ADMIN).order_by("created_at", "id")
+
+
+def admin_psychologists(*, accepting=None, status=None, search=None, now=None):
+    """Psychologists for the admin directory, with counts only: current patients
+    (accepted relationships) and open requests. Never who the patients are."""
+    from apps.psychologists.models import PsychologistProfile
+    from apps.relationships.models import RelationshipStatus
+
+    now = now or timezone.now()
+    qs = (
+        PsychologistProfile.objects.select_related("user", "country", "city")
+        .annotate(
+            current_patient_count=Count(
+                "care_relationships",
+                filter=Q(care_relationships__status=RelationshipStatus.ACCEPTED),
+            ),
+            pending_request_count=Count(
+                "care_relationships",
+                filter=Q(
+                    care_relationships__status=RelationshipStatus.PENDING,
+                    care_relationships__expires_at__gt=now,
+                ),
+            ),
+        )
+        .order_by("user__full_name", "pk")
+    )
+    if accepting is not None:
+        qs = qs.filter(is_accepting_patients=accepting)
+    if status:
+        qs = qs.filter(
+            **{
+                f"user__{key}": value
+                for key, value in ADMIN_STATUS_FILTERS[status].children
+            }
+        )
+    if search:
+        qs = qs.filter(
+            Q(user__full_name__icontains=search) | Q(user__email__icontains=search)
+        )
+    return qs
+
+
 def platform_overview():
     """Counts for the admin Overview. Numbers only: no names, no health data."""
     from apps.moderation.models import Report, ReportStatus
@@ -154,4 +220,5 @@ def platform_overview():
         "relationships": relationships,
         "open_reports": Report.objects.filter(status=ReportStatus.OPEN).count(),
         "weekly_signups": list(signups.values()),
+        "recent_account_actions": recent_account_actions(),
     }

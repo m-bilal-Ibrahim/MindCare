@@ -16,7 +16,14 @@ from django.utils import timezone
 
 logger = logging.getLogger("mindcare.audit")
 
-AUTH_EVENT_TYPES = {"register", "login", "login_failed", "logout", "token_refresh"}
+AUTH_EVENT_TYPES = {
+    "register",
+    "login",
+    "login_failed",
+    "logout",
+    "token_refresh",
+    "password_changed",
+}
 
 
 def log_auth_event(
@@ -86,6 +93,19 @@ ADMIN_EVENTS = {
     "report_submitted",
     "report_dismissed",
     "report_actioned",
+    # Super-admin workflow (Phase 2, module 0)
+    "admin_created",
+    "admin_promoted",
+    "admin_demoted",
+    "admin_deactivated",
+    "admin_reactivated",
+    # admin-panel-2: reference data and content (ref_id = "<kind>:<id>")
+    "city_verified",
+    "city_merged",
+    "city_rejected",
+    "content_created",
+    "content_updated",
+    "content_deleted",
 }
 
 

@@ -82,10 +82,12 @@ class PendingListTests(AdminTestCase):
                 "role",
                 "approval_status",
                 "created_at",
+                "submitted_at",
                 "psychologist_profile",
                 "ngo_profile",
             },
         )
+        self.assertEqual(row["submitted_at"], row["created_at"])
         self.assertEqual(row["approval_status"], "pending")
         self.assertIsNone(row["ngo_profile"])
         profile = row["psychologist_profile"]

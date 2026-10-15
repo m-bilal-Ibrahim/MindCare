@@ -12,7 +12,11 @@ from apps.patients.selectors import (
     list_display_identity,
 )
 from apps.psychologists.api.serializers import PsychologistProfileOwnerSerializer
-from core.serializers import RejectUnknownFieldsMixin
+from core.serializers import (
+    RejectUnknownFieldsMixin,
+    person_name_field,
+    search_field,
+)
 
 
 class PendingAccountSerializer(serializers.ModelSerializer):
@@ -30,10 +34,17 @@ class PendingAccountSerializer(serializers.ModelSerializer):
             "role",
             "approval_status",
             "created_at",
+            "submitted_at",
             "psychologist_profile",
             "ngo_profile",
         ]
         read_only_fields = fields
+
+    submitted_at = serializers.DateTimeField(
+        source="created_at",
+        read_only=True,
+        help_text="Waiting since: when the application was submitted (oldest first).",
+    )
 
     def get_psychologist_profile(self, obj) -> PsychologistProfileOwnerSerializer:
         if obj.role != Role.PSYCHOLOGIST:
@@ -249,6 +260,11 @@ class _WeeklySignups(serializers.Serializer):
     ngo = serializers.IntegerField()
 
 
+class _RecentAction(PartySerializer):
+    action = serializers.ChoiceField(choices=["deactivated", "rejected"])
+    at = serializers.DateTimeField()
+
+
 class OverviewSerializer(serializers.Serializer):
     users = _UsersByRole()
     pending_approvals = _PendingApprovals()
@@ -258,3 +274,97 @@ class OverviewSerializer(serializers.Serializer):
     )
     open_reports = serializers.IntegerField()
     weekly_signups = _WeeklySignups(many=True, help_text="Last 12 weeks.")
+    recent_account_actions = serializers.SerializerMethodField(
+        help_text=(
+            "Accounts deactivated or rejected in the last 30 days, newest first "
+            "(max 10). Private patients appear by pseudonym."
+        )
+    )
+
+    def get_recent_account_actions(self, obj) -> _RecentAction(many=True):
+        return [
+            {**party_summary(user), "action": action, "at": at}
+            for user, action, at in obj["recent_account_actions"]
+        ]
+
+
+# --- Super-admin workflow -----------------------------------------------------
+
+
+class AdminAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "email",
+            "full_name",
+            "is_super_admin",
+            "is_active",
+            "must_change_password",
+            "created_at",
+            "last_login",
+        ]
+        read_only_fields = fields
+
+
+class CreateAdminSerializer(RejectUnknownFieldsMixin, serializers.Serializer):
+    email = serializers.EmailField(max_length=254)
+    full_name = person_name_field("Full name")
+
+    def validate_email(self, value):
+        value = value.strip().lower()
+        if User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError("A user with this email already exists.")
+        return value
+
+
+class CreatedAdminSerializer(AdminAccountSerializer):
+    temporary_password = serializers.CharField(
+        help_text=(
+            "Shown once and never again. Give it to the new admin privately; "
+            "they must change it before using the admin console."
+        )
+    )
+
+    class Meta(AdminAccountSerializer.Meta):
+        fields = [*AdminAccountSerializer.Meta.fields, "temporary_password"]
+        read_only_fields = fields
+
+
+# --- Psychologist directory (admin) -------------------------------------------
+
+
+class AdminPsychologistsQuerySerializer(serializers.Serializer):
+    accepting = serializers.BooleanField(required=False, allow_null=True, default=None)
+    status = serializers.ChoiceField(
+        choices=["active", "pending", "rejected", "deactivated"], required=False
+    )
+    search = search_field(required=False, allow_blank=True)
+
+
+class AdminPsychologistSerializer(serializers.Serializer):
+    """Counts only: never which patients a psychologist has."""
+
+    id = serializers.IntegerField(source="user_id", help_text="The user id.")
+    full_name = serializers.CharField(source="user.full_name")
+    email = serializers.EmailField(source="user.email")
+    approval_status = serializers.CharField(source="user.approval_status")
+    is_active = serializers.BooleanField(source="user.is_active")
+    is_accepting_patients = serializers.BooleanField()
+    not_accepting_reason = serializers.CharField(allow_null=True)
+    current_patient_count = serializers.IntegerField()
+    pending_request_count = serializers.IntegerField(
+        help_text="Open (unexpired) requests waiting for an answer."
+    )
+    last_active = serializers.SerializerMethodField(
+        help_text="today, this_week, this_month, over_a_month or never."
+    )
+    country = serializers.CharField(source="country.code")
+    city = serializers.CharField(source="city.name")
+    years_of_experience = serializers.IntegerField()
+    created_at = serializers.DateTimeField(source="user.created_at")
+
+    def get_last_active(self, obj) -> str:
+        from apps.relationships.selectors import last_active_band
+
+        return last_active_band(obj.user.last_active_at)

@@ -23,7 +23,11 @@ from apps.psychologists.api.serializers import (
     PsychologistProfileOwnerSerializer,
     PsychologistRegistrationProfileSerializer,
 )
-from core.serializers import StrictTrueField, person_name_field
+from core.serializers import (
+    RejectUnknownFieldsMixin,
+    StrictTrueField,
+    person_name_field,
+)
 
 ADULT_CONFIRMATION_ERROR = "You must confirm you are 18 or older."
 
@@ -215,5 +219,43 @@ class MindCareTokenObtainPairSerializer(TokenObtainPairSerializer):
         except services.AccountRejectedError as exc:
             raise AuthenticationFailed(str(exc), code="account_rejected") from exc
 
-        refresh = self.get_token(user)
-        return {"refresh": str(refresh), "access": str(refresh.access_token)}
+        return token_pair(user)
+
+
+def token_pair(user):
+    """{refresh, access, must_change_password} for a freshly authenticated user."""
+    refresh = MindCareTokenObtainPairSerializer.get_token(user)
+    return {
+        "refresh": str(refresh),
+        "access": str(refresh.access_token),
+        "must_change_password": user.must_change_password,
+    }
+
+
+class TokenPairSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+    access = serializers.CharField()
+    must_change_password = serializers.BooleanField(
+        help_text=(
+            "true for an admin still on the temporary password a super-admin "
+            "gave them: send them to the change-password screen first."
+        )
+    )
+
+
+class PasswordChangeSerializer(RejectUnknownFieldsMixin, serializers.Serializer):
+    current_password = serializers.CharField(
+        write_only=True, trim_whitespace=False, max_length=128
+    )
+    new_password = serializers.CharField(
+        write_only=True, trim_whitespace=False, max_length=128
+    )
+
+    def validate(self, attrs):
+        user = self.context["request"].user
+        messages = _password_problems(
+            attrs["new_password"], email=user.email, full_name=user.full_name
+        )
+        if messages:
+            raise serializers.ValidationError({"new_password": messages})
+        return attrs

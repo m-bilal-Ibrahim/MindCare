@@ -30,6 +30,12 @@ def make_admin(**extra):
     return make_user(role=Role.ADMIN, **extra)
 
 
+def make_super_admin(**extra):
+    return make_user(
+        role=Role.ADMIN, is_super_admin=True, is_staff=True, is_superuser=True, **extra
+    )
+
+
 def psychologist_profile_data(**overrides):
     from apps.reference.models import Country, Language, Specialization
 

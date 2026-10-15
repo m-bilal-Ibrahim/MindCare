@@ -80,7 +80,10 @@ class AdminReportsView(AdminAPIView):
     @extend_schema(
         parameters=[AdminReportsQuerySerializer],
         responses={200: AdminReportListItemSerializer(many=True)},
-        description="Reports and complaints, newest first, paginated.",
+        description=(
+            "Reports and complaints, paginated. `status=open` lists the "
+            "longest-waiting first; otherwise newest first."
+        ),
     )
     def get(self, request):
         query = AdminReportsQuerySerializer(data=request.query_params)

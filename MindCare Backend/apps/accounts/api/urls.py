@@ -5,11 +5,18 @@ from django.urls import path
 from apps.accounts.api.views import (
     LoginView,
     LogoutView,
+    PasswordChangeView,
     RefreshView,
     RegisterView,
 )
 
 from apps.accounts.api.admin_views import (
+    AdminAccountsView,
+    AdminPsychologistsView,
+    DeactivateAdminView,
+    DemoteSelfView,
+    PromoteAdminView,
+    ReactivateAdminView,
     AdminUserDetailView,
     AdminUsersView,
     ApproveAccountView,
@@ -28,6 +35,7 @@ urlpatterns = [
     path("login/", LoginView.as_view(), name="login"),
     path("refresh/", RefreshView.as_view(), name="refresh"),
     path("logout/", LogoutView.as_view(), name="logout"),
+    path("password/change/", PasswordChangeView.as_view(), name="password-change"),
     # Admin console (6.3): admins only.
     path("admin/pending/", PendingAccountsView.as_view(), name="admin-pending"),
     path(
@@ -57,5 +65,28 @@ urlpatterns = [
         "admin/users/<int:user_id>/reactivate/",
         ReactivateUserView.as_view(),
         name="admin-user-reactivate",
+    ),
+    path(
+        "admin/psychologists/",
+        AdminPsychologistsView.as_view(),
+        name="admin-psychologists",
+    ),
+    # Super-admin workflow: super-admins only.
+    path("admin/admins/", AdminAccountsView.as_view(), name="admin-admins"),
+    path("admin/admins/me/demote/", DemoteSelfView.as_view(), name="admin-demote-self"),
+    path(
+        "admin/admins/<int:user_id>/promote/",
+        PromoteAdminView.as_view(),
+        name="admin-promote",
+    ),
+    path(
+        "admin/admins/<int:user_id>/deactivate/",
+        DeactivateAdminView.as_view(),
+        name="admin-admin-deactivate",
+    ),
+    path(
+        "admin/admins/<int:user_id>/reactivate/",
+        ReactivateAdminView.as_view(),
+        name="admin-admin-reactivate",
     ),
 ]

@@ -42,3 +42,12 @@ def active_surahs():
     from apps.motivation.models import Surah
 
     return Surah.objects.filter(is_active=True)
+
+
+def admin_content(*, model, is_active=None):
+    """Every quote / dua / surah for the admin console, active or not, in the
+    model's own order."""
+    qs = model.objects.all()
+    if is_active is not None:
+        qs = qs.filter(is_active=is_active)
+    return qs
