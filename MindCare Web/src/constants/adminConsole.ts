@@ -23,10 +23,7 @@ import type {
   SafetyStats,
   TherapistDirectoryEntry,
   TherapistDirectorySummary,
-  NgoPartnerCard,
-  NgoPartnersSummary,
   SosRoutingStep,
-  PartnerOnboardingSummary,
   BillingStats,
   RevenueMonthPoint,
   PaymentMethodShare,
@@ -470,15 +467,6 @@ export const THERAPIST_DIRECTORY: TherapistDirectoryEntry[] = [
 ];
 
 // ——— NGO partners (A07) ———
-export const NGO_PARTNERS_SUMMARY: NgoPartnersSummary = { activePartners: 5, ytdRouted: 2054, closedLoopPercent: 100 };
-
-export const NGO_PARTNER_CARDS: NgoPartnerCard[] = [
-  { id: 'p-umang', initials: 'UH', avatarColor: 'bg-orange-500', name: 'Umang Helpline', status: 'Active', typeLine: 'Helpline · 24/7 · Nationwide · Urdu/English', pickupSla: '< 90s', ytdRouted: 1240, slaHitPercent: 94, email: 'helpline@umang.com.pk', phone: '0311-7786264' },
-  { id: 'p-rozan', initials: 'R', avatarColor: 'bg-emerald-700', name: 'Rozan', status: 'Active', typeLine: 'Counselling · referral · Islamabad, Rawalpindi', pickupSla: '< 5 min', ytdRouted: 412, slaHitPercent: 88, email: 'info@rozan.org', phone: '051-2890505' },
-  { id: 'p-karwan', initials: 'K', avatarColor: 'bg-violet-500', name: 'Karwan-e-Hayat', status: 'Active', typeLine: 'Hospital partner · Karachi', pickupSla: '< 15 min', ytdRouted: 86, slaHitPercent: 91, email: 'admin@kehayat.org', phone: '021-3637-3737' },
-  { id: 'p-taskeen', initials: 'T', avatarColor: 'bg-amber-600', name: 'Taskeen', status: 'Active', typeLine: 'Helpline · 12h · Lahore, Faisalabad', pickupSla: '< 3 min', ytdRouted: 268, slaHitPercent: 82, email: 'reach@taskeen.org', phone: '0316-8275336' },
-];
-
 export const SOS_ROUTING_TREE: SosRoutingStep[] = [
   { id: 'r1', label: 'SOS triggered (user or Aida)', tone: 'critical', indent: 0 },
   { id: 'r2', label: 'Aida crisis-mode engaged · grounding script · 8s', tone: 'neutral', indent: 1 },
@@ -486,16 +474,6 @@ export const SOS_ROUTING_TREE: SosRoutingStep[] = [
   { id: 'r4', label: 'If suicidal language → call Umang directly (24/7)', tone: 'critical', indent: 2 },
   { id: 'r5', label: 'Else → primary NGO for that region', tone: 'neutral', indent: 2 },
 ];
-
-export const NGO_PARTNER_ONBOARDING: PartnerOnboardingSummary = {
-  name: 'Therapy Works',
-  meta: 'Submitted May 14 · sliding-scale clinic · Karachi',
-  checklist: [
-    { label: 'MOU signed', meta: 'May 18', done: true },
-    { label: 'Insurance cover', meta: 'Rs 5M cover · expires 2027', done: true },
-    { label: 'Helpline staff list', meta: '4 listed · 2 verified', done: true },
-  ],
-};
 
 // ——— Billing (A08) ———
 export const BILLING_STATS: BillingStats = {
