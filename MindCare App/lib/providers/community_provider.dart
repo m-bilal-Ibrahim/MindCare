@@ -125,33 +125,6 @@ class CommunityProvider extends ChangeNotifier {
   }
 
   // ----- SOS -----
-  final List<SosResource> sosResources = const [
-    SosResource(
-      icon: Icons.call,
-      iconBackground: AppColors.sos,
-      title: 'Umang helpline · 0311-7786264',
-      subtitle: 'Trained listeners, in Urdu or English. Free.',
-    ),
-    SosResource(
-      icon: Icons.auto_awesome,
-      iconBackground: AppColors.primaryDark,
-      title: 'Talk to Aida, with crisis mode',
-      subtitle: 'A slow, gentle conversation while you wait for help.',
-    ),
-    SosResource(
-      icon: Icons.groups,
-      iconBackground: Color(0xFF4A7A67),
-      title: 'Notify your circle',
-      subtitle: 'People you trust get a gentle ping.',
-    ),
-    SosResource(
-      icon: Icons.local_hospital,
-      iconBackground: AppColors.textDark,
-      title: 'Nearby hospitals',
-      subtitle: 'Hospitals near you, closest first.',
-    ),
-  ];
-
   /// Hospitals near the patient's location, closest first, from the backend.
   List<Hospital> nearbyHospitals = const [];
 

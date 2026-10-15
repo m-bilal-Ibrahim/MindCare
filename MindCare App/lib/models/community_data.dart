@@ -34,17 +34,3 @@ class CommunityPost {
   final int comments;
   final bool isAnonymous;
 }
-
-class SosResource {
-  const SosResource({
-    required this.icon,
-    required this.iconBackground,
-    required this.title,
-    required this.subtitle,
-  });
-
-  final IconData icon;
-  final Color iconBackground;
-  final String title;
-  final String subtitle;
-}
