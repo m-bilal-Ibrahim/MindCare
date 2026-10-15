@@ -75,7 +75,8 @@ async function apiFetch<T>(
     return fetch(`${API_BASE_URL}${endpoint}`, {
       ...init,
       headers: {
-        'Content-Type': 'application/json',
+        // FormData sets its own multipart Content-Type (with the boundary).
+        ...(init.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...init.headers,
       },
@@ -170,12 +171,30 @@ export async function searchCities(country: string, search: string): Promise<Cit
  * 201 on success (no tokens: sign in afterwards). Psychologist and NGO
  * accounts come back approval_status "pending" until an admin approves.
  */
-export function register(payload: RegisterPayload) {
-  return apiFetch<RegisteredUser>('/accounts/register/', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-    skipAuth: true,
-  });
+export interface CredentialFiles {
+  license?: File | null;
+  degree?: File | null;
+  /** at most 3 */
+  others?: File[];
+}
+
+export function register(payload: RegisterPayload, files?: CredentialFiles) {
+  const hasFiles = !!(files && (files.license || files.degree || files.others?.length));
+  if (!hasFiles) {
+    return apiFetch<RegisteredUser>('/accounts/register/', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      skipAuth: true,
+    });
+  }
+  // Psychologist with credential files: multipart, the JSON body in a "data" part
+  // plus license_document, degree_document and up to 3 other_documents.
+  const body = new FormData();
+  body.append('data', JSON.stringify(payload));
+  if (files!.license) body.append('license_document', files!.license);
+  if (files!.degree) body.append('degree_document', files!.degree);
+  for (const f of files!.others ?? []) body.append('other_documents', f);
+  return apiFetch<RegisteredUser>('/accounts/register/', { method: 'POST', body, skipAuth: true });
 }
 
 /**

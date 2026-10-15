@@ -211,3 +211,25 @@ export function getPasswordStrength(value: string): PasswordStrength {
 
   return { score: clamped, ...levels[clamped] };
 }
+// ——— Credential file uploads (validation-rules.md "File uploads") ———
+// Same order and messages as the backend's core/files.check_upload: empty →
+// too big → wrong type. The type is read from the file's first bytes, like the
+// backend, not from its name. The backend checks again on upload.
+
+export const CREDENTIAL_FILE_MAX_MB = 5;
+export const CREDENTIAL_FILE_ACCEPT = '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png';
+
+async function detectCredentialKind(file: File): Promise<'PDF' | 'JPG' | 'PNG' | null> {
+  const b = new Uint8Array(await file.slice(0, 8).arrayBuffer());
+  if (b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46) return 'PDF'; // %PDF
+  if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return 'JPG';
+  if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return 'PNG';
+  return null;
+}
+
+export async function validateCredentialFile(file: File, label: string): Promise<string | null> {
+  if (!file.size) return `${label} is empty.`;
+  if (file.size > CREDENTIAL_FILE_MAX_MB * 1024 * 1024) return `${label} must be ${CREDENTIAL_FILE_MAX_MB} MB or smaller.`;
+  if (!(await detectCredentialKind(file))) return `${label} must be one of: PDF, JPG, PNG.`;
+  return null;
+}

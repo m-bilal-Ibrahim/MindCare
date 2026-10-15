@@ -11,6 +11,7 @@ import AdminLayout from '../components/admin/AdminLayout';
 import Avatar from '../components/common/Avatar';
 import ConfirmSheet from '../components/therapist/ConfirmSheet';
 import { ErrorPanel, LoadingPanel, formatDate, relativeTime } from '../components/therapist/ApiStates';
+import { FileText } from 'lucide-react'; // documents list
 import {
   APPROVAL_API_MISSING,
   DJANGO_ADMIN_PENDING_NGO_URL,
@@ -20,7 +21,9 @@ import {
   approveAccount,
   getPendingNgos,
   getPendingPsychologists,
+  openCredentialDocument,
   rejectAccount,
+  type CredentialDocument,
   type PendingNgo,
   type PendingPsychologist,
   type RejectReason,
@@ -48,6 +51,78 @@ const Row: React.FC<{ label: string; children: React.ReactNode }> = ({ label, ch
 const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <h2 className="text-xs font-semibold tracking-widest text-gray-500 uppercase mt-6 mb-1">{children}</h2>
 );
+
+// ——— Credential documents (psychologists) ———
+
+const DOC_KIND_LABELS: Record<CredentialDocument['kind'], string> = {
+  license: 'License document',
+  degree: 'Degree certificate',
+  other: 'Other document',
+};
+
+const fileSize = (bytes: number) =>
+  bytes >= 1024 * 1024 ? `${(bytes / (1024 * 1024)).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+
+/** Lists the uploaded files; "Open" fetches a short-lived signed link (the backend logs each opening). */
+const DocumentsSection: React.FC<{ documents: CredentialDocument[] }> = ({ documents }) => {
+  const [openingId, setOpeningId] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const open = async (doc: CredentialDocument) => {
+    setError(null);
+    setOpeningId(doc.id);
+    // Open the tab now (inside the click) so pop-up blockers allow it, then point it at the file.
+    const tab = window.open('', '_blank');
+    const res = await openCredentialDocument(doc.id);
+    setOpeningId(null);
+    if (res.data?.url) {
+      if (tab) {
+        tab.opener = null;
+        tab.location.href = res.data.url;
+      } else {
+        window.location.assign(res.data.url);
+      }
+    } else {
+      tab?.close();
+      setError(res.error ?? 'Couldn’t open this document.');
+    }
+  };
+
+  if (!documents.length) {
+    return <p className="text-sm text-gray-500 py-3">No documents uploaded with this application.</p>;
+  }
+  return (
+    <>
+      <ul className="divide-y divide-gray-100">
+        {documents.map((doc) => (
+          <li key={doc.id} className="flex items-center gap-3 py-3">
+            <FileText size={16} className="text-gray-500 shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm text-gray-900">{DOC_KIND_LABELS[doc.kind] ?? 'Document'}</span>
+              <span className="block text-xs text-gray-500">
+                {doc.file_type.toUpperCase()} · {fileSize(doc.size)} · uploaded {formatDate(doc.uploaded_at)}
+              </span>
+            </span>
+            <button
+              type="button"
+              onClick={() => open(doc)}
+              disabled={openingId === doc.id}
+              className="inline-flex items-center gap-1.5 border border-gray-200 bg-white text-gray-700 text-xs font-semibold px-3 py-2 rounded-lg hover:border-gray-400 disabled:opacity-50"
+            >
+              <ExternalLink size={12} aria-hidden="true" /> {openingId === doc.id ? 'Opening…' : 'Open'}
+            </button>
+          </li>
+        ))}
+      </ul>
+      {error && (
+        <p role="alert" className="text-xs text-red-600 mt-1">
+          {error}
+        </p>
+      )}
+      <p className="text-xs text-gray-400 mt-2">Each opening is recorded in the access log.</p>
+    </>
+  );
+};
 
 // ——— What differs between the two queues ———
 
@@ -96,6 +171,9 @@ const PSYCHOLOGISTS: QueueConfig<PendingPsychologist> = {
           <Row label="Issuing country">{profile?.license_issuing_country?.name}</Row>
           <Row label="Issuing authority">{profile?.license_issuing_authority}</Row>
         </dl>
+
+        <SectionTitle>Documents</SectionTitle>
+        <DocumentsSection key={active.id} documents={profile?.documents ?? []} />
 
         <SectionTitle>Practice</SectionTitle>
         <dl>
