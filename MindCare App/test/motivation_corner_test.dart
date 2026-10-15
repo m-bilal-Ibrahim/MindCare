@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import 'package:mindcare_mobile/models/motivation_data.dart';
 import 'package:mindcare_mobile/providers/motivation_provider.dart';
 import 'package:mindcare_mobile/screens/care/motivation_screen.dart';
 import 'package:mindcare_mobile/screens/care/surah_reader_screen.dart';
+import 'package:mindcare_mobile/widgets/common/skeleton.dart';
 
 class _MemoryTokens implements TokenStore {
   _MemoryTokens();
@@ -228,5 +230,30 @@ void main() {
     expect(find.text('Allah, the eternally Besought of all!'), findsOneWidget);
     expect(find.text('اللَّهُ الصَّمَدُ'), findsOneWidget);
     expect(find.byIcon(Icons.play_arrow), findsNothing); // no recitation yet
+  });
+
+  testWidgets('While loading, pages show skeletons instead of spinners', (tester) async {
+    _phone(tester);
+    final gate = Completer<void>();
+    final backend = _FakeBackend();
+    final fast = backend.client;
+    final slow = MockClient((req) async {
+      await gate.future;
+      final copy = http.Request(req.method, req.url)..headers.addAll(req.headers);
+      return http.Response.fromStream(await fast.send(copy));
+    });
+    final provider = MotivationProvider(MotivationApi(ApiClient(client: slow, tokens: _MemoryTokens())));
+
+    await tester.pumpWidget(_wrap(const MotivationScreen(), provider));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.byType(Shimmer), findsWidgets);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+
+    gate.complete();
+    await tester.pumpAndSettle();
+    expect(find.byType(Shimmer), findsNothing);
+    expect(find.text('“Small steps still move you forward.”'), findsOneWidget);
   });
 }
