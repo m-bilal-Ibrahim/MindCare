@@ -12,6 +12,10 @@ Production backend runs on **Render**, with **Supabase** (Postgres) and
 - **Production superuser:** a real production superuser account exists (created
   via `createsuperuser`, so `is_super_admin=True`). Its credentials are not
   recorded in the repo.
+  It is the first super-admin: other admins are created from the admin console
+  (`POST /api/v1/accounts/admin/admins/`, one-time temporary password), not with
+  `createsuperuser`. Keep at least two super-admins so one lost password can't
+  lock everyone out.
 
 ### Environment variables (configured in Render)
 

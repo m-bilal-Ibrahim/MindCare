@@ -198,6 +198,7 @@ REST_FRAMEWORK = {
         "admin": "120/min",
         "reports": "10/day",
         "uploads": "20/hour",
+        "password_change": "10/hour",
     },
     "NUM_PROXIES": env.int("NUM_PROXIES", default=0),
 }

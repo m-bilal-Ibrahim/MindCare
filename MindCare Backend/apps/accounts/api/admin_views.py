@@ -1,6 +1,7 @@
 """Admin console API (6.3). Thin views: parse -> service/selector -> serialize.
 
-Every endpoint: IsAuthenticated + IsAdmin, throttle `admin` (120/min per user).
+Every endpoint: IsAuthenticated + IsAdmin + PasswordChangeNotRequired, throttle
+`admin` (120/min per user). Admin management also needs IsSuperAdmin.
 Approvals follow MindCare Web/docs/admin-approvals-api-contract.md.
 """
 
@@ -13,6 +14,11 @@ from rest_framework.views import APIView
 
 from apps.accounts import selectors, services
 from apps.accounts.api.admin_serializers import (
+    AdminAccountSerializer,
+    AdminPsychologistSerializer,
+    AdminPsychologistsQuerySerializer,
+    CreateAdminSerializer,
+    CreatedAdminSerializer,
     AdminUserDetailSerializer,
     AdminUserListItemSerializer,
     AdminUsersQuerySerializer,
@@ -28,8 +34,9 @@ from apps.accounts.models import ApprovalStatus
 from apps.psychologists import services as psychologist_services
 from core.exceptions import DomainValidationError
 from core.pagination import StandardPagination
-from core.permissions import IsAdmin
-from rest_framework.exceptions import ValidationError
+from core.permissions import IsAdmin, IsSuperAdmin, PasswordChangeNotRequired
+from rest_framework import status
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 
 class AdminRateThrottle(UserRateThrottle):
@@ -37,8 +44,12 @@ class AdminRateThrottle(UserRateThrottle):
 
 
 class AdminAPIView(APIView):
-    permission_classes = [IsAuthenticated, IsAdmin]
+    permission_classes = [IsAuthenticated, IsAdmin, PasswordChangeNotRequired]
     throttle_classes = [AdminRateThrottle]
+
+
+class SuperAdminAPIView(AdminAPIView):
+    permission_classes = [*AdminAPIView.permission_classes, IsSuperAdmin]
 
 
 def _domain_errors(exc):
@@ -237,3 +248,117 @@ class ReactivateUserView(AdminAPIView):
         except DomainValidationError as exc:
             raise _domain_errors(exc) from exc
         return Response(ReviewResultSerializer(user).data)
+
+
+class AdminPsychologistsView(AdminAPIView):
+    @extend_schema(
+        parameters=[AdminPsychologistsQuerySerializer],
+        responses={200: AdminPsychologistSerializer(many=True)},
+        description=(
+            "Every psychologist with active / accepting status and patient counts "
+            "only (never who the patients are). Paginated, by name."
+        ),
+    )
+    def get(self, request):
+        query = AdminPsychologistsQuerySerializer(data=request.query_params)
+        query.is_valid(raise_exception=True)
+        profiles = selectors.admin_psychologists(
+            accepting=query.validated_data.get("accepting"),
+            status=query.validated_data.get("status"),
+            search=query.validated_data.get("search") or None,
+        )
+        paginator = StandardPagination()
+        page = paginator.paginate_queryset(profiles, request, view=self)
+        return paginator.get_paginated_response(
+            AdminPsychologistSerializer(page, many=True).data
+        )
+
+
+# --- Super-admin workflow: managing admin accounts ------------------------------
+
+
+class AdminAccountsView(SuperAdminAPIView):
+    @extend_schema(
+        responses={200: AdminAccountSerializer(many=True)},
+        description="Every admin account, oldest first. Super-admins only.",
+    )
+    def get(self, request):
+        return Response(
+            AdminAccountSerializer(selectors.admin_accounts(), many=True).data
+        )
+
+    @extend_schema(
+        request=CreateAdminSerializer,
+        responses={201: CreatedAdminSerializer, 400: OpenApiResponse()},
+        description=(
+            "Create an ordinary admin. The response carries a one-time temporary "
+            "password, shown only here; the new admin must change it "
+            "(POST /accounts/password/change/) before any admin endpoint works."
+        ),
+    )
+    def post(self, request):
+        body = CreateAdminSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        try:
+            user, password = services.create_admin_account(
+                actor=request.user, **body.validated_data
+            )
+        except services.DuplicateEmailError as exc:
+            raise ValidationError({"email": [str(exc)]}) from exc
+        data = AdminAccountSerializer(user).data
+        data["temporary_password"] = password
+        return Response(data, status=status.HTTP_201_CREATED)
+
+
+class _AdminAccountActionView(SuperAdminAPIView):
+    service = None
+
+    @extend_schema(
+        request=None,
+        responses={
+            200: AdminAccountSerializer,
+            400: OpenApiResponse(description="The rule this action would break."),
+            404: OpenApiResponse(description="No such admin account."),
+        },
+    )
+    def post(self, request, user_id):
+        try:
+            user = type(self).service(actor=request.user, user_id=user_id)
+        except services.AccountNotFound as exc:
+            raise Http404 from exc
+        except services.NotSuperAdmin as exc:
+            raise PermissionDenied(IsSuperAdmin.message) from exc
+        except DomainValidationError as exc:
+            raise _domain_errors(exc) from exc
+        return Response(AdminAccountSerializer(user).data)
+
+
+class PromoteAdminView(_AdminAccountActionView):
+    service = services.promote_admin
+
+
+class DeactivateAdminView(_AdminAccountActionView):
+    service = services.deactivate_admin
+
+
+class ReactivateAdminView(_AdminAccountActionView):
+    service = services.reactivate_admin
+
+
+class DemoteSelfView(SuperAdminAPIView):
+    @extend_schema(
+        request=None,
+        responses={
+            200: AdminAccountSerializer,
+            400: OpenApiResponse(description="You're the only super-admin."),
+        },
+        description="Step down to ordinary admin. The last super-admin can't.",
+    )
+    def post(self, request):
+        try:
+            user = services.demote_self(actor=request.user)
+        except services.NotSuperAdmin as exc:
+            raise PermissionDenied(IsSuperAdmin.message) from exc
+        except DomainValidationError as exc:
+            raise _domain_errors(exc) from exc
+        return Response(AdminAccountSerializer(user).data)

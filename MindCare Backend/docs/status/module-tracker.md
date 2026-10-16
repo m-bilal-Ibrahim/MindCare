@@ -12,7 +12,8 @@ role in the bullet).
 The Web is the psychologist/admin client; the App is the patient client. "Branch"
 means the work sits on an unmerged branch.
 
-Last updated: 2026-10-11 (6.10 backend). Re-checked against `origin` on
+Last updated: 2026-10-15 (Phase 2 module 0: super-admin workflow + admin-panel-2,
+backend). Earlier: 2026-10-11 (6.10 backend). Re-checked against `origin` on
 2026-10-11: the partner merged Web PRs #38 (city search), #40 (name validation), #44
 (pricing) and App PRs #39, #41; her App backend wiring is not on GitHub yet.
 
@@ -37,7 +38,7 @@ Last updated: 2026-10-11 (6.10 backend). Re-checked against `origin` on
 | Bullet | Backend | Web | App | Notes |
 |---|---|---|---|---|
 | Verify psychologist credentials; approve or reject registrations | done (PR 6.3) | partial (branch `web/admin-psychologist-approvals`) | — | Endpoints exactly per the contract; audited document links; Django admin uses the same service. Web: merge the partner's branch, then add the document viewer |
-| Monitor platform activities; ensure policies are followed | done (PR 6.3) | mock only | — | Overview, Users (pseudonyms for private patients, audited reveal), deactivate/reactivate. Web pages still use `constants/adminConsole.ts` until the partner's branches land |
+| Monitor platform activities; ensure policies are followed | done (PR 6.3, admin-panel-2) | mock only | — | Overview (now with recent suspensions/rejections), Users (pseudonyms for private patients, audited reveal), deactivate/reactivate. admin-panel-2 adds the psychologist directory (counts only), city verification (verify/merge/reject), content CRUD for quotes/duas/surahs with audio, "waiting since" and oldest-first queues, and the super-admin workflow (create admins with a temporary password, promote, step down, deactivate) plus password change for everyone. Web screens: `docs/handoff/admin-panel-2.md` |
 | Moderate community content; manage reports and complaints | partial (PR 6.3) | mock only | not started | Reports and complaints done (both directions, encrypted descriptions, dismiss/uphold). **Community content moderation deferred to 6.8** |
 
 ## 6.4 Patient Profiling
@@ -132,6 +133,7 @@ Last updated: 2026-10-11 (6.10 backend). Re-checked against `origin` on
 
 | Item | Status | Notes |
 |---|---|---|
+| Super-admin workflow and password change | backend done (module 0) | Web screens (admin management, change password) and the App's change-password screen are the partner's; see `docs/handoff/admin-panel-2.md` |
 | Patient ↔ psychologist relationships | Backend done, Web done, App mock only | Patient side in the App is Phase 1 item (f) |
 | File storage (`integrations/storage_client`) | backend done (PR foundations) | Private Supabase bucket, signed URLs, magic-byte checks, EXIF removal. Used by 6.1, 6.2, 6.10 |
 | DB-backed PHI access audit trail | backend done (PR foundations) | `apps/audit`, append-only, fail closed; field encryption for health data ready too |

@@ -1164,3 +1164,49 @@ auditing the patient's own reads (noise without a privacy benefit).
 external Quran API called at runtime (an outside dependency, and unclear audio
 licensing); keeping a `false` row on opt-out (stores belief data that isn't needed);
 showing the opt-in in Django admin (no purpose that needs it).
+
+
+## 2026-10-15 - Phase 2 module 0: super-admin workflow and admin-panel-2
+**Decision (Phase 2 answers: Q1 as specified, Q2–Q5 defaults):**
+- **Admin accounts are created by a super-admin** (`POST
+  /accounts/admin/admins/`) with a **one-time temporary password** returned once in
+  the response and never stored or logged in plain text. The account carries
+  `must_change_password=True`; while it is set, **every admin endpoint answers 403
+  `password_change_required`**, and login returns `must_change_password` so the Web
+  sends them to the change-password screen. `POST /accounts/password/change/` works
+  for every role: current password, Django's password rules for the new one, then
+  **every refresh token is revoked** and a new pair is returned for this device.
+  Access tokens already issued stay valid until they expire (15 minutes).
+- **Roles:** ordinary admins do everything in 6.3 and admin-panel-2. **Only
+  super-admins create, promote, demote, deactivate or reactivate admins.** Ordinary
+  admins are staff (not superuser) in the **"MindCare admins" group**: in Django
+  admin they can edit quotes, duas, surahs and reference data, and only view users.
+  Promotion makes the account a Django superuser too.
+- **Invariants:** at least one active super-admin always exists. `demote_self()`
+  locks every active super-admin row first, so two super-admins stepping down at
+  the same moment can't both succeed. A super-admin can demote only themselves, must
+  be demoted before being deactivated, and nobody deactivates their own account.
+  Deactivating any account (admin or not) now also revokes its refresh tokens.
+- **Known gap:** an admin on a temporary password can still sign in to Django
+  admin (`/admin/`), which doesn't know the flag. The admin console is the
+  intended surface; tell new admins to change the password first.
+- **admin-panel-2:** city verification API (list, verify, **merge** an unverified
+  city into another in the same country, moving every profile and NGO service area
+  and dropping duplicate areas, **reject** = delete an unused unverified city);
+  content CRUD for quotes, duas and surahs with recitation upload (the same
+  content check as Django admin); an admin psychologist directory with **counts
+  only** (current patients, open requests), never which patients; `submitted_at`
+  ("waiting since") on pending approvals, which, like open reports and unverified
+  cities, are listed **oldest first**; and the Overview's
+  `recent_account_actions` (deactivated or rejected in the last 30 days, private
+  patients by pseudonym). NGO counts were already on the Overview.
+- **New timestamps:** `User.reviewed_at` and `User.deactivated_at` (cleared on
+  reactivation). Older rows are backfilled from `updated_at` as a best guess.
+  `submitted_at` is the account's `created_at`; if a later re-review flow sends an
+  account back to pending, it needs its own timestamp.
+- **No demo admin accounts** in `seed_demo`: a known demo password on an admin
+  would be a way into production.
+**Alternatives considered:** admins choosing their own password via an emailed
+invite (needs the email layer, which is module 1); letting any admin manage
+admins (one compromised account could lock out the rest); hard-deleting used
+cities (profiles PROTECT their city, and the data would be lost).

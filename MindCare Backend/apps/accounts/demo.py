@@ -299,7 +299,24 @@ def seed_demo_accounts(*, password):
         )
         created += 1
     _ensure_demo_report()
+    _ensure_demo_city()
     return {"created": created, "existing": existing}
+
+
+# admin-panel-2: one fictional, unverified city for the admin verification screen.
+# No demo admin accounts are seeded: a known demo password on an admin would be a
+# way into production.
+DEMO_CITY = "Demoville"
+
+
+def _ensure_demo_city():
+    from apps.reference.models import City, Country
+
+    City.objects.get_or_create(
+        country=Country.objects.get(code="PK"),
+        name__iexact=DEMO_CITY,
+        defaults={"name": DEMO_CITY, "is_verified": False},
+    )
 
 
 # 6.1 demo data: initials avatars (generated, clearly not real photos) and a
@@ -481,4 +498,16 @@ def remove_demo_accounts():
     rels.delete()
     count = users.count()
     users.delete()
+    _remove_demo_city()
     return {"users": count, "relationships": relationships}
+
+
+def _remove_demo_city():
+    """Delete the demo city if nothing uses it (an admin may have merged it, or
+    a real profile may have typed the same name)."""
+    from apps.reference.models import City
+    from apps.reference.services import city_usage_count
+
+    for city in City.objects.filter(country__code="PK", name__iexact=DEMO_CITY):
+        if not city_usage_count(city):
+            city.delete()

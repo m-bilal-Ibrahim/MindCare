@@ -261,3 +261,16 @@ class SeedDemoAdminDataTests(TestCase):
         from apps.motivation.selectors import has_opted_in_to_religious_content
 
         self.assertTrue(has_opted_in_to_religious_content(user=hina.user))
+
+
+class SeedDemoCityTests(TestCase):
+    def test_seeds_one_unverified_city_and_removes_it(self):
+        from apps.reference.models import City
+
+        demo.seed_demo_accounts(password=PASSWORD)
+        demo.seed_demo_accounts(password=PASSWORD)
+        cities = City.objects.filter(name=demo.DEMO_CITY)
+        self.assertEqual(cities.count(), 1)
+        self.assertFalse(cities.get().is_verified)
+        demo.remove_demo_accounts()
+        self.assertFalse(City.objects.filter(name=demo.DEMO_CITY).exists())

@@ -11,7 +11,7 @@ from rest_framework import serializers, status
 from rest_framework.exceptions import ParseError, ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.throttling import AnonRateThrottle
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -21,11 +21,14 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from apps.accounts import selectors, services
 from apps.accounts.api.serializers import (
     MindCareTokenObtainPairSerializer,
+    PasswordChangeSerializer,
+    TokenPairSerializer,
     RegisterMultipartDoc,
     RegisterRequestDoc,
     RegisterResponseDoc,
     RegisterSerializer,
     registration_response_data,
+    token_pair,
 )
 from apps.accounts.models import ApprovalStatus, Role
 from apps.psychologists.api.serializers import CredentialDocumentsSerializer
@@ -124,6 +127,10 @@ class LoginView(TokenObtainPairView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
+    @extend_schema(responses={200: TokenPairSerializer})
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
 
 class RefreshView(TokenRefreshView):
     permission_classes = [AllowAny]
@@ -181,3 +188,43 @@ class LogoutView(APIView):
         token.blacklist()
         services.record_logout(user=request.user, ip=request.META.get("REMOTE_ADDR"))
         return Response(status=status.HTTP_205_RESET_CONTENT)
+
+
+class PasswordChangeRateThrottle(UserRateThrottle):
+    scope = "password_change"
+
+
+class PasswordChangeView(APIView):
+    """Any signed-in user changes their own password. Every other session is
+    signed out; this device gets a fresh token pair."""
+
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [PasswordChangeRateThrottle]
+
+    @extend_schema(
+        request=PasswordChangeSerializer,
+        responses={200: TokenPairSerializer},
+        description=(
+            "Checks the current password and Django's password rules for the new "
+            "one. On success every refresh token is revoked (all devices) and a "
+            "new pair is returned for this device; must_change_password is "
+            "cleared."
+        ),
+    )
+    def post(self, request):
+        body = PasswordChangeSerializer(data=request.data, context={"request": request})
+        body.is_valid(raise_exception=True)
+        try:
+            user = services.change_password(
+                user=request.user,
+                current_password=body.validated_data["current_password"],
+                new_password=body.validated_data["new_password"],
+                ip=request.META.get("REMOTE_ADDR"),
+            )
+        except services.WrongCurrentPassword as exc:
+            raise ValidationError(
+                {"current_password": ["Your current password is incorrect."]}
+            ) from exc
+        except DomainValidationError as exc:
+            raise ValidationError(exc.errors, code=exc.code) from exc
+        return Response(token_pair(user))
