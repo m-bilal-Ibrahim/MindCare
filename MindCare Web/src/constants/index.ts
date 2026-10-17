@@ -45,12 +45,8 @@ export const HERO_STATS: { key: keyof PlatformStats; label: string }[] = [
 ];
 
 // ——— Partners ———
-export const PARTNERS: Partner[] = [
-  { name: 'Umang' },
-  { name: 'Rozan' },
-  { name: 'Karwan-e-Hayat' },
-  { name: 'Taskeen' },
-];
+// Only real, signed partner organisations go here. Empty = the home page hides the strip.
+export const PARTNERS: Partner[] = [];
 
 // ——— Team behind MindCare — photoUrl is populated from the backend ———
 export const TEAM_MEMBERS: TeamMember[] = [

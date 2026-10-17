@@ -84,7 +84,7 @@ const Footer: React.FC = () => (
 
       {/* Bottom bar */}
       <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-600">
-        <p>PMDC-verified therapists · Umang · Rozan partner · HIPAA-aligned</p>
+        <p>PMDC-verified therapists · HIPAA-aligned</p>
         <div className="flex gap-4">
           <Link to={ROUTES.CLIENT_APP} className="hover:text-gray-400 transition-colors">Get started</Link>
         </div>
