@@ -4,7 +4,12 @@
 // ============================================================
 
 import { API_BASE_URL } from '../constants';
-import { getAccessToken, getRefreshToken, isExpired, saveTokens } from './tokens';
+import { getAccessToken, getRefreshToken, isExpired, saveTokens, setMustChangePassword } from './tokens';
+
+/** The backend's 403 for an admin still on a temporary password (code password_change_required). */
+export const PASSWORD_CHANGE_REQUIRED_DETAIL = 'Change your temporary password before continuing.';
+/** Fired on window when that 403 arrives, so the session can send the user to the password screen. */
+export const PASSWORD_CHANGE_REQUIRED_EVENT = 'mc:password-change-required';
 import type {
   RegisterPayload,
   RegisteredUser,
@@ -92,6 +97,10 @@ async function apiFetch<T>(
     }
 
     const body = await response.json().catch(() => null);
+    if (response.status === 403 && (body as { detail?: unknown } | null)?.detail === PASSWORD_CHANGE_REQUIRED_DETAIL) {
+      setMustChangePassword(true);
+      window.dispatchEvent(new Event(PASSWORD_CHANGE_REQUIRED_EVENT));
+    }
     if (!response.ok) {
       return { data: null, error: errorMessage(body, response.status), errorBody: body, status: response.status, loading: false };
     }
@@ -108,12 +117,28 @@ async function apiFetch<T>(
 
 // ——— Auth ———
 
-/** POST /accounts/login/ → { access, refresh }. The access token carries a "role" claim. */
+/**
+ * POST /accounts/login/ → { access, refresh, must_change_password }. The access token
+ * carries a "role" claim; must_change_password is true only for an admin a
+ * super-admin just created (temporary password).
+ */
 export function login(email: string, password: string) {
-  return apiFetch<{ access: string; refresh: string }>('/accounts/login/', {
+  return apiFetch<{ access: string; refresh: string; must_change_password?: boolean }>('/accounts/login/', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
     skipAuth: true,
+  });
+}
+
+/**
+ * POST /accounts/password/change/ — any signed-in user. 200 = a new token pair
+ * (every other session, on every device, is signed out). 400 bodies are keyed
+ * current_password / new_password with the backend's messages.
+ */
+export function changePassword(currentPassword: string, newPassword: string) {
+  return apiFetch<{ access: string; refresh: string; must_change_password?: boolean }>('/accounts/password/change/', {
+    method: 'POST',
+    body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
   });
 }
 

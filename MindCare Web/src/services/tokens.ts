@@ -21,6 +21,8 @@ export interface TokenClaims {
 const ACCESS_KEY = 'mc_access_token';
 const REFRESH_KEY = 'mc_refresh_token';
 const EMAIL_KEY = 'mc_session_email';
+// Set when login says must_change_password (an admin on a temporary password).
+const MUST_CHANGE_KEY = 'mc_must_change_password';
 
 const stores = (): Storage[] => {
   try {
@@ -71,6 +73,7 @@ export function clearTokens() {
       s.removeItem(ACCESS_KEY);
       s.removeItem(REFRESH_KEY);
       s.removeItem(EMAIL_KEY);
+      s.removeItem(MUST_CHANGE_KEY);
     } catch {
       /* ignore */
     }
@@ -78,6 +81,20 @@ export function clearTokens() {
 }
 
 export const getAccessToken = () => read(ACCESS_KEY);
+export const getMustChangePassword = () => read(MUST_CHANGE_KEY) === '1';
+
+/** Remember (or clear) "must change password" in the same store as the session. */
+export function setMustChangePassword(value: boolean) {
+  const target = activeStore();
+  for (const s of stores()) {
+    try {
+      if (value && s === target) s.setItem(MUST_CHANGE_KEY, '1');
+      else s.removeItem(MUST_CHANGE_KEY);
+    } catch {
+      /* storage blocked */
+    }
+  }
+}
 export const getRefreshToken = () => read(REFRESH_KEY);
 export const getSessionEmail = () => read(EMAIL_KEY);
 

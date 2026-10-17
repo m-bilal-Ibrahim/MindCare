@@ -31,8 +31,12 @@ export const useTherapistAuth = () => {
 /** Route guard — redirects to therapist sign-in unless signed in as a psychologist. */
 export const RequireTherapistAuth: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useTherapistAuth();
+  const { session } = useAuth();
   if (!isAuthenticated) {
     return <Navigate to={ROUTES.THERAPIST_LOGIN} replace />;
+  }
+  if (session?.mustChangePassword) {
+    return <Navigate to={ROUTES.CHANGE_PASSWORD} replace />;
   }
   return <>{children}</>;
 };

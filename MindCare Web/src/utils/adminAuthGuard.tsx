@@ -12,6 +12,7 @@
 import React, { type ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { ADMIN_ROUTES } from '../constants/adminConsole';
+import { ROUTES } from '../constants';
 import { useAuth } from './auth';
 
 interface AdminSession {
@@ -33,8 +34,12 @@ export const useAdminAuth = () => {
 /** Route guard — redirects to admin sign-in unless signed in as an admin. */
 export const RequireAdminAuth: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAdminAuth();
+  const { session } = useAuth();
   if (!isAuthenticated) {
     return <Navigate to={ADMIN_ROUTES.SIGN_IN} replace />;
+  }
+  if (session?.mustChangePassword) {
+    return <Navigate to={ROUTES.CHANGE_PASSWORD} replace />;
   }
   return <>{children}</>;
 };
