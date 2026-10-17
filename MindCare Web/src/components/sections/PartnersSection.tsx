@@ -12,7 +12,8 @@ const TINTS = [
   'bg-purple-50 border-purple-100 text-purple-700',
 ];
 
-const PartnersSection: React.FC = () => (
+const PartnersSection: React.FC = () =>
+  PARTNERS.length === 0 ? null : (
   <section
     className="border-t border-b border-gray-200 py-10"
     aria-label="Partners"

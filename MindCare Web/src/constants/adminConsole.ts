@@ -54,7 +54,7 @@ export const ADMIN_NAV_OPERATIONS: AdminNavItem[] = [
 ];
 
 export const ADMIN_NAV_TRUST_SAFETY: AdminNavItem[] = [
-  { id: 'moderation', label: 'Moderation', route: ADMIN_ROUTES.MODERATION, icon: 'flag', badge: 12 },
+  { id: 'moderation', label: 'Moderation', route: ADMIN_ROUTES.MODERATION, icon: 'flag' },
   { id: 'safety-sos', label: 'Safety / SOS', route: ADMIN_ROUTES.SAFETY, icon: 'alert-triangle' },
   { id: 'ngo-partners', label: 'NGO partners', route: ADMIN_ROUTES.NGO_PARTNERS, icon: 'heart' },
 ];

@@ -57,7 +57,7 @@ const AdminBell: React.FC = () => {
         {
           label: 'NGOs waiting for approval',
           count: overview.pending_approvals.ngo,
-          to: `${ADMIN_ROUTES.USERS}?role=ngo&status=pending`,
+          to: `${ADMIN_ROUTES.VERIFICATIONS}?type=ngo`,
         },
         { label: 'Open reports', count: overview.open_reports, to: ADMIN_ROUTES.MODERATION },
       ]

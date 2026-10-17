@@ -5,7 +5,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
-import { Shield, Heart, Lock, Stethoscope } from 'lucide-react';
+import { Shield, Lock, Stethoscope } from 'lucide-react';
 import Button from '../common/Button';
 import { ROUTES } from '../../constants';
 import { RevealGroup, RevealItem } from '../motion/Reveal';
@@ -125,7 +125,6 @@ const TrustBadges: React.FC = () => (
   <div className="flex flex-wrap gap-6 mt-6">
     {[
       { icon: <Shield size={14} />, text: 'PMDC-verified therapists' },
-      { icon: <Heart size={14} />, text: 'Umang · Rozan partner' },
       { icon: <Lock size={14} />, text: 'HIPAA-aligned' },
     ].map(({ icon, text }) => (
       <div key={text} className="flex items-center gap-2 text-xs text-gray-500">
