@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import 'profile_widgets.dart';
 
 class ProfileHeader extends StatelessWidget {
   const ProfileHeader({
     super.key,
     required this.name,
     this.initials,
+    this.photoUrl,
     this.joinedInfo,
     required this.levelBadge,
     required this.streak,
@@ -16,6 +18,7 @@ class ProfileHeader extends StatelessWidget {
 
   final String name;
   final String? initials;
+  final String? photoUrl;
   final String? joinedInfo;
   final String levelBadge;
   final int streak;
@@ -32,7 +35,10 @@ class ProfileHeader extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CircleAvatar(radius: 34, backgroundColor: const Color(0xFFE5382B), child: Text(displayInitials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18))),
+            if (photoUrl != null)
+              ProfilePhoto(name: name, photoUrl: photoUrl)
+            else
+              CircleAvatar(radius: 34, backgroundColor: const Color(0xFFE5382B), child: Text(displayInitials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18))),
             const SizedBox(width: 16),
             Expanded(
               child: Column(

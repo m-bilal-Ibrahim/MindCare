@@ -32,11 +32,21 @@ class ApiClient {
 
   Future<Object?> put(String path, Map<String, dynamic> body) => _send('PUT', path, body: body);
 
-  Future<Object?> _send(String method, String path, {Map<String, String>? query, Map<String, dynamic>? body}) async {
-    var response = await _request(method, path, query: query, body: body);
+  Future<Object?> patch(String path, Map<String, dynamic> body) => _send('PATCH', path, body: body);
+
+  Future<Object?> post(String path, Map<String, dynamic> body) => _send('POST', path, body: body);
+
+  Future<Object?> delete(String path) => _send('DELETE', path);
+
+  /// Uploads one file as multipart/form-data under [field].
+  Future<Object?> putFile(String path, {required String field, required List<int> bytes, required String filename}) =>
+      _send('PUT', path, file: _UploadFile(field, bytes, filename));
+
+  Future<Object?> _send(String method, String path, {Map<String, String>? query, Map<String, dynamic>? body, _UploadFile? file}) async {
+    var response = await _request(method, path, query: query, body: body, file: file);
     if (response.statusCode == 401) {
       await _refreshTokens();
-      response = await _request(method, path, query: query, body: body);
+      response = await _request(method, path, query: query, body: body, file: file);
       if (response.statusCode == 401) throw const ApiException.sessionExpired();
     }
     final decoded = _decode(response.bodyBytes);
@@ -44,7 +54,7 @@ class ApiClient {
     throw ApiException.fromResponse(response.statusCode, decoded);
   }
 
-  Future<http.Response> _request(String method, String path, {Map<String, String>? query, Map<String, dynamic>? body}) async {
+  Future<http.Response> _request(String method, String path, {Map<String, String>? query, Map<String, dynamic>? body, _UploadFile? file}) async {
     final access = await _tokens.access();
     if (access == null) throw const ApiException.sessionExpired();
     var uri = Uri.parse('${AuthApi.baseUrl}$path');
@@ -55,8 +65,17 @@ class ApiClient {
       if (body != null) 'Content-Type': 'application/json',
     };
     try {
-      final request = http.Request(method, uri)..headers.addAll(headers);
-      if (body != null) request.body = jsonEncode(body);
+      final http.BaseRequest request;
+      if (file != null) {
+        // The multipart boundary header is added by MultipartRequest itself.
+        request = http.MultipartRequest(method, uri)
+          ..headers.addAll(headers)
+          ..files.add(http.MultipartFile.fromBytes(file.field, file.bytes, filename: file.filename));
+      } else {
+        final r = http.Request(method, uri)..headers.addAll(headers);
+        if (body != null) r.body = jsonEncode(body);
+        request = r;
+      }
       final streamed = await _client.send(request).timeout(_timeout);
       return await http.Response.fromStream(streamed);
     } on TimeoutException {
@@ -105,6 +124,13 @@ class ApiClient {
   }
 }
 
+class _UploadFile {
+  const _UploadFile(this.field, this.bytes, this.filename);
+  final String field;
+  final List<int> bytes;
+  final String filename;
+}
+
 /// Where the tokens live. Swapped for an in-memory store in tests.
 abstract class TokenStore {
   Future<String?> access();
@@ -135,30 +161,38 @@ class SecureTokenStore implements TokenStore {
 /// A failed API call, with a message that can be shown as it is.
 @immutable
 class ApiException implements Exception {
-  const ApiException(this.statusCode, this.message);
+  const ApiException(this.statusCode, this.message, {this.fieldErrors = const {}});
 
   const ApiException.sessionExpired()
       : statusCode = 401,
-        message = 'Your session has ended. Please sign in again.';
+        message = 'Your session has ended. Please sign in again.',
+        fieldErrors = const {};
 
   final int statusCode;
   final String message;
+
+  /// The backend's message per field, e.g. {"phone_number": "Enter a phone…"}.
+  final Map<String, String> fieldErrors;
 
   bool get isSessionExpired => statusCode == 401;
 
   factory ApiException.fromResponse(int status, Object? body) {
     String? detail;
+    final fields = <String, String>{};
     if (body is Map<String, dynamic>) {
       final d = body['detail'];
       if (d is String && d.isNotEmpty) detail = d;
-      if (detail == null) {
-        for (final value in body.values) {
-          if (value is List && value.isNotEmpty) {
-            detail = value.first.toString();
-            break;
-          }
+      body.forEach((key, value) {
+        if (key == 'detail') return;
+        final text = value is List && value.isNotEmpty ? value.first.toString() : (value is String ? value : null);
+        if (text == null) return;
+        if (key == 'non_field_errors') {
+          detail ??= text;
+        } else {
+          fields[key] = text;
         }
-      }
+      });
+      if (detail == null && fields.isNotEmpty) detail = fields.values.first;
     }
     final message = switch (status) {
       403 => detail ?? "You're not allowed to see this.",
@@ -167,7 +201,7 @@ class ApiException implements Exception {
       >= 500 => 'MindCare is having trouble right now. Please try again shortly.',
       _ => detail ?? 'Something went wrong. Please try again.',
     };
-    return ApiException(status, message);
+    return ApiException(status, message, fieldErrors: fields);
   }
 
   @override

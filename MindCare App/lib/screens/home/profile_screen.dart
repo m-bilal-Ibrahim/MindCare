@@ -11,10 +11,15 @@ import '../../providers/account_provider.dart';
 import '../../providers/journal_provider.dart';
 import '../../providers/motivation_provider.dart';
 import '../../providers/premium_provider.dart';
+import '../../providers/profile_provider.dart';
 import '../../providers/user_session_provider.dart';
 import '../../widgets/common/sos_button.dart';
+import '../../widgets/profile/complete_profile_card.dart';
 import '../../widgets/profile/profile_header.dart';
 import '../../widgets/profile/profile_list_section.dart';
+import '../profile/mental_health_history_screen.dart';
+import '../profile/personal_details_screen.dart';
+import '../profile/profile_privacy_screen.dart';
 import '../care/aida_personality_screen.dart';
 import '../care/past_sessions_screen.dart';
 import '../care/therapist_detail_screen.dart';
@@ -49,6 +54,7 @@ class ProfileScreen extends StatelessWidget {
 
     if (confirmed == true && context.mounted) {
       context.read<MotivationProvider>().reset();
+      context.read<ProfileProvider>().reset();
       await context.read<UserSessionProvider>().signOut();
       if (!context.mounted) return;
       Navigator.of(context).pushNamedAndRemoveUntil('/welcome', (route) => false);
@@ -61,6 +67,22 @@ class ProfileScreen extends StatelessWidget {
     final session = context.watch<UserSessionProvider>();
     final displayName = session.fullName ?? 'You';
     final therapist = provider.therapistProfile;
+    final me = context.watch<ProfileProvider>().profile.data;
+
+    final profileItems = [
+      ProfileListItem(
+        icon: Icons.person_outline,
+        title: 'Personal details',
+        subtitle: me == null ? 'Name, photo, birthday, contact' : 'Others see you as ${me.isPublic ? me.fullName : me.pseudonym}',
+      ),
+      ProfileListItem(
+        icon: Icons.visibility_outlined,
+        title: 'Profile visibility',
+        trailing: me == null ? null : (me.isPublic ? 'Public' : 'Private'),
+      ),
+      const ProfileListItem(icon: Icons.history_edu_outlined, title: 'Mental health history', subtitle: 'Optional · encrypted', showDivider: false),
+    ];
+    const profileScreens = <Widget>[PersonalDetailsScreen(), ProfilePrivacyScreen(), MentalHealthHistoryScreen()];
 
     final careItems = [
       ProfileListItem(
@@ -156,11 +178,22 @@ class ProfileScreen extends StatelessWidget {
                   child: ProfileHeader(
                     name: displayName,
                     initials: session.fullName != null ? session.initials : null,
+                    photoUrl: me?.photoUrl,
                     joinedInfo: provider.joinedInfo,
                     levelBadge: 'Level ${provider.levelNumber}',
                     streak: provider.checkinStreak,
                     sessions: provider.statsSessions,
                     exercises: provider.statsExercises,
+                  ),
+                ),
+                const SizedBox(height: 22),
+                const CompleteProfileCard(),
+                const Text('PROFILE', style: TextStyle(letterSpacing: 1, color: AppColors.textLabel, fontWeight: FontWeight.w600, fontSize: 12)),
+                const SizedBox(height: 12),
+                ProfileListSection(
+                  items: profileItems,
+                  onItemTap: (index) => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => MobileFrame(child: profileScreens[index])),
                   ),
                 ),
                 const SizedBox(height: 22),
