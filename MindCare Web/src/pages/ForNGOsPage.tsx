@@ -61,6 +61,9 @@ const ForNGOsPage: React.FC = () => {
             </p>
           </Reveal>
 
+          {NGO_PARTNERS.length === 0 && (
+            <p className="text-gray-400 text-sm">No partner NGOs are listed yet.</p>
+          )}
           <RevealGroup className="space-y-4" stagger={0.1}>
             {NGO_PARTNERS.map((partner) => (
               <RevealItem key={partner.id}>
