@@ -12,15 +12,22 @@
 // ============================================================
 
 import React, { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
-import { login as loginRequest, logoutRequest, refreshTokens } from '../services/api.service';
+import {
+  PASSWORD_CHANGE_REQUIRED_EVENT,
+  login as loginRequest,
+  logoutRequest,
+  refreshTokens,
+} from '../services/api.service';
 import {
   clearTokens,
   decodeClaims,
   getAccessToken,
   getRefreshToken,
+  getMustChangePassword,
   getSessionEmail,
   isExpired,
   saveTokens,
+  setMustChangePassword,
   type Role,
 } from '../services/tokens';
 import { ADMIN_ROUTES } from '../constants/adminConsole';
@@ -33,6 +40,8 @@ export interface Session {
   /** Display name — the backend token has no name, so derived from the email */
   name: string;
   initials: string;
+  /** Signed in with a temporary password: must choose a new one before anything else. */
+  mustChangePassword: boolean;
 }
 
 export type SignInResult = { ok: true; session: Session } | { ok: false; error: string };
@@ -41,12 +50,15 @@ interface AuthContextValue {
   session: Session | null;
   signIn: (email: string, password: string, opts?: { remember?: boolean }) => Promise<SignInResult>;
   signOut: () => void;
+  /** After POST /accounts/password/change/: store the new token pair and clear the flag. */
+  passwordChanged: (access: string, refresh: string) => void;
 }
 
 const AuthContext = createContext<AuthContextValue>({
   session: null,
   signIn: async () => ({ ok: false, error: 'Not ready' }),
   signOut: () => {},
+  passwordChanged: () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -73,7 +85,7 @@ function readSession(): Session | null {
   const claims = decodeClaims(getAccessToken()) ?? decodeClaims(refresh);
   if (!claims || !WEB_ROLES.includes(claims.role)) return null;
   const email = getSessionEmail() ?? '';
-  return { userId: claims.userId, role: claims.role, email, ...nameFromEmail(email) };
+  return { userId: claims.userId, role: claims.role, email, ...nameFromEmail(email), mustChangePassword: getMustChangePassword() };
 }
 
 /** Where each role lands after signing in. */
@@ -110,10 +122,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       remember: claims.role === 'admin' ? false : !!opts?.remember,
       email,
     });
+    setMustChangePassword(res.data.must_change_password === true);
     const next = readSession();
     if (!next) return { ok: false, error: 'Sign-in failed. Please try again.' };
     setSession(next);
     return { ok: true, session: next };
+  }, []);
+
+  // The backend refused a call because the password is still temporary.
+  useEffect(() => {
+    const onRequired = () => setSession(readSession());
+    window.addEventListener(PASSWORD_CHANGE_REQUIRED_EVENT, onRequired);
+    return () => window.removeEventListener(PASSWORD_CHANGE_REQUIRED_EVENT, onRequired);
+  }, []);
+
+  const passwordChanged = useCallback((access: string, refresh: string) => {
+    saveTokens(access, refresh); // same store as the current session
+    setMustChangePassword(false);
+    setSession(readSession());
   }, []);
 
   const signOut = useCallback(() => {
@@ -121,5 +147,5 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setSession(null);
   }, []);
 
-  return <AuthContext.Provider value={{ session, signIn, signOut }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ session, signIn, signOut, passwordChanged }}>{children}</AuthContext.Provider>;
 };

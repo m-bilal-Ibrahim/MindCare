@@ -153,6 +153,7 @@ export const ROUTES = {
   TERMS: '/terms',
   HIPAA: '/hipaa-alignment',
   COOKIES: '/cookies',
+  CHANGE_PASSWORD: '/account/password',
 } as const;
 
 // ——— Stories page ———
