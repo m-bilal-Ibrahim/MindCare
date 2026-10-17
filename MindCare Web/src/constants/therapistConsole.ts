@@ -421,7 +421,7 @@ export const SESSION_REQUESTS: SessionRequestEntry[] = [
     date: 'Thu · May 29',
     time: '5:00 PM',
     durationMin: 50,
-    note: 'First session — referred by Rozan helpline.',
+    note: 'First session — referred by a crisis helpline.',
     requestedAgo: 'yesterday',
     status: 'inbox',
   },

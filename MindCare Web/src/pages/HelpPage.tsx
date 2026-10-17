@@ -42,7 +42,7 @@ const HelpPage: React.FC = () => {
               </p>
               <h2 className="text-2xl font-black text-gray-900 mb-3">Crisis support, free, 24/7.</h2>
               <p className="text-gray-700 leading-relaxed mb-6">
-                If you or someone you love is in danger, please call Umang. A trained human picks up
+                If you or someone you love is in danger, please call the crisis helpline. A trained human picks up
                 in under 90 seconds.
               </p>
               <div className="flex flex-wrap gap-3">
@@ -50,7 +50,7 @@ const HelpPage: React.FC = () => {
                   href={HELP_CRISIS_PHONE_TEL}
                   className="inline-flex items-center gap-2 bg-red-600 text-white text-sm font-semibold px-5 py-3 rounded-full hover:bg-red-700 transition-colors"
                 >
-                  <Phone size={15} aria-hidden="true" /> Call Umang · {HELP_CRISIS_PHONE}
+                  <Phone size={15} aria-hidden="true" /> Call crisis helpline · {HELP_CRISIS_PHONE}
                 </a>
                 <Link
                   to={ROUTES.CLIENT_APP}

@@ -430,12 +430,12 @@ export const SOS_CASE_DETAIL: SosCaseDetail = {
     'User pressed SOS from the Pulse screen during work hours. EDA had been climbing for 30 min. Aida went into crisis mode within 3 seconds.',
   region: 'Islamabad',
   triggerLabel: 'User · button',
-  responder: 'Umang helpline',
+  responder: 'Crisis helpline',
   handoffTo: 'Dr. Tariq',
   timeline: [
     { time: '14:22:08', label: 'SOS triggered' },
     { time: '14:22:11', label: 'Aida crisis mode engaged · grounding script' },
-    { time: '14:23:40', label: 'Umang helpline auto-dialed' },
+    { time: '14:23:40', label: 'Crisis helpline auto-dialed' },
     { time: '14:24:01', label: 'Therapist Dr. Tariq notified' },
     { time: '14:24:18', label: 'Helpline answered · user transferred' },
     { time: '14:26:20', label: 'Resolved · user safe at home' },
@@ -471,7 +471,7 @@ export const SOS_ROUTING_TREE: SosRoutingStep[] = [
   { id: 'r1', label: 'SOS triggered (user or Aida)', tone: 'critical', indent: 0 },
   { id: 'r2', label: 'Aida crisis-mode engaged · grounding script · 8s', tone: 'neutral', indent: 1 },
   { id: 'r3', label: 'Identify region from device + profile', tone: 'neutral', indent: 1 },
-  { id: 'r4', label: 'If suicidal language → call Umang directly (24/7)', tone: 'critical', indent: 2 },
+  { id: 'r4', label: 'If suicidal language → call the crisis helpline directly (24/7)', tone: 'critical', indent: 2 },
   { id: 'r5', label: 'Else → primary NGO for that region', tone: 'neutral', indent: 2 },
 ];
 

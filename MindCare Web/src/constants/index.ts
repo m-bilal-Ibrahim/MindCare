@@ -202,40 +202,8 @@ export const STORIES: StoryEntry[] = [
 export const STORIES_TOTAL_COUNT = 42;
 
 // ——— For NGOs page ———
-export const NGO_PARTNERS: NGOPartnerEntry[] = [
-  {
-    id: 'ngo-1',
-    initials: 'UH',
-    color: 'bg-orange-500',
-    name: 'Umang Helpline',
-    description: '24/7 helpline · nationwide',
-    routedCount: 1240,
-  },
-  {
-    id: 'ngo-2',
-    initials: 'R',
-    color: 'bg-emerald-700',
-    name: 'Rozan',
-    description: 'Counselling · referral · ISB/RWP',
-    routedCount: 412,
-  },
-  {
-    id: 'ngo-3',
-    initials: 'K',
-    color: 'bg-violet-500',
-    name: 'Karwan-e-Hayat',
-    description: 'Hospital partner · Karachi',
-    routedCount: 86,
-  },
-  {
-    id: 'ngo-4',
-    initials: 'T',
-    color: 'bg-amber-600',
-    name: 'Taskeen',
-    description: 'Helpline · 12h · LHR/FSD',
-    routedCount: 268,
-  },
-];
+// Only real, approved partner NGOs go here. Empty = the For NGOs page says none are listed yet.
+export const NGO_PARTNERS: NGOPartnerEntry[] = [];
 
 export const NGO_STATS: Stat[] = [
   { value: '2,054', label: 'Cases routed YTD' },
@@ -627,7 +595,7 @@ export const TERMS_SECTIONS: LegalSection[] = [
     title: 'MindCare is not a replacement for emergency services',
     body: [
       "The SOS button, available from every screen, connects you to local helplines and nearby hospitals, notifies your pre-configured emergency contacts, and attempts to connect you with an available psychologist in real time. Our AI chat assistant can also trigger SOS on its own if it detects signs of distress in a conversation.",
-      'If you or someone else is in immediate danger, please call Umang at 0311-7786264 or your local emergency number first. SOS is a bridge to help, not a substitute for emergency medical care.',
+      'If you or someone else is in immediate danger, please call the crisis helpline at 0311-7786264 or your local emergency number first. SOS is a bridge to help, not a substitute for emergency medical care.',
     ],
   },
   {

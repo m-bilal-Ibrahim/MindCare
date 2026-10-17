@@ -101,7 +101,6 @@ export const PRICING_PLANS: PricingPlanCard[] = [
 
 export const DISCOUNT_CODES: DiscountCode[] = [
   { code: 'WELCOME50', discount: '50% off month 1', cohort: 'Trial → paid', used: 412, total: 1000, expires: 'Jun 30', status: 'Live' },
-  { code: 'UMANG-FREE', discount: '100% off · 3 mo', cohort: 'Umang post-crisis', used: 37, total: 100, expires: 'no end', status: 'Live' },
   { code: 'STUDENT30', discount: '30% off · monthly', cohort: 'Student email', used: 218, total: null, expires: 'Aug 31', status: 'Live' },
   { code: 'LAUNCH26', discount: '40% off · yearly', cohort: 'All', used: 1902, total: 2000, expires: 'Jul 1', status: 'Sunset' },
 ];
