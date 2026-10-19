@@ -477,8 +477,12 @@ export const HELP_TOP_QUESTIONS: HelpTopQuestion[] = [
   },
 ];
 
-export const HELP_CRISIS_PHONE = '0311-7786264';
-export const HELP_CRISIS_PHONE_TEL = 'tel:+923117786264';
+// Pakistan's public emergency numbers. Named helplines will come from the backend
+// (SOS module) once their numbers are verified and entered by an admin.
+export const HELP_CRISIS_PHONE = '1122'; // Rescue / ambulance
+export const HELP_CRISIS_PHONE_TEL = 'tel:1122';
+export const HELP_POLICE_PHONE = '15';
+export const HELP_POLICE_PHONE_TEL = 'tel:15';
 // Official inbox for the About page "Contact" and Help page "Email us" form. Leave empty until the
 // team's address is live — the form still works; once this is set, sending
 // also opens the visitor's mail app with the message pre-filled to it.
@@ -596,7 +600,7 @@ export const TERMS_SECTIONS: LegalSection[] = [
     title: 'MindCare is not a replacement for emergency services',
     body: [
       "The SOS button, available from every screen, connects you to local helplines and nearby hospitals, notifies your pre-configured emergency contacts, and attempts to connect you with an available psychologist in real time. Our AI chat assistant can also trigger SOS on its own if it detects signs of distress in a conversation.",
-      'If you or someone else is in immediate danger, please call the crisis helpline at 0311-7786264 or your local emergency number first. SOS is a bridge to help, not a substitute for emergency medical care.',
+      'If you or someone else is in immediate danger, please call 1122 (Rescue) or 15 (Police) first. SOS is a bridge to help, not a substitute for emergency medical care.',
     ],
   },
   {

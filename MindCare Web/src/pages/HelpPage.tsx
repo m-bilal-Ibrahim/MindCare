@@ -11,7 +11,7 @@ import Footer from '../components/layout/Footer';
 import Reveal from '../components/motion/Reveal';
 import ContactModal from '../components/contact/ContactModal';
 import GettingStartedGuide from '../components/help/GettingStartedGuide';
-import { HELP_TOP_QUESTIONS, HELP_CRISIS_PHONE, HELP_CRISIS_PHONE_TEL, ROUTES } from '../constants';
+import { HELP_TOP_QUESTIONS, HELP_CRISIS_PHONE, HELP_CRISIS_PHONE_TEL, HELP_POLICE_PHONE, HELP_POLICE_PHONE_TEL, ROUTES } from '../constants';
 
 const HelpPage: React.FC = () => {
   const [openId, setOpenId] = useState<string | null>(null);
@@ -42,15 +42,20 @@ const HelpPage: React.FC = () => {
               </p>
               <h2 className="text-2xl font-black text-gray-900 mb-3">Crisis support, free, 24/7.</h2>
               <p className="text-gray-700 leading-relaxed mb-6">
-                If you or someone you love is in danger, please call the crisis helpline. A trained human picks up
-                in under 90 seconds.
+                If you or someone you love is in danger, call {HELP_CRISIS_PHONE} (Rescue) or {HELP_POLICE_PHONE} (Police).
               </p>
               <div className="flex flex-wrap gap-3">
                 <a
                   href={HELP_CRISIS_PHONE_TEL}
                   className="inline-flex items-center gap-2 bg-red-600 text-white text-sm font-semibold px-5 py-3 rounded-full hover:bg-red-700 transition-colors"
                 >
-                  <Phone size={15} aria-hidden="true" /> Call crisis helpline · {HELP_CRISIS_PHONE}
+                  <Phone size={15} aria-hidden="true" /> Call {HELP_CRISIS_PHONE} · Rescue
+                </a>
+                <a
+                  href={HELP_POLICE_PHONE_TEL}
+                  className="inline-flex items-center gap-2 bg-red-600 text-white text-sm font-semibold px-5 py-3 rounded-full hover:bg-red-700 transition-colors"
+                >
+                  <Phone size={15} aria-hidden="true" /> Call {HELP_POLICE_PHONE} · Police
                 </a>
                 <Link
                   to={ROUTES.CLIENT_APP}
