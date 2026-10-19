@@ -12,7 +12,8 @@ role in the bullet).
 The Web is the psychologist/admin client; the App is the patient client. "Branch"
 means the work sits on an unmerged branch.
 
-Last updated: 2026-10-15 (Phase 2 module 0: super-admin workflow + admin-panel-2,
+Last updated: 2026-10-19 (Phase 2 module 1: password reset + email, backend).
+Before that: 2026-10-15 (Phase 2 module 0: super-admin workflow + admin-panel-2,
 backend). Earlier: 2026-10-11 (6.10 backend). Re-checked against `origin` on
 2026-10-11: the partner merged Web PRs #38 (city search), #40 (name validation), #44
 (pricing) and App PRs #39, #41; her App backend wiring is not on GitHub yet.
@@ -133,6 +134,7 @@ backend). Earlier: 2026-10-11 (6.10 backend). Re-checked against `origin` on
 
 | Item | Status | Notes |
 |---|---|---|
+| Password reset and email | backend done (module 1) | 6-digit code by email; password-changed notice; approval/rejection emails; Brevo over HTTPS (Resend by settings). Web and App "Forgot password" screens are the partner's: `docs/handoff/password-reset-email.md`. Production sends nothing until the Render email variables are set |
 | Super-admin workflow and password change | backend done (module 0) | Web screens (admin management, change password) and the App's change-password screen are the partner's; see `docs/handoff/admin-panel-2.md` |
 | Patient ↔ psychologist relationships | Backend done, Web done, App mock only | Patient side in the App is Phase 1 item (f) |
 | File storage (`integrations/storage_client`) | backend done (PR foundations) | Private Supabase bucket, signed URLs, magic-byte checks, EXIF removal. Used by 6.1, 6.2, 6.10 |

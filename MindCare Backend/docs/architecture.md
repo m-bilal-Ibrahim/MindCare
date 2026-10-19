@@ -56,7 +56,8 @@ docs/               This file, decisions.md, roadmap.md, deployment.md
   `files.py`, `checks.py`, `testing.py` (test factories only).
 - **integrations/** — outbound API clients, one subpackage per third-party service:
   `ai_service/` (the separate FastAPI inference service), `stripe_client/`,
-  `zoom_client/`, `fcm_client/`, `storage_client/`.
+  `zoom_client/`, `fcm_client/`, `storage_client/`, `email_client/` (Brevo or
+  Resend over HTTPS; see `apps/notifications/services.py` for delivery).
 
 ## Per-app internal structure
 

@@ -21,7 +21,10 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from apps.accounts import selectors, services
 from apps.accounts.api.serializers import (
     MindCareTokenObtainPairSerializer,
+    PasswordResetMessageSerializer,
     PasswordChangeSerializer,
+    PasswordResetConfirmSerializer,
+    PasswordResetRequestSerializer,
     TokenPairSerializer,
     RegisterMultipartDoc,
     RegisterRequestDoc,
@@ -228,3 +231,74 @@ class PasswordChangeView(APIView):
         except DomainValidationError as exc:
             raise ValidationError(exc.errors, code=exc.code) from exc
         return Response(token_pair(user))
+
+
+class PasswordResetRateThrottle(AnonRateThrottle):
+    scope = "password_reset"
+
+
+class PasswordResetConfirmRateThrottle(AnonRateThrottle):
+    scope = "password_reset_confirm"
+
+
+RESET_REQUESTED_MESSAGE = (
+    "If an account exists for that email, we've sent a 6-digit code to it. "
+    "It works for 15 minutes."
+)
+
+
+class PasswordResetRequestView(APIView):
+    """Always the same 200, whether or not the email has an account."""
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    throttle_classes = [PasswordResetRateThrottle]
+
+    @extend_schema(
+        request=PasswordResetRequestSerializer,
+        responses={200: PasswordResetMessageSerializer},
+        description=(
+            "Emails a 6-digit code (15 minutes, 5 tries) to an active account. "
+            "The answer is the same for unknown, deactivated or rejected emails. "
+            "5 requests an hour per address; 3 codes an hour per account (a new "
+            "code replaces the previous one)."
+        ),
+    )
+    def post(self, request):
+        body = PasswordResetRequestSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        services.request_password_reset(
+            email=body.validated_data["email"], ip=request.META.get("REMOTE_ADDR")
+        )
+        return Response({"detail": RESET_REQUESTED_MESSAGE})
+
+
+class PasswordResetConfirmView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    throttle_classes = [PasswordResetConfirmRateThrottle]
+
+    @extend_schema(
+        request=PasswordResetConfirmSerializer,
+        responses={200: PasswordResetMessageSerializer},
+        description=(
+            "Sets the new password. Every session on every device is signed out, "
+            "so the client sends the person to sign in again. A wrong, expired or "
+            "used code, or an unknown email, all get the same `code` error."
+        ),
+    )
+    def post(self, request):
+        body = PasswordResetConfirmSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        try:
+            services.confirm_password_reset(
+                email=body.validated_data["email"],
+                code=body.validated_data["code"],
+                new_password=body.validated_data["new_password"],
+                ip=request.META.get("REMOTE_ADDR"),
+            )
+        except services.InvalidResetCode as exc:
+            raise ValidationError({"code": [services.INVALID_RESET_CODE]}) from exc
+        except DomainValidationError as exc:
+            raise ValidationError(exc.errors, code=exc.code) from exc
+        return Response({"detail": "Your password was changed. Sign in again."})

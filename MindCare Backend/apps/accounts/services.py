@@ -226,6 +226,7 @@ def review_pending_account(*, admin, user_id, decision, reason=None):
         user.save(update_fields=["approval_status", "reviewed_at", "updated_at"])
         if decision == ApprovalStatus.REJECTED:
             end_for_unavailable_account(user=user)
+        _send_review_email(user, decision, reason)
         event = (
             "account_approved"
             if decision == ApprovalStatus.APPROVED
@@ -240,6 +241,24 @@ def review_pending_account(*, admin, user_id, decision, reason=None):
             )
         )
     return user
+
+
+def _send_review_email(user, decision, reason):
+    """Tell a psychologist or NGO the outcome; they can't find out otherwise."""
+    from apps.notifications import emails
+    from apps.notifications.services import send_email_after_commit
+
+    if decision == ApprovalStatus.APPROVED:
+        template = "account_approved"
+        message = emails.account_approved(full_name=user.full_name, role=user.role)
+    else:
+        template = "account_rejected"
+        message = emails.account_rejected(
+            full_name=user.full_name,
+            role=user.role,
+            reason_label=dict(RejectReason.CHOICES).get(reason),
+        )
+    send_email_after_commit(template=template, to=user.email, message=message)
 
 
 def deactivate_account(*, admin, user_id, reason=None):
@@ -330,8 +349,158 @@ def change_password(*, user, current_password, new_password, ip=None):
         user.must_change_password = False
         user.save(update_fields=["password", "must_change_password", "updated_at"])
         sign_out_everywhere(user=user)
+        _send_password_changed_notice(user)
     log_auth_event(
         "password_changed", user_id=user.id, email=user.email, role=user.role, ip=ip
+    )
+    return user
+
+
+def _send_password_changed_notice(user):
+    from apps.notifications import emails
+    from apps.notifications.services import send_email_after_commit
+
+    send_email_after_commit(
+        template="password_changed",
+        to=user.email,
+        message=emails.password_changed(full_name=user.full_name),
+    )
+
+
+# --- Password reset by emailed code (Phase 2, module 1) -----------------------
+# docs/decisions.md, 2026-10-19. A 6-digit code, stored hashed, valid 15 minutes
+# and 5 wrong tries; a new request supersedes the old code. The request always
+# answers the same way, so it never tells anyone whether an account exists.
+
+RESET_CODE_MINUTES = 15
+RESET_MAX_FAILED_ATTEMPTS = 5
+RESET_MAX_REQUESTS_PER_HOUR = 3
+INVALID_RESET_CODE = "That code is wrong or has expired. Request a new one."
+
+
+class InvalidResetCode(Exception):
+    """Unknown email, no live code, wrong code, or too many tries: one answer for
+    all of them (400 on `code`)."""
+
+
+def _resettable_user(email):
+    """Any active account in any role, pending ones included; never a
+    deactivated or rejected one."""
+    return (
+        User.objects.filter(email__iexact=(email or "").strip(), is_active=True)
+        .exclude(approval_status=ApprovalStatus.REJECTED)
+        .first()
+    )
+
+
+def request_password_reset(*, email, ip=None):
+    """Email a reset code if the address belongs to a resettable account that
+    hasn't had 3 codes in the last hour. Returns nothing either way."""
+    import secrets
+    from datetime import timedelta
+
+    from django.contrib.auth.hashers import make_password
+
+    from apps.accounts.models import PasswordResetCode
+    from apps.notifications import emails
+    from apps.notifications.services import send_email_after_commit
+
+    current = now()
+    PasswordResetCode.objects.filter(
+        created_at__lt=current - timedelta(days=1)
+    ).delete()
+    user = _resettable_user(email)
+    if user is None:
+        return
+    with transaction.atomic():
+        user = User.objects.select_for_update().get(pk=user.pk)
+        recent = PasswordResetCode.objects.filter(
+            user=user, created_at__gte=current - timedelta(hours=1)
+        ).count()
+        if recent >= RESET_MAX_REQUESTS_PER_HOUR:
+            return
+        PasswordResetCode.objects.filter(user=user, closed_at__isnull=True).update(
+            closed_at=current
+        )
+        code = f"{secrets.randbelow(10**6):06d}"
+        PasswordResetCode.objects.create(
+            user=user,
+            code_hash=make_password(code),
+            expires_at=current + timedelta(minutes=RESET_CODE_MINUTES),
+        )
+        send_email_after_commit(
+            template="password_reset_code",
+            to=user.email,
+            message=emails.password_reset_code(
+                full_name=user.full_name, code=code, minutes=RESET_CODE_MINUTES
+            ),
+        )
+    log_auth_event(
+        "password_reset_requested",
+        user_id=user.id,
+        email=user.email,
+        role=user.role,
+        ip=ip,
+    )
+
+
+def confirm_password_reset(*, email, code, new_password, ip=None):
+    """Check the code and set the new password. A wrong code counts as a try
+    (the 5th one kills the code); a right code with a password that breaks the
+    rules isn't used up, so the person can pick another password. On success
+    every session is signed out and a notice is emailed."""
+    from django.contrib.auth.hashers import check_password
+    from django.contrib.auth.password_validation import validate_password
+    from django.core.exceptions import ValidationError as DjangoValidationError
+
+    from apps.accounts.models import PasswordResetCode
+
+    user = _resettable_user(email)
+    if user is None:
+        raise InvalidResetCode()
+    current = now()
+    with transaction.atomic():
+        reset = (
+            PasswordResetCode.objects.select_for_update()
+            .filter(user=user, closed_at__isnull=True, expires_at__gt=current)
+            .order_by("-created_at")
+            .first()
+        )
+        if reset is None:
+            raise InvalidResetCode()
+        wrong = not check_password(code, reset.code_hash)
+        if wrong:
+            reset.failed_attempts += 1
+            if reset.failed_attempts >= RESET_MAX_FAILED_ATTEMPTS:
+                reset.closed_at = current
+            reset.save(update_fields=["failed_attempts", "closed_at"])
+    if wrong:  # raised outside the block, so the counted try is kept
+        raise InvalidResetCode()
+
+    try:
+        validate_password(new_password, user=user)
+    except DjangoValidationError as exc:
+        raise DomainValidationError({"new_password": list(exc.messages)}) from exc
+
+    with transaction.atomic():
+        user = User.objects.select_for_update().get(pk=user.pk)
+        # Lock again: another request may have used or replaced it meanwhile.
+        if (
+            not PasswordResetCode.objects.select_for_update()
+            .filter(pk=reset.pk, closed_at__isnull=True, expires_at__gt=now())
+            .exists()
+        ):
+            raise InvalidResetCode()
+        PasswordResetCode.objects.filter(user=user, closed_at__isnull=True).update(
+            closed_at=now()
+        )
+        user.set_password(new_password)
+        user.must_change_password = False
+        user.save(update_fields=["password", "must_change_password", "updated_at"])
+        sign_out_everywhere(user=user)
+        _send_password_changed_notice(user)
+    log_auth_event(
+        "password_reset", user_id=user.id, email=user.email, role=user.role, ip=ip
     )
     return user
 

@@ -6,6 +6,8 @@ from apps.accounts.api.views import (
     LoginView,
     LogoutView,
     PasswordChangeView,
+    PasswordResetConfirmView,
+    PasswordResetRequestView,
     RefreshView,
     RegisterView,
 )
@@ -36,6 +38,12 @@ urlpatterns = [
     path("refresh/", RefreshView.as_view(), name="refresh"),
     path("logout/", LogoutView.as_view(), name="logout"),
     path("password/change/", PasswordChangeView.as_view(), name="password-change"),
+    path("password/reset/", PasswordResetRequestView.as_view(), name="password-reset"),
+    path(
+        "password/reset/confirm/",
+        PasswordResetConfirmView.as_view(),
+        name="password-reset-confirm",
+    ),
     # Admin console (6.3): admins only.
     path("admin/pending/", PendingAccountsView.as_view(), name="admin-pending"),
     path(

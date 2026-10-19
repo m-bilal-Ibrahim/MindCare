@@ -1187,9 +1187,9 @@ showing the opt-in in Django admin (no purpose that needs it).
   the same moment can't both succeed. A super-admin can demote only themselves, must
   be demoted before being deactivated, and nobody deactivates their own account.
   Deactivating any account (admin or not) now also revokes its refresh tokens.
-- **Known gap:** an admin on a temporary password can still sign in to Django
-  admin (`/admin/`), which doesn't know the flag. The admin console is the
-  intended surface; tell new admins to change the password first.
+- ~~**Known gap:** an admin on a temporary password can still sign in to Django
+  admin (`/admin/`), which doesn't know the flag.~~ **Closed 2026-10-19** (module
+  1): MindCare's admin site refuses that login and any existing session.
 - **admin-panel-2:** city verification API (list, verify, **merge** an unverified
   city into another in the same country, moving every profile and NGO service area
   and dropping duplicate areas, **reject** = delete an unused unverified city);
@@ -1210,3 +1210,53 @@ showing the opt-in in Django admin (no purpose that needs it).
 invite (needs the email layer, which is module 1); letting any admin manage
 admins (one compromised account could lock out the rest); hard-deleting used
 cities (profiles PROTECT their city, and the data would be lost).
+
+
+## 2026-10-19 - Phase 2 module 1: email over the provider's HTTPS API, password reset by code
+**Decision (module 1 answers Q1–Q10):**
+- **Email goes through each provider's HTTPS API with stdlib `urllib`**
+  (`integrations/email_client`), no new package. Render's free plan blocks outbound
+  SMTP (25/465/587), and the alternate ports are too fragile to rely on.
+  `EMAIL_PROVIDER` is `brevo`, `resend`, `console` or `disabled`, with
+  `EMAIL_PROVIDER_API_KEY` and `DEFAULT_FROM_EMAIL` from the environment, so moving
+  from Brevo to Resend is a settings change only. `console` hands mail to Django's
+  default mailer (`MAILERS`, which Django 6.1 introduced in place of
+  `EMAIL_BACKEND`): the console in development, the in-memory outbox in tests.
+  Production defaults to `disabled` (warning `mindcare.W001`); `console` there fails
+  the deploy (`mindcare.E003`) because it would print codes into the logs, and a
+  provider without its key fails it too (`mindcare.E004`).
+- **Delivery** (`apps.notifications.services.send_email_after_commit`): after the
+  caller's transaction commits (a rolled-back action emails nobody), on a
+  background thread (a slow provider never delays the response, and response time
+  can't reveal whether an account exists). Failures are caught and logged as
+  `{"event": "email_failed", "template", "reason"}`: template name and a status
+  code or exception type only, **never the address, the code or the body**, and
+  never raised into the request. No retries: a lost reset email is re-requested.
+- **Password reset:** a **6-digit code** by email, **valid 15 minutes, dead after 5
+  wrong tries, stored hashed** (Django's password hasher), one use. `POST
+  /accounts/password/reset/` always answers the same 200. Any active account in
+  any role can reset, pending ones included; deactivated, rejected and unknown
+  emails get the same answer and no email. Limits: 5 requests an hour per IP, 3
+  codes an hour per account, and a new code supersedes the previous one. Code rows
+  are deleted after a day. `POST /accounts/password/reset/confirm/` answers one
+  generic message for every bad-code case. A right code with a weak password is
+  not used up. On success: new password, `must_change_password` cleared, every
+  refresh token revoked, and a "your password was changed" email (also sent after
+  `/password/change/`).
+- **Other emails in this module:** approval and rejection emails for psychologists
+  and NGOs (the rejection carries the fixed reason label and `SUPPORT_EMAIL`).
+  Email verification at signup is not part of it: it would change login for both
+  frontends, so it needs its own module.
+- **Django admin** now refuses an account on a temporary password (custom
+  `MindCareAdminSite`, installed through `config.apps.MindCareAdminConfig`),
+  closing module 0's known gap.
+- **Module 0 temporary passwords stay as shipped** (Q9).
+- **Sender (Q10):** for the demo the sender is a verified single address on
+  Brevo's free plan, with no domain authentication, so some mail may land in spam.
+  **Pre-release item:** authenticate a domain we own (SPF, DKIM, DMARC) before
+  real users rely on these emails.
+**Alternatives considered:** Django's SMTP backend on ports 2525/2587 (one firewall
+change from silent failure); `django-anymail` (a new package for two HTTP calls);
+sending during the request (slower, and timing would reveal which emails have
+accounts); a Celery task (needs a paid worker on Render); a reset link instead of a
+code (needs deep links in the App and a Web page; the code works the same in both).

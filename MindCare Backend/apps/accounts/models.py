@@ -86,3 +86,26 @@ class User(ValidatedModelMixin, AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+
+class PasswordResetCode(models.Model):
+    """A one-time 6-digit reset code (docs/decisions.md, 2026-10-19). Only its
+    hash is stored. Valid for 15 minutes and 5 wrong tries; a new request
+    supersedes older codes. Rows are kept for an hour so the per-email limit
+    (3 an hour) can be counted, then deleted."""
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="password_reset_codes"
+    )
+    code_hash = models.CharField(max_length=128)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    failed_attempts = models.PositiveSmallIntegerField(default=0)
+    # Set when the code is used, superseded, or dies after too many tries.
+    closed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        indexes = [models.Index(fields=["user", "created_at"])]
+
+    def __str__(self):
+        return f"Reset code #{self.pk}"

@@ -314,4 +314,19 @@ new service, selector, or API endpoint. Keep entries one row per function/class.
 | `core/testing.py` | `make_super_admin()` | Test factory | — | neither (tests) |
 | `apps/accounts/demo.py` | `DEMO_CITY`, `_ensure_demo_city()` | One fictional unverified city ("Demoville") for the verification screen; removed with `--remove` if unused. No demo admin accounts | — | neither (tooling) |
 
+### Phase 2 module 1: password reset and email
+
+| File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
+|------|-------------------|---------|--------------|--------------------|
+| `integrations/email_client/client.py` | `send_email()`, `EmailNotSent`, `PROVIDERS` | Sends one email through Brevo or Resend's HTTPS API (urllib), Django's mailer (`console`), or not at all (`disabled`); failure reasons are status codes or exception types only | — | neither |
+| `apps/notifications/services.py` | `send_email_after_commit()` | The only way the backend sends mail: after commit, on a background thread, failures logged (template + reason, no PII) and never raised | — | neither |
+| `apps/notifications/emails.py` | `password_reset_code()`, `password_changed()`, `account_approved()`, `account_rejected()` | Subject, text and HTML for each email; names HTML-escaped | — | neither |
+| `apps/accounts/models.py` | `PasswordResetCode` | Hashed one-time code, 15-minute expiry, failed-try count, closed when used/superseded/dead | — | — |
+| `apps/accounts/services.py` | `request_password_reset()`, `confirm_password_reset()`, `InvalidResetCode`, `INVALID_RESET_CODE` | Reset by 6-digit code: same answer for every email, 3 codes an hour per account, 5 tries per code; success revokes every refresh token, clears `must_change_password` and emails a notice | `POST /api/v1/accounts/password/reset/`, `/password/reset/confirm/` | MindCare Web, MindCare App |
+| `apps/accounts/services.py` | `_send_password_changed_notice()`, `_send_review_email()` | Password-changed notice after reset or change; approval / rejection email from `review_pending_account()` | — | neither |
+| `apps/accounts/api/views.py`, `serializers.py` | `PasswordResetRequestView`, `PasswordResetConfirmView`, `PasswordResetRequestSerializer`, `PasswordResetConfirmSerializer` | Public reset endpoints; throttles `password_reset` (5/hour per IP) and `password_reset_confirm` (20/hour per IP) | `POST /api/v1/accounts/password/reset/`, `/password/reset/confirm/` | MindCare Web, MindCare App |
+| `config/admin_site.py`, `config/apps.py` | `MindCareAdminSite`, `MindCareAdminAuthenticationForm`, `MindCareAdminConfig` | Django admin refuses a login or session while `must_change_password` is set | `/admin/` | neither (Django admin) |
+| `core/checks.py` | `check_email_provider()` | `mindcare.E003` (console in production), `E004` (unknown provider or missing key), `W001` (email disabled) | — | neither |
+| `core/audit.py` | `AUTH_EVENT_TYPES` | New events `password_reset_requested`, `password_reset` | — | neither |
+
 <!-- Add new `### apps/<app_name>` sections below as modules are implemented. -->
