@@ -23,6 +23,8 @@ AUTH_EVENT_TYPES = {
     "logout",
     "token_refresh",
     "password_changed",
+    "password_reset_requested",
+    "password_reset",
 }
 
 

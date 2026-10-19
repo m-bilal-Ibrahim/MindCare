@@ -243,6 +243,32 @@ class TokenPairSerializer(serializers.Serializer):
     )
 
 
+class PasswordResetRequestSerializer(RejectUnknownFieldsMixin, serializers.Serializer):
+    email = serializers.EmailField(max_length=254)
+
+
+RESET_CODE_MESSAGE = "Enter the 6-digit code from the email."
+
+
+class PasswordResetConfirmSerializer(RejectUnknownFieldsMixin, serializers.Serializer):
+    email = serializers.EmailField(max_length=254)
+    code = serializers.RegexField(
+        r"^\d{6}$",
+        error_messages={
+            "invalid": RESET_CODE_MESSAGE,
+            "blank": RESET_CODE_MESSAGE,
+            "required": RESET_CODE_MESSAGE,
+        },
+    )
+    new_password = serializers.CharField(
+        write_only=True, trim_whitespace=False, max_length=128
+    )
+
+
+class PasswordResetMessageSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+
+
 class PasswordChangeSerializer(RejectUnknownFieldsMixin, serializers.Serializer):
     current_password = serializers.CharField(
         write_only=True, trim_whitespace=False, max_length=128

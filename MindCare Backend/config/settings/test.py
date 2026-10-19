@@ -54,3 +54,11 @@ CACHES = {
 # Tests mock every AI call; this placeholder never resolves, so a missing mock
 # fails instead of reaching the real service.
 AI_SERVICE_URL = "http://ai.invalid"
+
+# Emails land in django.core.mail.outbox, sent synchronously on commit.
+EMAIL_PROVIDER = "console"
+EMAIL_PROVIDER_API_KEY = ""
+MAILERS = {"default": {"BACKEND": "django.core.mail.backends.locmem.EmailBackend"}}
+EMAIL_SEND_IN_BACKGROUND = False
+DEFAULT_FROM_EMAIL = "no-reply@mindcare.test"
+SUPPORT_EMAIL = "support@mindcare.test"

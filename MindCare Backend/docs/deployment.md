@@ -28,6 +28,11 @@ Production backend runs on **Render**, with **Supabase** (Postgres) and
 | `ALLOWED_HOSTS` | `.onrender.com` |
 | `CORS_EXTRA_ALLOWED_ORIGINS` | optional, comma-separated extra browser origins on top of the Vercel origin, e.g. `http://localhost:5000` for a local Flutter web demo. Unset normally; remove after a demo |
 | `FIELD_ENCRYPTION_KEY` | Fernet key for health data at rest. Generate with `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`. **Save a copy in a password manager first**: losing it makes encrypted data unreadable. Missing or invalid → the deploy's system check fails (`mindcare.E001`) |
+| `EMAIL_PROVIDER` | `brevo` (or `resend`). Unset → `disabled`: no email is sent and the deploy shows warning `mindcare.W001`. `console` fails the deploy (`mindcare.E003`). Setup steps: `docs/handoff/password-reset-email.md` |
+| `EMAIL_PROVIDER_API_KEY` | the provider's API key (Brevo: SMTP & API → API Keys, starts `xkeysib-`). Required when a provider is set (`mindcare.E004`) |
+| `DEFAULT_FROM_EMAIL` | the sender address verified with the provider |
+| `DEFAULT_FROM_NAME` | optional, default `MindCare` |
+| `SUPPORT_EMAIL` | address shown in emails for questions (e.g. after a rejection) |
 | `FIELD_ENCRYPTION_PREVIOUS_KEYS` | optional, comma-separated old keys during a rotation; unset normally |
 | `SUPABASE_S3_BUCKET` | name of the **private** Supabase Storage bucket for uploads (e.g. `mindcare-private`) |
 | `SUPABASE_S3_ENDPOINT` | `https://<project-ref>.supabase.co/storage/v1/s3` (Supabase → Storage → Settings → S3 Connection) |

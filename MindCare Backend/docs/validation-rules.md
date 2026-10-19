@@ -203,6 +203,9 @@ as GPS location. Audio types: MP3, M4A, OGG. Documents: PDF.
 | AI form: `Occupation`, `Family History of Anxiety` | AI assessment | — | Choice | yes | |
 | AI form: `Gender` | AI assessment | — | Choice (`Female`, `Male`, `Other`) | no | may be null; only fills recommendation wording |
 | AI form: `Alcohol Consumption (drinks/week)` | AI assessment | Alcohol consumption | Decimal 0–100 | no | may be null |
+| `email` | `accounts/password/reset/`, `/reset/confirm/` | Email | Email | yes | not checked for existence; the request always answers 200 |
+| `code` | `accounts/password/reset/confirm/` | — | Exactly 6 digits | yes | `Enter the 6-digit code from the email.`; any bad code → `That code is wrong or has expired. Request a new one.` |
+| `new_password` | `accounts/password/reset/confirm/` | — | Password | yes | a rule failure doesn't use up the code |
 | `current_password` | `accounts/password/change/` | — | Password (checked against the account) | yes | wrong → `Your current password is incorrect.` |
 | `new_password` | `accounts/password/change/` | — | Password | yes | the same as the current one → `Choose a password different from your current one.` |
 | new admin `email`, `full_name` | `accounts/admin/admins/` (super-admin) | Email / Full name | Email (unique) / Person name | yes | |

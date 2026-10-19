@@ -56,7 +56,7 @@ THIRD_PARTY_APPS = [
 ]
 
 DJANGO_APPS = [
-    "django.contrib.admin",
+    "config.apps.MindCareAdminConfig",  # django.contrib.admin with MindCare's site
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -199,6 +199,8 @@ REST_FRAMEWORK = {
         "reports": "10/day",
         "uploads": "20/hour",
         "password_change": "10/hour",
+        "password_reset": "5/hour",
+        "password_reset_confirm": "20/hour",
     },
     "NUM_PROXIES": env.int("NUM_PROXIES", default=0),
 }
@@ -206,6 +208,24 @@ REST_FRAMEWORK = {
 # MindCare AI inference service (FastAPI on Render). Base URL only; the client
 # appends /predict. Empty means "not configured": the AI endpoint answers 503.
 AI_SERVICE_URL = env("AI_SERVICE_URL", default="")
+
+# Email (integrations/email_client; docs/decisions.md, 2026-10-19). Sent over the
+# provider's HTTPS API, because Render's free plan blocks outbound SMTP. Switching
+# provider is a settings change: EMAIL_PROVIDER plus its API key.
+#   brevo | resend : the provider's API (needs EMAIL_PROVIDER_API_KEY)
+#   console        : Django's default mailer (MAILERS; console here, in-memory in tests)
+#   disabled       : send nothing (prod.py's default until a provider is set)
+EMAIL_PROVIDER = env("EMAIL_PROVIDER", default="console")
+EMAIL_PROVIDER_API_KEY = env("EMAIL_PROVIDER_API_KEY", default="")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="no-reply@mindcare.local")
+DEFAULT_FROM_NAME = env("DEFAULT_FROM_NAME", default="MindCare")
+# Shown in emails as the address to contact (e.g. after a rejection).
+SUPPORT_EMAIL = env("SUPPORT_EMAIL", default="")
+EMAIL_TIMEOUT_SECONDS = 10
+# Emails are sent after the transaction commits, on a background thread, so a
+# slow provider never delays (or reveals anything through) the response.
+EMAIL_SEND_IN_BACKGROUND = True
+MAILERS = {"default": {"BACKEND": "django.core.mail.backends.console.EmailBackend"}}
 
 # django-cors-headers: lets MindCare Web call this API from a browser.
 # Only the deployed web origin here; dev.py adds the local Vite dev server.
@@ -294,6 +314,12 @@ LOGGING = {
     },
     "loggers": {
         "mindcare.audit": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        # Template name and failure kind only: never addresses or bodies.
+        "mindcare.email": {
             "handlers": ["console"],
             "level": "INFO",
             "propagate": False,

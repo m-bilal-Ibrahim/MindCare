@@ -18,6 +18,10 @@ SECURE_HSTS_SECONDS = 86400
 # fails the deploy, so files can never land on Render's temporary disk.
 REQUIRE_OBJECT_STORAGE = True
 
+# No email goes out until a provider is configured on Render. Never "console" in
+# production: it would print one-time codes into the logs (mindcare.E003).
+EMAIL_PROVIDER = env("EMAIL_PROVIDER", default="disabled")  # noqa: F405
+
 MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")  # noqa: F405
 
 # Pinned explicitly so production only ever allows the real web origin, even if
