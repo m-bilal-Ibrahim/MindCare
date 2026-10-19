@@ -2,7 +2,7 @@
 // MindCare — Admin Console Sidebar (shared across all admin screens)
 // ============================================================
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Home,
@@ -24,8 +24,10 @@ import {
   ADMIN_NAV_OPERATIONS,
   ADMIN_NAV_TRUST_SAFETY,
   ADMIN_NAV_PLATFORM,
+  ADMIN_NAV_ADMINS,
   ADMIN_ROUTES,
 } from '../../constants/adminConsole';
+import { isSuperAdmin } from '../../services/admin.service';
 import { useAdminAuth } from '../../utils/adminAuthGuard';
 import type { AdminNavItem } from '../../types/adminConsole';
 
@@ -39,6 +41,7 @@ const ICON_MAP: Record<AdminNavItem['icon'], LucideIcon> = {
   heart: Heart,
   file: FileText,
   sun: Sun,
+  key: KeyRound,
 };
 
 const NavGroup: React.FC<{ title: string; items: AdminNavItem[]; currentPath: string }> = ({
@@ -81,6 +84,14 @@ const AdminSidebar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { admin, logout } = useAdminAuth();
+  const [superAdmin, setSuperAdmin] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    if (admin) isSuperAdmin().then((v) => alive && setSuperAdmin(v));
+    return () => {
+      alive = false;
+    };
+  }, [admin]);
 
   const handleSignOut = () => {
     logout();
@@ -99,7 +110,11 @@ const AdminSidebar: React.FC = () => {
       <nav className="flex-1 overflow-y-auto">
         <NavGroup title="Operations" items={ADMIN_NAV_OPERATIONS} currentPath={location.pathname} />
         <NavGroup title="Trust & safety" items={ADMIN_NAV_TRUST_SAFETY} currentPath={location.pathname} />
-        <NavGroup title="Platform" items={ADMIN_NAV_PLATFORM} currentPath={location.pathname} />
+        <NavGroup
+          title="Platform"
+          items={superAdmin ? [...ADMIN_NAV_PLATFORM, ADMIN_NAV_ADMINS] : ADMIN_NAV_PLATFORM}
+          currentPath={location.pathname}
+        />
       </nav>
 
       {admin && (

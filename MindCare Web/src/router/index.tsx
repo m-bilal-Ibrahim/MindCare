@@ -51,6 +51,7 @@ const BillingPage = lazy(() => import('../pages/BillingPage'));
 const SettingsPage = lazy(() => import('../pages/SettingsPage'));
 const AiAssessmentPage = lazy(() => import('../pages/AiAssessmentPage'));
 const ChangePasswordPage = lazy(() => import('../pages/ChangePasswordPage'));
+const AdminAdminsPage = lazy(() => import('../pages/AdminAdminsPage'));
 
 const PageLoader: React.FC = () => (
   <div className="min-h-screen bg-[#F5F0E8] flex items-center justify-center" aria-live="polite" aria-label="Loading page">
@@ -107,6 +108,7 @@ const AppRouter: React.FC = () => (
             <Route path={ADMIN_ROUTES.NGO_PARTNERS} element={<RequireAdminAuth><NgoPartnersPage /></RequireAdminAuth>} />
             <Route path={ADMIN_ROUTES.BILLING} element={<RequireAdminAuth><BillingPage /></RequireAdminAuth>} />
             <Route path={ADMIN_ROUTES.SETTINGS} element={<RequireAdminAuth><SettingsPage /></RequireAdminAuth>} />
+            <Route path={ADMIN_ROUTES.ADMINS} element={<RequireAdminAuth><AdminAdminsPage /></RequireAdminAuth>} />
 
             <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
           </Routes>

@@ -43,9 +43,13 @@ export const ADMIN_ROUTES = {
   NGO_PARTNERS: '/admin/ngo-partners',
   BILLING: '/admin/billing',
   SETTINGS: '/admin/settings',
+  ADMINS: '/admin/admins',
 } as const;
 
 // ——— Sidebar navigation ———
+/** Shown only to super-admins (the sidebar checks GET /accounts/admin/admins/). */
+export const ADMIN_NAV_ADMINS: AdminNavItem = { id: 'admins', label: 'Admins', route: ADMIN_ROUTES.ADMINS, icon: 'key' };
+
 export const ADMIN_NAV_OPERATIONS: AdminNavItem[] = [
   { id: 'overview', label: 'Overview', route: ADMIN_ROUTES.OVERVIEW, icon: 'home' },
   { id: 'verifications', label: 'Verifications', route: ADMIN_ROUTES.VERIFICATIONS, icon: 'shield' },

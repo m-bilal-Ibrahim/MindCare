@@ -6,7 +6,7 @@ export interface AdminNavItem {
   id: string;
   label: string;
   route: string;
-  icon: 'home' | 'shield' | 'code' | 'users' | 'flag' | 'alert-triangle' | 'heart' | 'file' | 'sun';
+  icon: 'home' | 'shield' | 'code' | 'users' | 'flag' | 'alert-triangle' | 'heart' | 'file' | 'sun' | 'key';
   badge?: number;
 }
 
