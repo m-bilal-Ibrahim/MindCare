@@ -8,7 +8,7 @@ import Button from '../common/Button';
 import Sheet, { sheetInputClass as inputClass } from '../common/Sheet';
 import { sendContactMessage } from '../../services/api.service';
 import { validateEmail } from '../../utils/validation';
-import { CONTACT_EMAIL, HELP_CRISIS_PHONE, HELP_CRISIS_PHONE_TEL } from '../../constants';
+import { CONTACT_EMAIL, HELP_CRISIS_PHONE, HELP_CRISIS_PHONE_TEL, HELP_POLICE_PHONE } from '../../constants';
 import { cn } from '../../utils/cn';
 
 interface ContactModalProps {
@@ -89,15 +89,16 @@ const ContactModal: React.FC<ContactModalProps> = ({ open, onClose }) => {
             Talk to <span className="italic font-serif font-normal">the team.</span>
           </h2>
 
-          {/* Not a crisis channel — point people in distress to the helpline */}
+          {/* Not a crisis channel — point people in distress to the emergency numbers */}
           <a
             href={HELP_CRISIS_PHONE_TEL}
             className="flex items-start gap-3 rounded-xl bg-rose-50 border border-rose-100 p-3.5 mb-6 text-xs text-rose-800 leading-relaxed hover:bg-rose-100/70 transition-colors"
           >
             <Phone size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
             <span>
-              In crisis or need help right now? Don&apos;t wait for an email. Call our helpline{' '}
-              <strong className="whitespace-nowrap">{HELP_CRISIS_PHONE}</strong>.
+              In crisis or need help right now? Don&apos;t wait for an email. Call{' '}
+              <strong className="whitespace-nowrap">{HELP_CRISIS_PHONE}</strong> (Rescue) or{' '}
+              <strong className="whitespace-nowrap">{HELP_POLICE_PHONE}</strong> (Police).
             </span>
           </a>
 
