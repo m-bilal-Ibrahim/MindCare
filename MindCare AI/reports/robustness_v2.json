@@ -1,0 +1,801 @@
+{
+  "model": "served 11-feature v2 XGBoost",
+  "guard": {
+    "balanced_accuracy": 0.8055,
+    "flagged": 411,
+    "flagged_true_high": 158,
+    "true_high": 165
+  },
+  "baseline": {
+    "balanced_accuracy": 0.8055111717561768,
+    "macro_f1": 0.8148105277018676,
+    "high_recall": 0.896969696969697,
+    "flag_catch_rate": 0.9575757575757575,
+    "predicted_high_share": 0.09272727272727273,
+    "flagged_share": 0.24909090909090909
+  },
+  "therapy_dependence": {
+    "oof_guard": {
+      "true_high_caught": 931,
+      "true_high": 968,
+      "flagged": 2361
+    },
+    "share_with_therapy_le_2": {
+      "Low": {
+        "rows": 4421,
+        "therapy_le_2": 3128,
+        "share": 0.7075322325265777
+      },
+      "Medium": {
+        "rows": 3961,
+        "therapy_le_2": 2496,
+        "share": 0.6301439030547842
+      },
+      "High": {
+        "rows": 968,
+        "therapy_le_2": 54,
+        "share": 0.05578512396694215
+      }
+    },
+    "true_high_detection_oof": {
+      "therapy_le_2": {
+        "rows": 54,
+        "model_high_recall": 0.0,
+        "flag_catch_rate": 0.6111111111111112,
+        "predicted_high": 0,
+        "flagged": 33
+      },
+      "therapy_gt_2": {
+        "rows": 914,
+        "model_high_recall": 0.9288840262582057,
+        "flag_catch_rate": 0.9824945295404814,
+        "predicted_high": 849,
+        "flagged": 898
+      }
+    },
+    "validation_stress_by_therapy_band": {
+      "0-2": {
+        "rows": 1008,
+        "8": {
+          "mean_p_high": 0.02398870885372162,
+          "predicted_high_share": 0.0,
+          "flagged_share": 0.251984126984127
+        },
+        "9": {
+          "mean_p_high": 0.029405660927295685,
+          "predicted_high_share": 0.0,
+          "flagged_share": 0.37202380952380953
+        },
+        "10": {
+          "mean_p_high": 0.04713992401957512,
+          "predicted_high_share": 0.0,
+          "flagged_share": 0.7509920634920635
+        }
+      },
+      "3-5": {
+        "rows": 486,
+        "8": {
+          "mean_p_high": 0.14432023465633392,
+          "predicted_high_share": 0.10082304526748971,
+          "flagged_share": 0.6419753086419753
+        },
+        "9": {
+          "mean_p_high": 0.15213724970817566,
+          "predicted_high_share": 0.10493827160493827,
+          "flagged_share": 0.7325102880658436
+        },
+        "10": {
+          "mean_p_high": 0.17596593499183655,
+          "predicted_high_share": 0.1111111111111111,
+          "flagged_share": 0.9218106995884774
+        }
+      },
+      "6+": {
+        "rows": 156,
+        "8": {
+          "mean_p_high": 0.6892344355583191,
+          "predicted_high_share": 0.6730769230769231,
+          "flagged_share": 0.9871794871794872
+        },
+        "9": {
+          "mean_p_high": 0.7011147737503052,
+          "predicted_high_share": 0.6858974358974359,
+          "flagged_share": 1.0
+        },
+        "10": {
+          "mean_p_high": 0.7167381644248962,
+          "predicted_high_share": 0.6858974358974359,
+          "flagged_share": 1.0
+        }
+      }
+    }
+  },
+  "knockout": {
+    "Sleep Hours": {
+      "median": {
+        "value": 6.7,
+        "balanced_accuracy": 0.7039761302608408,
+        "macro_f1": 0.7427978117951212,
+        "high_recall": 0.5818181818181818,
+        "flag_catch_rate": 0.9696969696969697,
+        "predicted_high_share": 0.058787878787878785,
+        "flagged_share": 0.26666666666666666
+      },
+      "mean": {
+        "value": 6.656064935064935,
+        "balanced_accuracy": 0.715541631283951,
+        "macro_f1": 0.7525741368682205,
+        "high_recall": 0.6181818181818182,
+        "flag_catch_rate": 0.9757575757575757,
+        "predicted_high_share": 0.062424242424242424,
+        "flagged_share": 0.2721212121212121
+      }
+    },
+    "Physical Activity (hrs/week)": {
+      "median": {
+        "value": 2.8,
+        "balanced_accuracy": 0.7945962903304653,
+        "macro_f1": 0.8074159788487472,
+        "high_recall": 0.8666666666666667,
+        "flag_catch_rate": 0.9757575757575757,
+        "predicted_high_share": 0.08969696969696969,
+        "flagged_share": 0.2412121212121212
+      },
+      "mean": {
+        "value": 2.942714285714286,
+        "balanced_accuracy": 0.7945962903304653,
+        "macro_f1": 0.8074159788487472,
+        "high_recall": 0.8666666666666667,
+        "flag_catch_rate": 0.9757575757575757,
+        "predicted_high_share": 0.08969696969696969,
+        "flagged_share": 0.23939393939393938
+      }
+    },
+    "Caffeine Intake (mg/day)": {
+      "median": {
+        "value": 272.0,
+        "balanced_accuracy": 0.7858288730084907,
+        "macro_f1": 0.8022309292308916,
+        "high_recall": 0.8424242424242424,
+        "flag_catch_rate": 0.9515151515151515,
+        "predicted_high_share": 0.08666666666666667,
+        "flagged_share": 0.24303030303030304
+      },
+      "mean": {
+        "value": 285.4105194805195,
+        "balanced_accuracy": 0.7907261750780292,
+        "macro_f1": 0.8057963543763219,
+        "high_recall": 0.8545454545454545,
+        "flag_catch_rate": 0.9575757575757575,
+        "predicted_high_share": 0.08787878787878788,
+        "flagged_share": 0.24727272727272728
+      }
+    },
+    "Stress Level (1-10)": {
+      "median": {
+        "value": 6.0,
+        "balanced_accuracy": 0.383727237945976,
+        "macro_f1": 0.37499303537934453,
+        "high_recall": 0.048484848484848485,
+        "flag_catch_rate": 0.8848484848484849,
+        "predicted_high_share": 0.0048484848484848485,
+        "flagged_share": 0.10424242424242425
+      },
+      "mean": {
+        "value": 5.865974025974026,
+        "balanced_accuracy": 0.3742856658049205,
+        "macro_f1": 0.33419533619433667,
+        "high_recall": 0.0,
+        "flag_catch_rate": 0.8424242424242424,
+        "predicted_high_share": 0.0,
+        "flagged_share": 0.08545454545454545
+      }
+    },
+    "Heart Rate (bpm)": {
+      "median": {
+        "value": 92.0,
+        "balanced_accuracy": 0.8025910450024071,
+        "macro_f1": 0.8126160639934273,
+        "high_recall": 0.8909090909090909,
+        "flag_catch_rate": 0.9575757575757575,
+        "predicted_high_share": 0.09212121212121212,
+        "flagged_share": 0.24
+      },
+      "mean": {
+        "value": 91.01337662337663,
+        "balanced_accuracy": 0.8025910450024071,
+        "macro_f1": 0.8126160639934273,
+        "high_recall": 0.8909090909090909,
+        "flag_catch_rate": 0.9575757575757575,
+        "predicted_high_share": 0.09212121212121212,
+        "flagged_share": 0.24
+      }
+    },
+    "Breathing Rate (breaths/min)": {
+      "median": {
+        "value": 21.0,
+        "balanced_accuracy": 0.8052530115295774,
+        "macro_f1": 0.8146214620985033,
+        "high_recall": 0.896969696969697,
+        "flag_catch_rate": 0.9575757575757575,
+        "predicted_high_share": 0.09272727272727273,
+        "flagged_share": 0.25212121212121213
+      },
+      "mean": {
+        "value": 20.93805194805195,
+        "balanced_accuracy": 0.8048245625150102,
+        "macro_f1": 0.8141892745738701,
+        "high_recall": 0.896969696969697,
+        "flag_catch_rate": 0.9575757575757575,
+        "predicted_high_share": 0.09272727272727273,
+        "flagged_share": 0.25212121212121213
+      }
+    },
+    "Therapy Sessions (per month)": {
+      "median": {
+        "value": 2.0,
+        "balanced_accuracy": 0.5494188089392854,
+        "macro_f1": 0.5591832484216525,
+        "high_recall": 0.12727272727272726,
+        "flag_catch_rate": 0.9454545454545454,
+        "predicted_high_share": 0.012727272727272728,
+        "flagged_share": 0.2309090909090909
+      },
+      "mean": {
+        "value": 2.436103896103896,
+        "balanced_accuracy": 0.5494188089392854,
+        "macro_f1": 0.5591832484216525,
+        "high_recall": 0.12727272727272726,
+        "flag_catch_rate": 0.9454545454545454,
+        "predicted_high_share": 0.012727272727272728,
+        "flagged_share": 0.2309090909090909
+      }
+    },
+    "Diet Quality (1-10)": {
+      "median": {
+        "value": 5.0,
+        "balanced_accuracy": 0.8013794952760058,
+        "macro_f1": 0.8152282883759678,
+        "high_recall": 0.8787878787878788,
+        "flag_catch_rate": 0.9575757575757575,
+        "predicted_high_share": 0.0890909090909091,
+        "flagged_share": 0.24484848484848484
+      },
+      "mean": {
+        "value": 5.192727272727272,
+        "balanced_accuracy": 0.8013794952760058,
+        "macro_f1": 0.8152282883759678,
+        "high_recall": 0.8787878787878788,
+        "flag_catch_rate": 0.9575757575757575,
+        "predicted_high_share": 0.0890909090909091,
+        "flagged_share": 0.24484848484848484
+      }
+    },
+    "Age": {
+      "median": {
+        "value": 40.0,
+        "balanced_accuracy": 0.8060256741796104,
+        "macro_f1": 0.8144955505257686,
+        "high_recall": 0.896969696969697,
+        "flag_catch_rate": 0.9575757575757575,
+        "predicted_high_share": 0.09333333333333334,
+        "flagged_share": 0.2587878787878788
+      },
+      "mean": {
+        "value": 40.1887012987013,
+        "balanced_accuracy": 0.8060256741796104,
+        "macro_f1": 0.8144955505257686,
+        "high_recall": 0.896969696969697,
+        "flag_catch_rate": 0.9575757575757575,
+        "predicted_high_share": 0.09333333333333334,
+        "flagged_share": 0.2587878787878788
+      }
+    },
+    "Occupation": {
+      "median": {
+        "value": "Musician",
+        "balanced_accuracy": 0.8045645842586463,
+        "macro_f1": 0.8140117484096251,
+        "high_recall": 0.896969696969697,
+        "flag_catch_rate": 0.9575757575757575,
+        "predicted_high_share": 0.09272727272727273,
+        "flagged_share": 0.25272727272727274
+      },
+      "mean": {
+        "value": "Musician",
+        "balanced_accuracy": 0.8045645842586463,
+        "macro_f1": 0.8140117484096251,
+        "high_recall": 0.896969696969697,
+        "flag_catch_rate": 0.9575757575757575,
+        "predicted_high_share": 0.09272727272727273,
+        "flagged_share": 0.25272727272727274
+      }
+    },
+    "Family History of Anxiety": {
+      "median": {
+        "value": "Yes",
+        "balanced_accuracy": 0.809584164439213,
+        "macro_f1": 0.8186839840404035,
+        "high_recall": 0.896969696969697,
+        "flag_catch_rate": 0.9575757575757575,
+        "predicted_high_share": 0.09272727272727273,
+        "flagged_share": 0.24606060606060606
+      },
+      "mean": {
+        "value": "Yes",
+        "balanced_accuracy": 0.809584164439213,
+        "macro_f1": 0.8186839840404035,
+        "high_recall": 0.896969696969697,
+        "flag_catch_rate": 0.9575757575757575,
+        "predicted_high_share": 0.09272727272727273,
+        "flagged_share": 0.24606060606060606
+      }
+    }
+  },
+  "noise": {
+    "0.25": {
+      "balanced_accuracy": {
+        "mean": 0.7590767277241863,
+        "std": 0.005671169740831902
+      },
+      "macro_f1": {
+        "mean": 0.7820516415250627,
+        "std": 0.004913338906641641
+      },
+      "high_recall": {
+        "mean": 0.7866666666666667,
+        "std": 0.015332255322028504
+      },
+      "flag_catch_rate": {
+        "mean": 0.946060606060606,
+        "std": 0.005306636580429765
+      },
+      "predicted_high_share": {
+        "mean": 0.08036363636363635,
+        "std": 0.0013761120295698104
+      },
+      "flagged_share": {
+        "mean": 0.21448484848484844,
+        "std": 0.004869064070219878
+      }
+    },
+    "0.5": {
+      "balanced_accuracy": {
+        "mean": 0.7027069342997466,
+        "std": 0.01766150598160199
+      },
+      "macro_f1": {
+        "mean": 0.7357486770867393,
+        "std": 0.01493354086189797
+      },
+      "high_recall": {
+        "mean": 0.6575757575757576,
+        "std": 0.04492395143017593
+      },
+      "flag_catch_rate": {
+        "mean": 0.9375757575757577,
+        "std": 0.013415723406774957
+      },
+      "predicted_high_share": {
+        "mean": 0.06775757575757577,
+        "std": 0.004640312132175144
+      },
+      "flagged_share": {
+        "mean": 0.23151515151515153,
+        "std": 0.005848127202476818
+      }
+    },
+    "0.75": {
+      "balanced_accuracy": {
+        "mean": 0.6502626502092002,
+        "std": 0.014917596163143582
+      },
+      "macro_f1": {
+        "mean": 0.6861511534513737,
+        "std": 0.014250668437704016
+      },
+      "high_recall": {
+        "mean": 0.5545454545454545,
+        "std": 0.036391683908387526
+      },
+      "flag_catch_rate": {
+        "mean": 0.901818181818182,
+        "std": 0.015332255322028511
+      },
+      "predicted_high_share": {
+        "mean": 0.05969696969696969,
+        "std": 0.003582656131508728
+      },
+      "flagged_share": {
+        "mean": 0.2568484848484848,
+        "std": 0.005180548016104918
+      }
+    },
+    "1.0": {
+      "balanced_accuracy": {
+        "mean": 0.6008129182363702,
+        "std": 0.011569175322626302
+      },
+      "macro_f1": {
+        "mean": 0.6365388288038598,
+        "std": 0.011214661540770216
+      },
+      "high_recall": {
+        "mean": 0.4636363636363637,
+        "std": 0.03053781102592115
+      },
+      "flag_catch_rate": {
+        "mean": 0.8593939393939394,
+        "std": 0.02519994525981844
+      },
+      "predicted_high_share": {
+        "mean": 0.052787878787878786,
+        "std": 0.0034098951539187085
+      },
+      "flagged_share": {
+        "mean": 0.27872727272727266,
+        "std": 0.005934375671522157
+      }
+    }
+  },
+  "invalid_inputs": {
+    "valid row (control)": {
+      "rejected": false,
+      "warnings": 0
+    },
+    "negative age (-5)": {
+      "rejected": true,
+      "violations": 1,
+      "message": "Input validation failed with 1 error(s):\n  - Age=-5 is outside the physically plausible range [0, 120] (0-120: outer bound of recorded human lifespan.)"
+    },
+    "under 18 (16)": {
+      "rejected": true,
+      "violations": 2,
+      "message": "Input validation failed with 1 error(s):\n  - Age=16 is under 18 - not eligible for MindCare (adults only; registration should have blocked this user). No predic"
+    },
+    "over 49 (55)": {
+      "rejected": true,
+      "violations": 2,
+      "message": "Input validation failed with 1 error(s):\n  - Age=55 is outside the supported range for AI pre-assessment [18, 49] - no prediction is made; refer this person dir"
+    },
+    "impossible stress (250)": {
+      "rejected": true,
+      "violations": 2,
+      "message": "Input validation failed with 1 error(s):\n  - Stress Level (1-10)=250 is outside the physically plausible range [0, 12] (0-12: 1-10 rating scale plus a small mar"
+    },
+    "impossible heart rate (9000)": {
+      "rejected": true,
+      "violations": 1,
+      "message": "Input validation failed with 1 error(s):\n  - Heart Rate (bpm)=9000 is outside the physically plausible range [30, 220] (30-220 bpm: standard clinical outer rang"
+    },
+    "negative sleep (-1)": {
+      "rejected": true,
+      "violations": 1,
+      "message": "Input validation failed with 1 error(s):\n  - Sleep Hours=-1 is outside the physically plausible range [0, 24] (0-24: a day has 24 hours.)"
+    },
+    "caffeine over 1200 mg (1500)": {
+      "rejected": true,
+      "violations": 1,
+      "message": "Input validation failed with 1 error(s):\n  - Caffeine Intake (mg/day)=1500 is outside the physically plausible range [0, 1200] (0-1200: commonly cited threshold"
+    },
+    "text instead of number": {
+      "rejected": true,
+      "violations": 1,
+      "message": "Input validation failed with 1 error(s):\n  - Heart Rate (bpm): expected a number, got 'fast' (str)"
+    },
+    "missing Stress Level": {
+      "rejected": true,
+      "violations": 1,
+      "message": "Input validation failed with 1 error(s):\n  - Missing required feature(s): ['Stress Level (1-10)']"
+    },
+    "all numeric fields 999": {
+      "rejected": true,
+      "violations": 4,
+      "message": "Input validation failed with 8 error(s):\n  - Age=999 is outside the physically plausible range [0, 120] (0-120: outer bound of recorded human lifespan.)\n  - Sle"
+    }
+  },
+  "stress_shift": {
+    "-3": {
+      "rows_changed": 1495,
+      "balanced_accuracy": 0.5149978273626113,
+      "macro_f1": 0.5246664906266064,
+      "high_recall": 0.24242424242424243,
+      "flag_catch_rate": 0.8787878787878788,
+      "predicted_high_share": 0.024242424242424242,
+      "flagged_share": 0.09636363636363636
+    },
+    "-2": {
+      "rows_changed": 1495,
+      "balanced_accuracy": 0.6545557493685469,
+      "macro_f1": 0.6847442825366804,
+      "high_recall": 0.5575757575757576,
+      "flag_catch_rate": 0.9212121212121213,
+      "predicted_high_share": 0.05757575757575758,
+      "flagged_share": 0.1303030303030303
+    },
+    "-1": {
+      "rows_changed": 1495,
+      "balanced_accuracy": 0.7725613619018897,
+      "macro_f1": 0.7889930900135912,
+      "high_recall": 0.8303030303030303,
+      "flag_catch_rate": 0.9333333333333333,
+      "predicted_high_share": 0.08545454545454545,
+      "flagged_share": 0.17757575757575758
+    },
+    "0": {
+      "rows_changed": 0,
+      "balanced_accuracy": 0.8055111717561768,
+      "macro_f1": 0.8148105277018676,
+      "high_recall": 0.896969696969697,
+      "flag_catch_rate": 0.9575757575757575,
+      "predicted_high_share": 0.09272727272727273,
+      "flagged_share": 0.24909090909090909
+    },
+    "1": {
+      "rows_changed": 1442,
+      "balanced_accuracy": 0.7998698253960542,
+      "macro_f1": 0.8057201966362095,
+      "high_recall": 0.896969696969697,
+      "flag_catch_rate": 0.9757575757575757,
+      "predicted_high_share": 0.09272727272727273,
+      "flagged_share": 0.32606060606060605
+    },
+    "2": {
+      "rows_changed": 1442,
+      "balanced_accuracy": 0.7833415107944873,
+      "macro_f1": 0.7818015683076753,
+      "high_recall": 0.896969696969697,
+      "flag_catch_rate": 0.9818181818181818,
+      "predicted_high_share": 0.09272727272727273,
+      "flagged_share": 0.40060606060606063
+    },
+    "3": {
+      "rows_changed": 1442,
+      "balanced_accuracy": 0.7548972231046095,
+      "macro_f1": 0.7414657817430705,
+      "high_recall": 0.896969696969697,
+      "flag_catch_rate": 0.9818181818181818,
+      "predicted_high_share": 0.09333333333333334,
+      "flagged_share": 0.47454545454545455
+    }
+  },
+  "root_cause": {
+    "clipping": {
+      "rows_at_9_or_10": 410,
+      "rows_at_10": 208,
+      "by_class_at_9_or_10": {
+        "Low": 39,
+        "Medium": 251,
+        "High": 120
+      },
+      "true_high_with_stress": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 1,
+        "8": 44,
+        "9": 60,
+        "10": 60
+      }
+    },
+    "splits": {
+      "n_splits_on_stress": 1263,
+      "max_threshold_raw": 10.000000059228944,
+      "thresholds_raw_counts": {
+        "2.0": 112,
+        "3.0": 86,
+        "4.0": 88,
+        "5.0": 105,
+        "6.0": 191,
+        "7.0": 171,
+        "8.0": 230,
+        "9.0": 166,
+        "10.0": 114
+      },
+      "integer_levels_separated": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    "stress_forced": {
+      "1": {
+        "mean_p_high": 0.004534908104687929,
+        "predicted_high_share": 0.0
+      },
+      "2": {
+        "mean_p_high": 0.004880025517195463,
+        "predicted_high_share": 0.0
+      },
+      "3": {
+        "mean_p_high": 0.005269193556159735,
+        "predicted_high_share": 0.0
+      },
+      "4": {
+        "mean_p_high": 0.0064238207414746284,
+        "predicted_high_share": 0.0
+      },
+      "5": {
+        "mean_p_high": 0.009456314146518707,
+        "predicted_high_share": 0.0
+      },
+      "6": {
+        "mean_p_high": 0.024994585663080215,
+        "predicted_high_share": 0.0048484848484848485
+      },
+      "7": {
+        "mean_p_high": 0.05771210789680481,
+        "predicted_high_share": 0.06606060606060606
+      },
+      "8": {
+        "mean_p_high": 0.1223277673125267,
+        "predicted_high_share": 0.09333333333333334
+      },
+      "9": {
+        "mean_p_high": 0.1290627419948578,
+        "predicted_high_share": 0.09575757575757576
+      },
+      "10": {
+        "mean_p_high": 0.14839251339435577,
+        "predicted_high_share": 0.09757575757575758
+      }
+    },
+    "therapy_bands": {
+      "(-0.001, 1.0]": {
+        "rows": 696,
+        "true_high": 5,
+        "predicted_high_share_shift_-3": 0.0,
+        "predicted_high_share_shift_+0": 0.0,
+        "predicted_high_share_shift_+3": 0.0,
+        "mean_p_high_stress_10": 0.045047979801893234,
+        "predicted_high_share_stress_10": 0.0
+      },
+      "(1.0, 2.0]": {
+        "rows": 312,
+        "true_high": 3,
+        "predicted_high_share_shift_-3": 0.0,
+        "predicted_high_share_shift_+0": 0.0,
+        "predicted_high_share_shift_+3": 0.0,
+        "mean_p_high_stress_10": 0.05180657282471657,
+        "predicted_high_share_stress_10": 0.0
+      },
+      "(2.0, 4.0]": {
+        "rows": 368,
+        "true_high": 25,
+        "predicted_high_share_shift_-3": 0.016304347826086956,
+        "predicted_high_share_shift_+0": 0.059782608695652176,
+        "predicted_high_share_shift_+3": 0.0625,
+        "mean_p_high_stress_10": 0.12793754041194916,
+        "predicted_high_share_stress_10": 0.06521739130434782
+      },
+      "(4.0, 12.0]": {
+        "rows": 274,
+        "true_high": 132,
+        "predicted_high_share_shift_-3": 0.12408759124087591,
+        "predicted_high_share_shift_+0": 0.4781021897810219,
+        "predicted_high_share_shift_+3": 0.4781021897810219,
+        "mean_p_high_stress_10": 0.5483561158180237,
+        "predicted_high_share_stress_10": 0.5
+      }
+    }
+  },
+  "rf17_from_robustness_3class_md": {
+    "baseline": {
+      "accuracy": 0.7733,
+      "balanced_accuracy": 0.8056,
+      "macro_f1": 0.8177,
+      "high_class_recall": 0.897
+    },
+    "knockout_mean_mode": {
+      "Stress Level (1-10)": {
+        "balanced_accuracy": 0.4291,
+        "high_recall": 0.2242
+      },
+      "Therapy Sessions (per month)": {
+        "balanced_accuracy": 0.559,
+        "high_recall": 0.1515
+      },
+      "Sleep Hours": {
+        "balanced_accuracy": 0.7922,
+        "high_recall": 0.8545
+      },
+      "Caffeine Intake (mg/day)": {
+        "balanced_accuracy": 0.7972,
+        "high_recall": 0.8727
+      },
+      "Diet Quality (1-10)": {
+        "balanced_accuracy": 0.7995,
+        "high_recall": 0.8788
+      },
+      "Family History of Anxiety": {
+        "balanced_accuracy": 0.8029,
+        "high_recall": 0.897
+      },
+      "Heart Rate (bpm)": {
+        "balanced_accuracy": 0.8055,
+        "high_recall": 0.897
+      },
+      "Sweating Level (1-5)": {
+        "balanced_accuracy": 0.8056,
+        "high_recall": 0.897
+      },
+      "Age": {
+        "balanced_accuracy": 0.8057,
+        "high_recall": 0.897
+      },
+      "Recent Major Life Event": {
+        "balanced_accuracy": 0.8059,
+        "high_recall": 0.897
+      },
+      "Physical Activity (hrs/week)": {
+        "balanced_accuracy": 0.8065,
+        "high_recall": 0.897
+      },
+      "Breathing Rate (breaths/min)": {
+        "balanced_accuracy": 0.8068,
+        "high_recall": 0.897
+      },
+      "Medication": {
+        "balanced_accuracy": 0.8068,
+        "high_recall": 0.897
+      },
+      "Occupation": {
+        "balanced_accuracy": 0.807,
+        "high_recall": 0.897
+      },
+      "Dizziness": {
+        "balanced_accuracy": 0.807,
+        "high_recall": 0.897
+      },
+      "Alcohol Consumption (drinks/week)": {
+        "balanced_accuracy": 0.807,
+        "high_recall": 0.897
+      },
+      "Smoking": {
+        "balanced_accuracy": 0.8079,
+        "high_recall": 0.897
+      }
+    },
+    "noise_single_seed": {
+      "0.25": {
+        "balanced_accuracy": 0.7732,
+        "high_recall": 0.8
+      },
+      "0.5": {
+        "balanced_accuracy": 0.6837,
+        "high_recall": 0.6121
+      },
+      "1.0": {
+        "balanced_accuracy": 0.556,
+        "high_recall": 0.3273
+      },
+      "2.0": {
+        "balanced_accuracy": 0.448,
+        "high_recall": 0.1576
+      }
+    },
+    "shift_predicted_high": {
+      "-3": 0.0418,
+      "-1": 0.0879,
+      "1": 0.0903,
+      "3": 0.0903
+    }
+  },
+  "library_versions": {
+    "python": "3.13.13",
+    "xgboost": "3.4.1",
+    "scikit-learn": "1.9.1",
+    "numpy": "2.5.3",
+    "pandas": "3.0.5"
+  },
+  "test_set_used": false
+}

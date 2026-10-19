@@ -671,6 +671,23 @@ preprocessing (Phase 10) is shared between the two targets.
   direction on both views (|Spearman| 0.735-0.945); Caffeine (out-of-fold) and Diet are not monotonic across
   quintiles. Association on synthetic data, not cause.
 
+### Phase 19 — Robustness for the served 11-feature v2 XGBoost (2026-10-19, validation only, test set NOT used)
+- [x] `src/evaluation/robustness_v2.py` -> `reports/robustness_v2.md` / `.json` (guarded: reproduces 0.8055 / 411 / 158 of 165).
+      Comparison is with `reports/robustness_3class.md`, which is the 17-feature Random Forest.
+- Knockout (train median): Stress -> balanced accuracy 0.3837, Therapy -> 0.5494,
+  Sleep -> 0.7040 (Sleep matters more than for the RF's 0.7922); all others within 0.02.
+- Noise (10 seeds): balanced accuracy 0.7591 at 0.25x std down to 0.6008 at 1.0x;
+  review-flag catch rate stays >= 0.859. v2 degrades less than the RF at 1.0x (RF 0.5560).
+- `validate_patient()` rejects all 10 invalid cases (negative/under-18/over-49 age, Stress 250, HR 9000, negative sleep,
+  caffeine 1500 mg, text value, missing field, all-999); the valid control row passes.
+- Stress shift: -3 -> predicted-High share 0.0242, +3 -> 0.0933 (baseline 0.0927); the
+  flagged share still rises with +3 (0.2491 -> 0.4745). **Root cause of "shift up changes nothing":
+  the Stress x Therapy interaction** (with Stress forced to 10, patients with <= 2 therapy sessions are never predicted
+  High) plus a soft plateau above Stress 8. Not clipping, not hard split saturation (splits separate every level 2-10).
+- Therapy dependence (out-of-fold): true-High patients with <= 2 therapy sessions (54 of 968, 5.6%) have
+  model High recall 0.0% and review-flag catch rate 61.1%. Likely reverse causality (therapy as a
+  severity proxy); model card Known Limitations item 16.
+
 ### Phase 21/22 — Clinical validation comparison tool (built, no data yet)
 - [x] Clinical scoring scales and agreement metrics built in `src/evaluation/clinical_scales.py` and `src/evaluation/clinical_agreement.py`
 - [x] Unit tests in `tests/test_clinical_scales.py` (arithmetic verification only)

@@ -995,12 +995,27 @@ Not yet done for the 5-class Severity target beyond what's already in `reports/f
     reported stress with otherwise lower-risk lifestyle signals (more sleep, fewer therapy sessions,
     more activity)"; low caffeine is a correlate, not the cause.
 
+16. **The model rarely predicts High for patients with few therapy sessions; therapy count likely acts as
+    a proxy for severity in this dataset (reverse causality), so new help-seekers may be under-called**
+    (added 2026-10-19, `reports/robustness_v2.md`, section 5). Out-of-fold over the 9,350 train + validation
+    rows, only 54 of 968 true-High patients (5.6%) have at most 2 therapy
+    sessions a month, against 70.8% of Low and 63.0% of Medium. For those
+    54 the model High recall is 0.0% (0 of 54; 92.9% with more
+    therapy), and the review flag catches 33 of 54 (61.1%; 98.2% with more therapy).
+    On validation rows with 0-2 sessions, setting Stress to 10 still gives a predicted-High share of
+    0.0000 (mean P(High) 0.0471), though 75.1% would be flagged. This also
+    explains why shifting Stress up barely changes the predicted class. No threshold was changed. Small sample;
+    very likely synthetic data.
+
 ### Items needing psychologist review
 
 - **Low-caffeine true-High patients (item 15):** true-High patients with low reported caffeine are
   under-detected (review flag 12/23 out-of-fold); small sample; likely a synthetic-data coverage gap.
   A reviewer should know that a patient with high stress but low caffeine, more sleep and fewer
   therapy sessions may be shown as Low/Medium without a priority-review flag.
+- **Low-therapy true-High patients (item 16):** patients with few therapy sessions are almost never predicted
+  High (0 of 54 out-of-fold) and the review flag catches 33 of 54. A reviewer should treat a
+  new help-seeker with high stress as possibly High even when the model says Low/Medium.
 - Other open review items are tracked in their own pull requests: the alert-layer draft thresholds
   (#54) and the 0.025 review-flag threshold with its evaluated alternatives (#57).
 
