@@ -50,6 +50,7 @@ const NgoPartnersPage = lazy(() => import('../pages/NgoPartnersPage'));
 const BillingPage = lazy(() => import('../pages/BillingPage'));
 const SettingsPage = lazy(() => import('../pages/SettingsPage'));
 const AiAssessmentPage = lazy(() => import('../pages/AiAssessmentPage'));
+const ChangePasswordPage = lazy(() => import('../pages/ChangePasswordPage'));
 
 const PageLoader: React.FC = () => (
   <div className="min-h-screen bg-[#F5F0E8] flex items-center justify-center" aria-live="polite" aria-label="Loading page">
@@ -81,6 +82,7 @@ const AppRouter: React.FC = () => (
             <Route path={ROUTES.TERMS} element={<TermsOfServicePage />} />
             <Route path={ROUTES.HIPAA} element={<HipaaAlignmentPage />} />
             <Route path={ROUTES.COOKIES} element={<CookiePolicyPage />} />
+            <Route path={ROUTES.CHANGE_PASSWORD} element={<ChangePasswordPage />} />
 
             <Route path={CONSOLE_ROUTES.TODAY} element={<RequireTherapistAuth><TherapistTodayPage /></RequireTherapistAuth>} />
             <Route path={CONSOLE_ROUTES.PATIENTS} element={<RequireTherapistAuth><TherapistPatientsPage /></RequireTherapistAuth>} />

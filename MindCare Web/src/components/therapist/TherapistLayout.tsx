@@ -18,6 +18,7 @@ import {
   Bell,
   Search,
   LogOut,
+  KeyRound,
   type LucideIcon,
 } from 'lucide-react';
 import Avatar from '../common/Avatar';
@@ -136,6 +137,14 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({ breadcrumb, headerAct
               <p className="text-sm font-semibold truncate">{therapist.name}</p>
               <p className="text-xs text-gray-500 truncate">Clinical psych · {therapist.license}</p>
             </div>
+            <Link
+              to={ROUTES.CHANGE_PASSWORD}
+              aria-label="Change password"
+              title="Change password"
+              className="w-8 h-8 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 flex items-center justify-center shrink-0"
+            >
+              <KeyRound size={15} />
+            </Link>
             <button
               type="button"
               onClick={handleSignOut}
