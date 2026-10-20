@@ -688,6 +688,17 @@ preprocessing (Phase 10) is shared between the two targets.
   model High recall 0.0% and review-flag catch rate 61.1%. Likely reverse causality (therapy as a
   severity proxy); model card Known Limitations item 16.
 
+### Ablation, PCA and significance for the served v2 (2026-10-19, validation/CV only, test set NOT used)
+- [x] `src/experiments/ablation_study.py` -> `reports/ablation_study.md` / `.json`: 10 decisions + 2 PCA variants re-run on one
+      shared set of 5 folds (guarded: served files reproduce 0.8055 / 411 / 158 of 165). Re-runs match the earlier
+      same-config reports (Sweating Level, derived features). Only Caffeine dropped (CV Δ balanced acc.
+      -0.0033, t-test p 0.033) and Therapy removed (-0.0081, p 0.039) reach raw p < 0.05,
+      but neither survives Holm-Bonferroni (0.328, 0.352): small, borderline-significant costs. XGBoost vs RF vs MLP:
+      no significant difference. p-values approximate (folds not independent).
+- Therapy removed does not fix the low-therapy gap: true High with <= 2 sessions predicted High 1/54 (v2 0),
+  flagged 35/54 at its own threshold 0.027 (v2 33 at 0.025). Decision left to the supervisor.
+- PCA (95% / 99%): no reliable gain, and per-feature interpretability is lost; evidence for the report only.
+
 ### Phase 21/22 — Clinical validation comparison tool (built, no data yet)
 - [x] Clinical scoring scales and agreement metrics built in `src/evaluation/clinical_scales.py` and `src/evaluation/clinical_agreement.py`
 - [x] Unit tests in `tests/test_clinical_scales.py` (arithmetic verification only)
