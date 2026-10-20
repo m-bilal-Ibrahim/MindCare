@@ -217,6 +217,83 @@ def reading(pv: dict, mods: dict) -> str:
            "(most errors sit at the Anxiety Level 3/4 and 6/7 borders).")
 
 
+def lr_section() -> str:
+    """'Why XGBoost if logistic regression ties?' from reports/lr_vs_v2.json (src/experiments/lr_vs_v2.py)."""
+    path = ROOT / "reports" / "lr_vs_v2.json"
+    if not path.exists():
+        return ""
+    d = json.loads(path.read_text(encoding="utf-8"))
+    c, nz, rv, tm, cl = d["calibration_oof"], d["noise_balanced_accuracy"], d["review_flag_oof"], d["timing_per_row"], d["clean_balanced_accuracy"]
+    cal = ["| Out-of-fold, 9,350 rows | v2 XGBoost | Logistic regression |", "|---|---|---|"]
+    for n in ("Low", "Medium", "High"):
+        cal.append(f"| ECE (10-bin), {n} | {c['v2'][f'ece_{n}']:.4f} | {c['logreg'][f'ece_{n}']:.4f} |")
+    cal.append(f"| ECE, mean of 3 classes | {c['v2']['ece_mean']:.4f} | {c['logreg']['ece_mean']:.4f} |")
+    for n in ("Low", "Medium", "High"):
+        cal.append(f"| Brier (one-vs-rest), {n} | {c['v2'][f'brier_{n}']:.4f} | {c['logreg'][f'brier_{n}']:.4f} |")
+    cal.append(f"| Brier, mean of 3 classes | {c['v2']['brier_mean']:.4f} | {c['logreg']['brier_mean']:.4f} |")
+    noise = ["| Balanced accuracy (5 folds, 10 noise seeds each) | v2 XGBoost | Logistic regression | LR − v2 (paired) |", "|---|---|---|---|",
+             f"| No noise | {cl['v2']['mean']:.4f} ± {cl['v2']['std']:.4f} | {cl['logreg']['mean']:.4f} ± {cl['logreg']['std']:.4f} | — |"]
+    for k, v in nz.items():
+        dd = v["delta_logreg_minus_v2"]
+        noise.append(f"| {k}× std | {v['v2']['mean']:.4f} ± {v['v2']['std']:.4f} | {v['logreg']['mean']:.4f} ± {v['logreg']['std']:.4f} "
+                     f"| {dd['mean']:+.4f} ± {dd['std']:.4f} (t-test p {dd['t_test_p']:.2g}) |")
+    v, l = rv["v2"], rv["logreg"]
+    flag = ["| Review flag, out-of-fold | v2 XGBoost | Logistic regression |", "|---|---|---|",
+            f"| Threshold on P(High) | {v['threshold']} (served) | {l['threshold']} (re-derived) |",
+            f"| True High flagged | {v['true_high_flagged']} / {rv['true_high']} ({v['catch_rate']:.1%}) | {l['true_high_flagged']} / {rv['true_high']} ({l['catch_rate']:.1%}) |",
+            f"| Patients flagged | {v['flagged']:,} of {rv['rows']:,} ({v['flagged'] / rv['rows']:.1%}) | {l['flagged']:,} of {rv['rows']:,} ({l['flagged'] / rv['rows']:.1%}) |"]
+    speed = ["| One-row predict_proba | v2 XGBoost | Logistic regression |", "|---|---|---|",
+             f"| Model only (preprocessed row) | {tm['v2']['model_only_ms']:.2f} ms | {tm['logreg']['model_only_ms']:.2f} ms |",
+             f"| Full pipeline (raw row) | {tm['v2']['pipeline_ms']:.2f} ms | {tm['logreg']['pipeline_ms']:.2f} ms |"]
+    better_noise = all(x["delta_logreg_minus_v2"]["mean"] > 0 and x["delta_logreg_minus_v2"]["t_test_p"] < 0.05 for x in nz.values())
+    fewer_flags = l["flagged"] < v["flagged"] and l["true_high_flagged"] >= v["true_high_flagged"]
+    high_ece_worse = c["logreg"]["ece_High"] > c["v2"]["ece_High"]
+    concl = [
+        f"- **Accuracy:** tie (balanced accuracy {cl['v2']['mean']:.4f} vs {cl['logreg']['mean']:.4f}; Table B).",
+        f"- **Calibration:** mean Brier is about equal ({c['v2']['brier_mean']:.4f} vs {c['logreg']['brier_mean']:.4f}). "
+        + (f"v2 is better calibrated for High (ECE {c['v2']['ece_High']:.4f} vs {c['logreg']['ece_High']:.4f}; Brier "
+           f"{c['v2']['brier_High']:.4f} vs {c['logreg']['brier_High']:.4f}), the class the review flag uses, and for Medium (ECE "
+           f"{c['v2']['ece_Medium']:.4f} vs {c['logreg']['ece_Medium']:.4f}); LR is better for Low (ECE {c['logreg']['ece_Low']:.4f} vs "
+           f"{c['v2']['ece_Low']:.4f}). Mean ECE {c['v2']['ece_mean']:.4f} vs {c['logreg']['ece_mean']:.4f}. All ECEs are small "
+           f"(≤ {max(max(c[m][f'ece_{n}'] for n in ('Low', 'Medium', 'High')) for m in c):.3f})."
+           if high_ece_worse else "LR is as well calibrated for High as v2."),
+        ("- **Noise:** LR is clearly more robust: " + "; ".join(f"{k}× std {x['delta_logreg_minus_v2']['mean']:+.4f}" for k, x in nz.items())
+         + " balanced accuracy vs v2." if better_noise else "- **Noise:** no consistent advantage for LR."),
+        (f"- **Review flag:** at matched coverage ({l['true_high_flagged']} of {rv['true_high']} true High), LR flags "
+         f"{v['flagged'] - l['flagged']:,} fewer patients ({l['flagged']:,} vs {v['flagged']:,}), so it puts less extra load on psychologists."
+         if fewer_flags else f"- **Review flag:** LR flags {l['flagged']:,} patients vs {v['flagged']:,} for v2 at matched coverage."),
+        f"- **Speed:** both are well under 10 ms per row through the full pipeline ({tm['v2']['pipeline_ms']:.1f} vs {tm['logreg']['pipeline_ms']:.1f} ms); "
+        "most of that is preprocessing. Timings are from this machine only.",
+        "- **What this supports:** logistic regression ties v2 on accuracy and Brier, is clearly more robust to noise, flags fewer "
+        "patients for the same High coverage, and is simpler to explain (one coefficient per feature). **v2's only measured advantage "
+        "is slightly better calibration for High and Medium**, so LR is not as good on everything, but the measured case for XGBoost "
+        "over LR is weak. "
+        "Not measured here: the shortcut checks that drove the 2026-09-28 switch from Random Forest (caffeine, age), SHAP and fairness. "
+        "Those would need re-running for LR before any change. **The served model is unchanged**; this is evidence for a supervisor "
+        "decision, not a decision.",
+    ]
+    return f"""
+## Why XGBoost if logistic regression ties?
+
+Script: `src/experiments/lr_vs_v2.py` (`reports/lr_vs_v2.json`). Same 5 folds; out-of-fold probabilities; v2 re-run reproduces
+the ablation fold scores (guard). LR = scikit-learn defaults (`max_iter=1000`), same preprocessing as v2. Noise = Gaussian on all
+9 numeric features of the held-out fold, scaled to that feature's training-fold std, identical for both models. LR's review
+threshold is re-derived (the highest threshold catching at least v2's out-of-fold share at 0.025); v2 keeps the served 0.025.
+
+{chr(10).join(cal)}
+
+{chr(10).join(noise)}
+
+{chr(10).join(flag)}
+
+{chr(10).join(speed)}
+
+{d['timing_note'].capitalize()}.
+
+{chr(10).join(concl)}
+"""
+
+
 def write_markdown(r: dict) -> None:
     s, pv, mods = r["summary"], r["paired_vs_v2"], r["models"]
     fmt = lambda d: f"{d['mean']:.4f} ± {d['std']:.4f}"
@@ -269,6 +346,8 @@ with their own tables [2, 3]. Neither pattern is a reason to doubt our own resul
   first three rows of `data/raw/mindcare_dataset_final.csv`. Our file has 23 columns. Its first 19 are the features the Data
   Card lists plus Anxiety Level, which fits the 19-column Kaggle file; the other four are Severity, Exercises, Sleep_Schedule and
   Nutrition. We checked only the preview, not the full file.
+- **The target is social anxiety:** the Data Card says `Anxiety Level (1-10)` "Quantifies the individual's social anxiety
+  intensity". Of the Table A studies, none uses a social-anxiety target; they use GAD-7, PHQ-9 or stress measures.
 - A search on the exact column names ("Anxiety Level (1-10)", "Therapy Sessions (per month)") found only [1].
 
 ## Table B: like-for-like results on our data
@@ -293,7 +372,7 @@ of no difference.
 {chr(10).join(pr)}
 
 **Reading.** {reading(pv, mods)}
-
+{lr_section()}
 Libraries: {', '.join(f'{k} {v}' for k, v in r['library_versions'].items())}.
 
 ## Sources (pages actually opened)

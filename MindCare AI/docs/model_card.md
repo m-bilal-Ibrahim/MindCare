@@ -58,6 +58,34 @@ See Known Limitations #12.
   by design, since a third use was not justified as a genuinely new configuration requiring it.
   The 5-class Severity test set remains untouched.
 
+### Data source
+
+Recorded from the Kaggle page and its Croissant metadata on 2026-10-20 (`reports/sota_comparison.md`).
+
+- **Source:** Kaggle, "Social Anxiety Dataset",
+  https://www.kaggle.com/datasets/natezhang123/social-anxiety-dataset (version 2), file
+  `enhanced_anxiety_dataset.csv` (19 columns; the page says "10,000+ samples", and its preview's value
+  counts sum to 11,000, as in our file). The version also holds a second file,
+  `family_anxiety_14_dataset.csv`, with the same 19 columns; we do not use it.
+- **Author:** the page is owned by "Zhang Chenyuan" (account `natezhang123`) and lists the authors
+  Liam Henderson, Ethan Callahan and Charlotte Fraser. The Croissant metadata names "Thiago Monteiro" as
+  creator. We cannot tell which of these is accurate.
+- **Licence:** CC0: Public Domain.
+- **Our additions:** our first 19 columns are the Kaggle file's 19, in the same order (checked in code).
+  We add 4: Severity, Exercises, Sleep_Schedule, Nutrition.
+- **What the target measures: social anxiety.** The page calls it "Social Anxiety Dataset" and describes
+  `Anxiety Level (1-10)` as quantifying "the individual's social anxiety intensity". **The model's target
+  is therefore a 1-10 social-anxiety rating, not a measure of general or generalised anxiety, and it was
+  never measured with a validated instrument** such as GAD-7 or a social-anxiety scale.
+- **Synthetic or real: the page contradicts itself.** Its Context section calls it "This synthetic
+  dataset", but its Disclaimer and Collection Methodology say it was compiled from real survey responses
+  and observational studies, with Australia 2019-2022 as coverage. We keep our assessment: **very likely
+  synthetic** (near-uniform demographics, zero missing values or duplicates, templated text).
+- **Published use:** Nishwa DE, Abbas Z, Lee SW. Lifestyle, psychological and demographic predictors of
+  anxiety: insights from a large-scale survey and machine learning analysis. *Front Psychiatry*. 2026;
+  17:1727014. doi:10.3389/fpsyt.2026.1727014. They use the same Kaggle dataset and the same 1-3 / 4-6 /
+  7-10 groups, model the 1-10 rating as a regression, and report no numeric model scores.
+
 ### Target definition
 
 The 3-class target is derived **directly from the raw `Anxiety Level (1-10)` column**, not from

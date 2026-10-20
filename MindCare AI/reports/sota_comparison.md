@@ -42,6 +42,8 @@ with their own tables [2, 3]. Neither pattern is a reason to doubt our own resul
   first three rows of `data/raw/mindcare_dataset_final.csv`. Our file has 23 columns. Its first 19 are the features the Data
   Card lists plus Anxiety Level, which fits the 19-column Kaggle file; the other four are Severity, Exercises, Sleep_Schedule and
   Nutrition. We checked only the preview, not the full file.
+- **The target is social anxiety:** the Data Card says `Anxiety Level (1-10)` "Quantifies the individual's social anxiety
+  intensity". Of the Table A studies, none uses a social-anxiety target; they use GAD-7, PHQ-9 or stress measures.
 - A search on the exact column names ("Anxiety Level (1-10)", "Therapy Sessions (per month)") found only [1].
 
 ## Table B: like-for-like results on our data
@@ -79,6 +81,50 @@ of no difference.
 | Logistic regression (defaults) | +0.0006 ± 0.0053 | -0.0022 ± 0.0045 | +0.0021 ± 0.0119 | 0.803 / 1.000 | 0.908 / 1 | 148 / 151 |
 
 **Reading.** No significant balanced-accuracy difference from v2 after Holm adjustment: RBF SVM (C=20, γ=0.001) (+0.0000), MLP (1×500 logistic, max_iter 500) (-0.0038), Logistic regression (defaults) (+0.0006). Significantly lower than v2: LightGBM (defaults) (-0.0087), LightGBM + random undersampling (-0.0215). None of the re-implemented methods beats v2 on our data. Undersampling trades overall quality for High recall (Δ model High recall +0.0186, Δ macro-F1 -0.0399); v2 gets its High coverage from the review flag instead. 4 of 5 re-implemented setups land within one point of v2's balanced accuracy despite very different model families, which fits the data ceiling noted in CLAUDE.md (most errors sit at the Anxiety Level 3/4 and 6/7 borders).
+
+## Why XGBoost if logistic regression ties?
+
+Script: `src/experiments/lr_vs_v2.py` (`reports/lr_vs_v2.json`). Same 5 folds; out-of-fold probabilities; v2 re-run reproduces
+the ablation fold scores (guard). LR = scikit-learn defaults (`max_iter=1000`), same preprocessing as v2. Noise = Gaussian on all
+9 numeric features of the held-out fold, scaled to that feature's training-fold std, identical for both models. LR's review
+threshold is re-derived (the highest threshold catching at least v2's out-of-fold share at 0.025); v2 keeps the served 0.025.
+
+| Out-of-fold, 9,350 rows | v2 XGBoost | Logistic regression |
+|---|---|---|
+| ECE (10-bin), Low | 0.0102 | 0.0084 |
+| ECE (10-bin), Medium | 0.0104 | 0.0136 |
+| ECE (10-bin), High | 0.0048 | 0.0112 |
+| ECE, mean of 3 classes | 0.0085 | 0.0111 |
+| Brier (one-vs-rest), Low | 0.1368 | 0.1356 |
+| Brier (one-vs-rest), Medium | 0.1485 | 0.1485 |
+| Brier (one-vs-rest), High | 0.0140 | 0.0156 |
+| Brier, mean of 3 classes | 0.0998 | 0.0999 |
+
+| Balanced accuracy (5 folds, 10 noise seeds each) | v2 XGBoost | Logistic regression | LR − v2 (paired) |
+|---|---|---|---|
+| No noise | 0.8113 ± 0.0070 | 0.8119 ± 0.0049 | — |
+| 0.25× std | 0.7592 ± 0.0090 | 0.7993 ± 0.0041 | +0.0401 ± 0.0104 (t-test p 0.00099) |
+| 1.0× std | 0.6019 ± 0.0078 | 0.6866 ± 0.0043 | +0.0847 ± 0.0079 (t-test p 1.8e-05) |
+
+| Review flag, out-of-fold | v2 XGBoost | Logistic regression |
+|---|---|---|
+| Threshold on P(High) | 0.025 (served) | 0.0178 (re-derived) |
+| True High flagged | 931 / 968 (96.2%) | 931 / 968 (96.2%) |
+| Patients flagged | 2,361 of 9,350 (25.3%) | 2,228 of 9,350 (23.8%) |
+
+| One-row predict_proba | v2 XGBoost | Logistic regression |
+|---|---|---|
+| Model only (preprocessed row) | 1.38 ms | 0.21 ms |
+| Full pipeline (raw row) | 7.94 ms | 6.43 ms |
+
+Mean of 500 one-row calls after 50 warm-up calls, this machine, fold-1 models.
+
+- **Accuracy:** tie (balanced accuracy 0.8113 vs 0.8119; Table B).
+- **Calibration:** mean Brier is about equal (0.0998 vs 0.0999). v2 is better calibrated for High (ECE 0.0048 vs 0.0112; Brier 0.0140 vs 0.0156), the class the review flag uses, and for Medium (ECE 0.0104 vs 0.0136); LR is better for Low (ECE 0.0084 vs 0.0102). Mean ECE 0.0085 vs 0.0111. All ECEs are small (≤ 0.014).
+- **Noise:** LR is clearly more robust: 0.25× std +0.0401; 1.0× std +0.0847 balanced accuracy vs v2.
+- **Review flag:** at matched coverage (931 of 968 true High), LR flags 133 fewer patients (2,228 vs 2,361), so it puts less extra load on psychologists.
+- **Speed:** both are well under 10 ms per row through the full pipeline (7.9 vs 6.4 ms); most of that is preprocessing. Timings are from this machine only.
+- **What this supports:** logistic regression ties v2 on accuracy and Brier, is clearly more robust to noise, flags fewer patients for the same High coverage, and is simpler to explain (one coefficient per feature). **v2's only measured advantage is slightly better calibration for High and Medium**, so LR is not as good on everything, but the measured case for XGBoost over LR is weak. Not measured here: the shortcut checks that drove the 2026-09-28 switch from Random Forest (caffeine, age), SHAP and fairness. Those would need re-running for LR before any change. **The served model is unchanged**; this is evidence for a supervisor decision, not a decision.
 
 Libraries: python 3.13.13, scikit-learn 1.9.1, xgboost 3.4.1, lightgbm 4.7.0, numpy 2.5.3, pandas 3.0.5.
 

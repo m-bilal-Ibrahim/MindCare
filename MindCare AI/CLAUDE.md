@@ -41,6 +41,21 @@ zero missing values/duplicates, templated recommendation text). Treat all perfor
 claims as prototype-level, not clinically validated. Document this caveat in any report
 or model card generated from this repo.
 
+**Data source (recorded 2026-10-20; details in `docs/model_card.md`, "Data source"):**
+- Kaggle "Social Anxiety Dataset", https://www.kaggle.com/datasets/natezhang123/social-anxiety-dataset (v2),
+  file `enhanced_anxiety_dataset.csv`, licence CC0: Public Domain. Owner "Zhang Chenyuan"; the listed
+  authors (Liam Henderson, Ethan Callahan, Charlotte Fraser) and the metadata creator ("Thiago Monteiro")
+  differ, so authorship is unclear.
+- Our first 19 columns are that file's 19, in order (checked in code); we add Severity, Exercises,
+  Sleep_Schedule and Nutrition.
+- **The target is SOCIAL anxiety:** the page says `Anxiety Level (1-10)` "quantifies the individual's social
+  anxiety intensity". It is not a general-anxiety measure and no validated instrument was used. Docs that
+  call it plain "anxiety" are flagged, not yet reworded.
+- The page contradicts itself: "This synthetic dataset" in its Context, versus "compiled from real-world
+  survey responses" in its Disclaimer. Our wording stays **very likely synthetic**.
+- Published use: Nishwa, Abbas & Lee, *Front Psychiatry* 2026;17:1727014, doi:10.3389/fpsyt.2026.1727014
+  (regression on the 1-10 rating; no numeric model scores).
+
 ## Target change (2026-09-14): 3-class Anxiety Level is now primary
 The primary target changed from 5-class Severity to a **3-class Low/Medium/High**
 target, derived directly from the raw `Anxiety Level (1-10)` column (not from Severity):
@@ -705,6 +720,11 @@ preprocessing (Phase 10) is shared between the two targets.
       logistic regression tie v2 (Holm p >= 0.05); LightGBM is lower (defaults -0.0087, with undersampling -0.0215 balanced
       acc.). The only paper on this dataset (Nishwa et al. 2026, Kaggle "Social Anxiety Dataset", which its page calls
       synthetic) reports no numeric scores. `lightgbm` is installed in the venv only, not in `requirements.txt`.
+- [x] `src/experiments/lr_vs_v2.py` -> `reports/lr_vs_v2.json`, section "Why XGBoost if logistic regression ties?" in
+      `reports/sota_comparison.md` (same folds, out-of-fold). LR vs v2: Brier mean 0.0999 vs 0.0998; LR more robust to noise
+      (+0.0401 at 0.25x std, +0.0847 at 1.0x); flags 2,228 vs 2,361 patients for the same 931/968 true High (LR threshold
+      0.0178). v2 is better calibrated for High (ECE 0.0048 vs 0.0112) and Medium. Caffeine/age shortcut checks, SHAP and
+      fairness were not run for LR. **Served model unchanged; a decision for the supervisor.**
 
 ### Phase 21/22 — Clinical validation comparison tool (built, no data yet)
 - [x] Clinical scoring scales and agreement metrics built in `src/evaluation/clinical_scales.py` and `src/evaluation/clinical_agreement.py`
