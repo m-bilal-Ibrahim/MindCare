@@ -699,6 +699,13 @@ preprocessing (Phase 10) is shared between the two targets.
   flagged 35/54 at its own threshold 0.027 (v2 33 at 0.025). Decision left to the supervisor.
 - PCA (95% / 99%): no reliable gain, and per-feature interpretability is lost; evidence for the report only.
 
+### Comparison with published methods (2026-10-20, CV only, test set NOT used)
+- [x] `src/experiments/sota_baselines.py` -> `reports/sota_comparison.md` / `reports/sota_baselines.json`: 7 studies'
+      reported numbers (Table A, not comparable) plus published setups re-run on the ablation folds (Table B). SVM, MLP and
+      logistic regression tie v2 (Holm p >= 0.05); LightGBM is lower (defaults -0.0087, with undersampling -0.0215 balanced
+      acc.). The only paper on this dataset (Nishwa et al. 2026, Kaggle "Social Anxiety Dataset", which its page calls
+      synthetic) reports no numeric scores. `lightgbm` is installed in the venv only, not in `requirements.txt`.
+
 ### Phase 21/22 — Clinical validation comparison tool (built, no data yet)
 - [x] Clinical scoring scales and agreement metrics built in `src/evaluation/clinical_scales.py` and `src/evaluation/clinical_agreement.py`
 - [x] Unit tests in `tests/test_clinical_scales.py` (arithmetic verification only)
