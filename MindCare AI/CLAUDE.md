@@ -735,6 +735,9 @@ preprocessing (Phase 10) is shared between the two targets.
       Age 49 -> 55 mean P(High) 0.863 -> 0.855 for LR vs 0.884 -> 0.862. Out-of-fold Scientist model High recall gap
       -0.116 for LR vs -0.141 for v2, with n=75 (see the Scientist fairness note above; not yet re-assessed). Decision for the
       supervisor.
+- [x] Scientist gap re-tested with n=75 out-of-fold: significant for v2 after Bonferroni; supersedes 'likely noise' and needs
+      reconciling with PR #57's wording at merge. (`src/experiments/occupation_gap_v2.py` -> `reports/occupation_gap_v2.md`;
+      model card Known Limitations #18.)
 
 ### Phase 21/22 — Clinical validation comparison tool (built, no data yet)
 - [x] Clinical scoring scales and agreement metrics built in `src/evaluation/clinical_scales.py` and `src/evaluation/clinical_agreement.py`

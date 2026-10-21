@@ -1044,6 +1044,15 @@ Not yet done for the 5-class Severity target beyond what's already in `reports/f
     contradicts itself on whether the data are synthetic or real, and its authorship is unclear. The model
     must not be presented as screening for anxiety disorders in general, such as generalised anxiety
     disorder.
+18. **Scientist: a statistically significant recall gap; cause unexplained; likely a data artifact; not evidence
+    of real occupational bias; disclosed and monitored** (added 2026-10-21, `reports/occupation_gap_v2.md`).
+    Out-of-fold over the 9,350 train + validation rows, the model labels 56 of 75 true-High Scientists High
+    (74.7%), against 88.8% for all other occupations. That is a gap of -0.141 (bootstrap 95% CI -0.250 to
+    -0.048; Fisher p 0.00136, Holm-adjusted across the 13 occupations p 0.0177). Scientist is the only
+    occupation with a significant gap after adjustment. The review flag catches 70 of 75 true-High Scientists
+    (93.3%, vs 96.4%; Holm p 1.0), so the safety net largely covers them. Occupation is unrelated to Stress Level
+    in this very likely synthetic dataset, and nothing here shows why the gap exists. It is reported as a
+    disclosed limitation to monitor, not as evidence of bias against scientists.
 
 ### Items needing psychologist review
 
