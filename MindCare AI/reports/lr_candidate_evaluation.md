@@ -121,6 +121,16 @@ the training split):
 
 Scientist true-High counts are small, so a gap of a few points is one or two patients.
 
+**Is the out-of-fold model High recall gap real?** Bootstrap 95% CI (2,000 resamples, seed 42,
+patients resampled within each group) and a two-sided Fisher exact test on predicted-High vs not, Scientist vs other:
+
+| Model | Scientist High recall | Other High recall | Gap | Bootstrap 95% CI | Fisher exact p | Odds ratio |
+|---|---|---|---|---|---|---|
+| v2 | 56/75 | 793/893 | -0.141 | -0.247 to -0.045 | 0.00136 | 0.37 |
+| LR | 58/75 | 794/893 | -0.116 | -0.218 to -0.023 | 0.0082 | 0.43 |
+
+**Reading.** v2: the CI excludes zero and Fisher p is 0.00136 (below 0.05); LR: the CI excludes zero and Fisher p is 0.0082 (below 0.05). Scientist was singled out because it was flagged earlier; if any of the 13 occupations could have been, a Bonferroni-adjusted p (× 13) is: v2 0.0177; LR 0.107. The two models' tests share patients. Out-of-fold predictions come from five models, not one. The data are very likely synthetic, and occupation shows no link to Stress Level in this dataset (CLAUDE.md). So this result bears on whether the gap is sampling noise; it does not explain the gap.
+
 **Under-detected subgroups** (out-of-fold):
 
 | Out-of-fold true High | Rows | v2: model High recall | v2: flag catch (0.025) | LR: model High recall | LR: flag catch |

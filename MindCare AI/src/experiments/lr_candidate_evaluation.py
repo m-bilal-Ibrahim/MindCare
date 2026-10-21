@@ -36,7 +36,7 @@ import sys
 import numpy as np
 import pandas as pd
 import sklearn
-from scipy.stats import spearmanr
+from scipy.stats import fisher_exact, spearmanr
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import balanced_accuracy_score
 from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_predict
@@ -225,9 +225,49 @@ def main() -> None:
         "direction": direction, "guards": {"validation": g, "low_caffeine": low_caf["v2"], "low_therapy": low_ther["v2"]},
         "library_versions": {"scikit-learn": sklearn.__version__, "numpy": np.__version__, "pandas": pd.__version__},
     }
+    result["scientist_stats"] = scientist_stats(result)
     REPORT_JSON.write_text(json.dumps(result, indent=2, default=float) + "\n", encoding="utf-8", newline="\n")
     write_markdown(result)
     print("guards passed; wrote", REPORT_MD.relative_to(ROOT), "and", REPORT_JSON.relative_to(ROOT))
+
+
+BOOTSTRAP_RESAMPLES = 2000
+
+
+def scientist_stats(r: dict) -> dict:
+    """Out-of-fold Scientist - other model High recall gap: bootstrap 95% CI and Fisher exact test, per model.
+
+    Each patient's result is 1 (predicted High) or 0, so resampling patients within each group (stratified bootstrap,
+    group sizes fixed) needs only the stored counts. Percentile CI, seed 42; Fisher exact is two-sided on the 2x2 table.
+    """
+    out = {}
+    for k in ("v2", "lr"):
+        s, o = (r["fairness_scientist"]["oof"][k][g] for g in ("scientist", "other"))
+        rng = np.random.default_rng(SEED)
+        a = np.r_[np.ones(s["predicted_high"]), np.zeros(s["rows"] - s["predicted_high"])]
+        b = np.r_[np.ones(o["predicted_high"]), np.zeros(o["rows"] - o["predicted_high"])]
+        gaps = np.array([rng.choice(a, len(a)).mean() - rng.choice(b, len(b)).mean() for _ in range(BOOTSTRAP_RESAMPLES)])
+        odds, p = fisher_exact([[s["predicted_high"], s["rows"] - s["predicted_high"]],
+                                [o["predicted_high"], o["rows"] - o["predicted_high"]]])
+        out[k] = {"gap": a.mean() - b.mean(), "ci95": [float(np.percentile(gaps, 2.5)), float(np.percentile(gaps, 97.5))],
+                  "fisher_p": float(p), "odds_ratio": float(odds), "scientist": s, "other": o}
+    return {"resamples": BOOTSTRAP_RESAMPLES, "seed": SEED, "models": out}
+
+
+def scientist_reading(ss: dict) -> str:
+    parts = []
+    for lab, k in (("v2", "v2"), ("LR", "lr")):
+        m = ss["models"][k]
+        excl = m["ci95"][1] < 0 or m["ci95"][0] > 0
+        parts.append(f"{lab}: the CI {'excludes' if excl else 'includes'} zero and Fisher p is {m['fisher_p']:.3g} "
+                     f"({'below' if m['fisher_p'] < 0.05 else 'not below'} 0.05)")
+    n_occ = 13
+    bonf = "; ".join(f"{lab} {min(1.0, ss['models'][k]['fisher_p'] * n_occ):.3g}" for lab, k in (("v2", "v2"), ("LR", "lr")))
+    return ("**Reading.** " + "; ".join(parts) + ". Scientist was singled out because it was flagged earlier; if any of the "
+            f"{n_occ} occupations could have been, a Bonferroni-adjusted p (× {n_occ}) is: {bonf}. The two models' tests share "
+            "patients. Out-of-fold predictions come from five models, not one. The data "
+            "are very likely synthetic, and occupation shows no link to Stress Level in this dataset (CLAUDE.md). So this "
+            "result bears on whether the gap is sampling noise; it does not explain the gap.")
 
 
 LABELS = {"accuracy": "Accuracy", "balanced_accuracy": "Balanced accuracy", "macro_f1": "Macro-F1",
@@ -312,6 +352,12 @@ def write_markdown(r: dict) -> None:
     dir_tbl += [f"| {f} | {v['expected']} | {v['lr_coef']:+.3f} | {'yes' if v['lr_matches'] else '**no**'} | {v['v2_oof_spearman']:+.3f} | {'yes' if v['v2_matches'] else '**no**'} |"
                 for f, v in dr.items()]
     p = r["lr_training_split_params"]
+    ss = r["scientist_stats"]
+    sci_rows = []
+    for lab, k in (("v2", "v2"), ("LR", "lr")):
+        m = ss["models"][k]
+        sci_rows.append(f"| {lab} | {m['scientist']['predicted_high']}/{m['scientist']['rows']} | {m['other']['predicted_high']}/{m['other']['rows']} "
+                        f"| {m['gap']:+.3f} | {m['ci95'][0]:+.3f} to {m['ci95'][1]:+.3f} | {m['fisher_p']:.3g} | {m['odds_ratio']:.2f} |")
     num_lr = [f for f in r["lr_rank"] if f in V2_NUMERIC]
     num_v2 = [f for f in r["v2_shap_rank_oof"] if f in V2_NUMERIC]
     rho_num = float(spearmanr([num_lr.index(f) for f in V2_NUMERIC], [num_v2.index(f) for f in V2_NUMERIC]).statistic)
@@ -375,6 +421,15 @@ the training split):
 
 Scientist true-High counts are small, so a gap of a few points is one or two patients.
 
+**Is the out-of-fold model High recall gap real?** Bootstrap 95% CI ({ss['resamples']:,} resamples, seed {ss['seed']},
+patients resampled within each group) and a two-sided Fisher exact test on predicted-High vs not, Scientist vs other:
+
+| Model | Scientist High recall | Other High recall | Gap | Bootstrap 95% CI | Fisher exact p | Odds ratio |
+|---|---|---|---|---|---|---|
+{chr(10).join(sci_rows)}
+
+{scientist_reading(ss)}
+
 **Under-detected subgroups** (out-of-fold):
 
 {chr(10).join(sub_tbl)}
@@ -429,7 +484,10 @@ Libraries: {', '.join(f'{k} {v}' for k, v in r['library_versions'].items())}.
 
 
 if __name__ == "__main__":
-    if "--report-only" in sys.argv:
-        write_markdown(json.loads(REPORT_JSON.read_text(encoding="utf-8")))
+    if "--report-only" in sys.argv:  # recomputes the count-based Scientist statistics, no refitting
+        saved = json.loads(REPORT_JSON.read_text(encoding="utf-8"))
+        saved["scientist_stats"] = scientist_stats(saved)
+        REPORT_JSON.write_text(json.dumps(saved, indent=2, default=float) + "\n", encoding="utf-8", newline="\n")
+        write_markdown(saved)
     else:
         main()

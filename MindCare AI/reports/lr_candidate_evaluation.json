@@ -720,5 +720,49 @@
     "scikit-learn": "1.9.1",
     "numpy": "2.5.3",
     "pandas": "3.0.5"
+  },
+  "scientist_stats": {
+    "resamples": 2000,
+    "seed": 42,
+    "models": {
+      "v2": {
+        "gap": -0.14135125046659203,
+        "ci95": [
+          -0.24682157521463227,
+          -0.04465584173198961
+        ],
+        "fisher_p": 0.001359921317010241,
+        "odds_ratio": 0.37167319307094976,
+        "scientist": {
+          "rows": 75,
+          "predicted_high": 56,
+          "flagged": 70
+        },
+        "other": {
+          "rows": 893,
+          "predicted_high": 793,
+          "flagged": 861
+        }
+      },
+      "lr": {
+        "gap": -0.11580440462859276,
+        "ci95": [
+          -0.2180963045912654,
+          -0.02257297499066818
+        ],
+        "fisher_p": 0.008201100953430575,
+        "odds_ratio": 0.42539635501555784,
+        "scientist": {
+          "rows": 75,
+          "predicted_high": 58,
+          "flagged": 71
+        },
+        "other": {
+          "rows": 893,
+          "predicted_high": 794,
+          "flagged": 861
+        }
+      }
+    }
   }
 }
