@@ -7,6 +7,20 @@ React 19 + Vite 7 + Tailwind 4 + TypeScript frontend for MindCare (therapist, ad
 - Branch names: `web/<feature>` for web, `mobile/<feature>` for the app. Branch from `main`, one feature per branch, push it, and open a PR to `main`.
 - Do not merge a PR whose backend endpoint isn't on `main` yet. The backend partner says when it can be merged.
 
+## Token discipline (applies even when effort is ultracode)
+- Workflows/subagents: do NOT start a workflow or subagent unless (a) my prompt contains the word "workflow", or (b) the task truly needs 3+ independent parallel parts. Even then, show the plan in 3 lines and wait for my OK. Default: do the work yourself, sequentially.
+- Think before acting: decide which files you need, then read only those. Use Grep with a specific pattern before opening files. Use offset/limit for files over 300 lines. Never read whole directories "to understand the project".
+- Never re-read a file you just edited or wrote.
+- Edit with the Edit/Write tools only. Never write files through shell heredocs or echo.
+- Tests: while working, run only the affected app (pytest <path> -q -x --no-header). Run the full suite ONCE, right before pushing. Print failures only.
+- Docker/DB: check once with `docker info`. If it's down, tell me in one line and stop. Never poll or wait in a loop.
+- Don't retry the same failing command more than twice. On the third failure, stop and report the error in 2 lines.
+- Lint/format: run pre-commit once before the commit, not after every edit.
+- Messages to me: no narration between steps. At most one line when something changes the plan. Final message: PR link + 5-line summary + my manual steps. No recap of what you did.
+- Question lists: one batch, one line per question, recommended option first, with a one-line reason only where it isn't obvious.
+- Don't explain code in chat. It's in the PR.
+- When a task is done, stop. Don't suggest extra improvements unless I ask.
+
 ## Commands
 - Dev server: `npm run dev` (Vite)
 - Build / type check: `npm run build`
