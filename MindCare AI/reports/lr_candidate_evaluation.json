@@ -1,0 +1,724 @@
+{
+  "rows_cv": 9350,
+  "rows_validation": 1650,
+  "seed": 42,
+  "test_set_used": false,
+  "lr_grid": {
+    "C": [
+      "0.001",
+      "0.01",
+      "0.1",
+      "1",
+      "10",
+      "100"
+    ],
+    "class_weight": [
+      "None",
+      "balanced"
+    ]
+  },
+  "lr_training_split_params": {
+    "C": 10,
+    "class_weight": "none"
+  },
+  "lr_training_split_inner_cv": 0.8117322802302631,
+  "nested": {
+    "lr": [
+      {
+        "fold": 1,
+        "params": {
+          "C": 0.1,
+          "class_weight": null
+        },
+        "inner_cv": 0.8107580667404811,
+        "threshold": 0.022615719335236838,
+        "all": {
+          "accuracy": 0.7796791443850267,
+          "balanced_accuracy": 0.8089905590917378,
+          "macro_f1": 0.8160309441697424,
+          "recall_Low": 0.7828054298642534,
+          "recall_Medium": 0.7477931904161412,
+          "recall_High": 0.8963730569948186,
+          "precision_High": 0.9505494505494505,
+          "flag_catch_rate": 0.9637305699481865,
+          "flag_volume": 0.24545454545454545,
+          "brier_Low": 0.1430029136702301,
+          "brier_Medium": 0.15463388324854907,
+          "brier_High": 0.014513535500687512
+        },
+        "eligible": {
+          "accuracy": 0.7893961708394698,
+          "balanced_accuracy": 0.8206830145784823,
+          "macro_f1": 0.8244481904727902,
+          "recall_Low": 0.785483870967742,
+          "recall_Medium": 0.7468354430379747,
+          "recall_High": 0.9297297297297298,
+          "precision_High": 0.9608938547486033,
+          "flag_catch_rate": 0.9837837837837838,
+          "flag_volume": 0.2849779086892489,
+          "brier_Low": 0.1368688721895318,
+          "brier_Medium": 0.1478431642420175,
+          "brier_High": 0.014142680358386776
+        }
+      },
+      {
+        "fold": 2,
+        "params": {
+          "C": 100,
+          "class_weight": null
+        },
+        "inner_cv": 0.8105510316911424,
+        "threshold": 0.01765818078960749,
+        "all": {
+          "accuracy": 0.8042780748663102,
+          "balanced_accuracy": 0.8138488009393429,
+          "macro_f1": 0.8293867167796236,
+          "recall_Low": 0.8192090395480226,
+          "recall_Medium": 0.7777777777777778,
+          "recall_High": 0.844559585492228,
+          "precision_High": 0.9702380952380952,
+          "flag_catch_rate": 0.9689119170984456,
+          "flag_volume": 0.24224598930481284,
+          "brier_Low": 0.12811772665182442,
+          "brier_Medium": 0.14391278628722026,
+          "brier_High": 0.017749044115497686
+        },
+        "eligible": {
+          "accuracy": 0.8098384728340675,
+          "balanced_accuracy": 0.8247677946410485,
+          "macro_f1": 0.8352856352316916,
+          "recall_Low": 0.8285256410256411,
+          "recall_Medium": 0.7653429602888087,
+          "recall_High": 0.8804347826086957,
+          "precision_High": 0.9700598802395209,
+          "flag_catch_rate": 0.9891304347826086,
+          "flag_volume": 0.28046989720998533,
+          "brier_Low": 0.1216710528702901,
+          "brier_Medium": 0.13863837673649476,
+          "brier_High": 0.018460479852766047
+        }
+      },
+      {
+        "fold": 3,
+        "params": {
+          "C": 0.1,
+          "class_weight": null
+        },
+        "inner_cv": 0.8125285782208028,
+        "threshold": 0.021516414361753784,
+        "all": {
+          "accuracy": 0.7914438502673797,
+          "balanced_accuracy": 0.8117745263742838,
+          "macro_f1": 0.8234075856451399,
+          "recall_Low": 0.8178733031674208,
+          "recall_Medium": 0.7411616161616161,
+          "recall_High": 0.8762886597938144,
+          "precision_High": 0.9659090909090909,
+          "flag_catch_rate": 0.9690721649484536,
+          "flag_volume": 0.23475935828877006,
+          "brier_Low": 0.13229178962604077,
+          "brier_Medium": 0.14560154281311405,
+          "brier_High": 0.01570132944251839
+        },
+        "eligible": {
+          "accuracy": 0.8033536585365854,
+          "balanced_accuracy": 0.8246139626012043,
+          "macro_f1": 0.8332324151834537,
+          "recall_Low": 0.8272,
+          "recall_Medium": 0.7335984095427436,
+          "recall_High": 0.9130434782608695,
+          "precision_High": 0.9824561403508771,
+          "flag_catch_rate": 0.9891304347826086,
+          "flag_volume": 0.2660060975609756,
+          "brier_Low": 0.12631227718554264,
+          "brier_Medium": 0.1392247950720342,
+          "brier_High": 0.015127203534601757
+        }
+      },
+      {
+        "fold": 4,
+        "params": {
+          "C": 10,
+          "class_weight": null
+        },
+        "inner_cv": 0.8126121656386976,
+        "threshold": 0.02081407323354457,
+        "all": {
+          "accuracy": 0.7844919786096257,
+          "balanced_accuracy": 0.8074419852770368,
+          "macro_f1": 0.8154760038324188,
+          "recall_Low": 0.7884615384615384,
+          "recall_Medium": 0.7575757575757576,
+          "recall_High": 0.8762886597938144,
+          "precision_High": 0.9392265193370166,
+          "flag_catch_rate": 0.9432989690721649,
+          "flag_volume": 0.21497326203208555,
+          "brier_Low": 0.13688186641591002,
+          "brier_Medium": 0.15003865531593935,
+          "brier_High": 0.016359575749354174
+        },
+        "eligible": {
+          "accuracy": 0.7936984246061516,
+          "balanced_accuracy": 0.8156477899431328,
+          "macro_f1": 0.822479482927244,
+          "recall_Low": 0.7865353037766831,
+          "recall_Medium": 0.7667910447761194,
+          "recall_High": 0.8936170212765957,
+          "precision_High": 0.9545454545454546,
+          "flag_catch_rate": 0.9521276595744681,
+          "flag_volume": 0.24681170292573143,
+          "brier_Low": 0.13117044955749396,
+          "brier_Medium": 0.1460894308724393,
+          "brier_High": 0.01878967627144352
+        }
+      },
+      {
+        "fold": 5,
+        "params": {
+          "C": 1,
+          "class_weight": null
+        },
+        "inner_cv": 0.8092110099149782,
+        "threshold": 0.020803406346541847,
+        "all": {
+          "accuracy": 0.7914438502673797,
+          "balanced_accuracy": 0.8190496418210184,
+          "macro_f1": 0.828851872664622,
+          "recall_Low": 0.7975113122171946,
+          "recall_Medium": 0.7575757575757576,
+          "recall_High": 0.9020618556701031,
+          "precision_High": 0.9776536312849162,
+          "flag_catch_rate": 0.9587628865979382,
+          "flag_volume": 0.22620320855614973,
+          "brier_Low": 0.13775193179697962,
+          "brier_Medium": 0.14839468764474734,
+          "brier_High": 0.01367970628303738
+        },
+        "eligible": {
+          "accuracy": 0.7927461139896373,
+          "balanced_accuracy": 0.8174236256864282,
+          "macro_f1": 0.8268826950459366,
+          "recall_Low": 0.8172920065252854,
+          "recall_Medium": 0.7244525547445255,
+          "recall_High": 0.9105263157894737,
+          "precision_High": 0.9885714285714285,
+          "flag_catch_rate": 0.9578947368421052,
+          "flag_volume": 0.25018504811250925,
+          "brier_Low": 0.1353945458115372,
+          "brier_Medium": 0.14672768089737812,
+          "brier_High": 0.015113905454610962
+        }
+      }
+    ],
+    "v2": [
+      {
+        "fold": 1,
+        "threshold": 0.023388925939798355,
+        "all": {
+          "accuracy": 0.7748663101604278,
+          "balanced_accuracy": 0.8029400810889862,
+          "macro_f1": 0.8138555109757092,
+          "recall_Low": 0.7737556561085973,
+          "recall_Medium": 0.7490542244640606,
+          "recall_High": 0.8860103626943006,
+          "precision_High": 0.9715909090909091,
+          "flag_catch_rate": 0.9637305699481865,
+          "flag_volume": 0.2716577540106952,
+          "brier_Low": 0.1447066217660904,
+          "brier_Medium": 0.1553110033273697,
+          "brier_High": 0.013566741719841957
+        },
+        "eligible": {
+          "accuracy": 0.7842415316642121,
+          "balanced_accuracy": 0.815590267978998,
+          "macro_f1": 0.8225852787039724,
+          "recall_Low": 0.7774193548387097,
+          "recall_Medium": 0.7450271247739603,
+          "recall_High": 0.9243243243243243,
+          "precision_High": 0.9827586206896551,
+          "flag_catch_rate": 0.9783783783783784,
+          "flag_volume": 0.31443298969072164,
+          "brier_Low": 0.13861897587776184,
+          "brier_Medium": 0.14830316603183746,
+          "brier_High": 0.0126641308888793
+        }
+      },
+      {
+        "fold": 2,
+        "threshold": 0.08135150372982025,
+        "all": {
+          "accuracy": 0.7978609625668449,
+          "balanced_accuracy": 0.8173876066363114,
+          "macro_f1": 0.8227715680366221,
+          "recall_Low": 0.8,
+          "recall_Medium": 0.7765151515151515,
+          "recall_High": 0.8756476683937824,
+          "precision_High": 0.9184782608695652,
+          "flag_catch_rate": 0.9740932642487047,
+          "flag_volume": 0.2647058823529412,
+          "brier_Low": 0.12967394292354584,
+          "brier_Medium": 0.14719171822071075,
+          "brier_High": 0.018315939232707024
+        },
+        "eligible": {
+          "accuracy": 0.8069016152716594,
+          "balanced_accuracy": 0.8288830799818085,
+          "macro_f1": 0.8313498880106501,
+          "recall_Low": 0.8173076923076923,
+          "recall_Medium": 0.7617328519855595,
+          "recall_High": 0.907608695652174,
+          "precision_High": 0.9277777777777778,
+          "flag_catch_rate": 0.9891304347826086,
+          "flag_volume": 0.2973568281938326,
+          "brier_Low": 0.121576227247715,
+          "brier_Medium": 0.1401333063840866,
+          "brier_High": 0.018707066774368286
+        }
+      },
+      {
+        "fold": 3,
+        "threshold": 0.026256807148456573,
+        "all": {
+          "accuracy": 0.7925133689839572,
+          "balanced_accuracy": 0.8114941456360499,
+          "macro_f1": 0.8236368242062392,
+          "recall_Low": 0.8133484162895928,
+          "recall_Medium": 0.75,
+          "recall_High": 0.8711340206185567,
+          "precision_High": 0.9657142857142857,
+          "flag_catch_rate": 0.9381443298969072,
+          "flag_volume": 0.23529411764705882,
+          "brier_Low": 0.13379256427288055,
+          "brier_Medium": 0.1468459814786911,
+          "brier_High": 0.015489509329199791
+        },
+        "eligible": {
+          "accuracy": 0.8064024390243902,
+          "balanced_accuracy": 0.8288016999452559,
+          "macro_f1": 0.8359085796311883,
+          "recall_Low": 0.8224,
+          "recall_Medium": 0.7455268389662028,
+          "recall_High": 0.9184782608695652,
+          "precision_High": 0.976878612716763,
+          "flag_catch_rate": 0.9619565217391305,
+          "flag_volume": 0.2698170731707317,
+          "brier_Low": 0.12715241312980652,
+          "brier_Medium": 0.13865944743156433,
+          "brier_High": 0.013872940093278885
+        }
+      },
+      {
+        "fold": 4,
+        "threshold": 0.02879783697426319,
+        "all": {
+          "accuracy": 0.786096256684492,
+          "balanced_accuracy": 0.8087484130540528,
+          "macro_f1": 0.8221142846821641,
+          "recall_Low": 0.7873303167420814,
+          "recall_Medium": 0.7626262626262627,
+          "recall_High": 0.8762886597938144,
+          "precision_High": 0.9826589595375722,
+          "flag_catch_rate": 0.9381443298969072,
+          "flag_volume": 0.22406417112299465,
+          "brier_Low": 0.1383427381515503,
+          "brier_Medium": 0.1504010111093521,
+          "brier_High": 0.014299188740551472
+        },
+        "eligible": {
+          "accuracy": 0.7974493623405852,
+          "balanced_accuracy": 0.8198338566052454,
+          "macro_f1": 0.8298824013137084,
+          "recall_Low": 0.7881773399014779,
+          "recall_Medium": 0.7723880597014925,
+          "recall_High": 0.898936170212766,
+          "precision_High": 0.9883040935672515,
+          "flag_catch_rate": 0.9414893617021277,
+          "flag_volume": 0.2565641410352588,
+          "brier_Low": 0.1315232813358307,
+          "brier_Medium": 0.14466707408428192,
+          "brier_High": 0.015970967710018158
+        }
+      },
+      {
+        "fold": 5,
+        "threshold": 0.03108222596347332,
+        "all": {
+          "accuracy": 0.7941176470588235,
+          "balanced_accuracy": 0.819812879773462,
+          "macro_f1": 0.8301649531837615,
+          "recall_Low": 0.7986425339366516,
+          "recall_Medium": 0.7638888888888888,
+          "recall_High": 0.8969072164948454,
+          "precision_High": 0.9775280898876404,
+          "flag_catch_rate": 0.9587628865979382,
+          "flag_volume": 0.21657754010695188,
+          "brier_Low": 0.13797599077224731,
+          "brier_Medium": 0.148005872964859,
+          "brier_High": 0.012316247448325157
+        },
+        "eligible": {
+          "accuracy": 0.7942264988897113,
+          "balanced_accuracy": 0.8198507828734026,
+          "macro_f1": 0.8287020511714278,
+          "recall_Low": 0.8156606851549756,
+          "recall_Medium": 0.7281021897810219,
+          "recall_High": 0.9157894736842105,
+          "precision_High": 0.9886363636363636,
+          "flag_catch_rate": 0.9578947368421052,
+          "flag_volume": 0.2464840858623242,
+          "brier_Low": 0.1351115107536316,
+          "brier_Medium": 0.14612698554992676,
+          "brier_High": 0.01378396712243557
+        }
+      }
+    ]
+  },
+  "thresholds": {
+    "validation": {
+      "v2": 0.025,
+      "lr": 0.014839432243165925
+    },
+    "oof": {
+      "v2": 0.025,
+      "lr": 0.0171
+    },
+    "v2_oof_catch_share": 0.9617768595041323
+  },
+  "validation_scores": {
+    "v2": {
+      "accuracy": 0.7745454545454545,
+      "balanced_accuracy": 0.8055111717561768,
+      "macro_f1": 0.8148105277018676,
+      "recall_Low": 0.7840616966580977,
+      "recall_Medium": 0.7355021216407355,
+      "recall_High": 0.896969696969697,
+      "precision_High": 0.9673202614379085,
+      "flag_catch_rate": 0.9575757575757575,
+      "flag_volume": 0.24909090909090909,
+      "brier_Low": 0.14087705314159393,
+      "brier_Medium": 0.15148571133613586,
+      "brier_High": 0.012426535598933697
+    },
+    "lr": {
+      "accuracy": 0.7775757575757576,
+      "balanced_accuracy": 0.8076964435334463,
+      "macro_f1": 0.8178211388748963,
+      "recall_Low": 0.7892030848329049,
+      "recall_Medium": 0.7369165487977369,
+      "recall_High": 0.896969696969697,
+      "precision_High": 0.9736842105263158,
+      "flag_catch_rate": 0.9575757575757575,
+      "flag_volume": 0.24303030303030304,
+      "brier_Low": 0.1400245361046605,
+      "brier_Medium": 0.15119989199591188,
+      "brier_High": 0.013220886833307187
+    }
+  },
+  "caffeine_observed": {
+    "validation": {
+      "v2": {
+        "rows": 4,
+        "predicted_high": 0,
+        "flagged": 2
+      },
+      "lr": {
+        "rows": 4,
+        "predicted_high": 0,
+        "flagged": 1
+      }
+    },
+    "oof": {
+      "v2": {
+        "rows": 23,
+        "predicted_high": 0,
+        "flagged": 12
+      },
+      "lr": {
+        "rows": 23,
+        "predicted_high": 1,
+        "flagged": 9
+      }
+    }
+  },
+  "caffeine_counterfactual": {
+    "0": {
+      "v2": {
+        "predicted_high": 128,
+        "flagged": 154,
+        "of": 165
+      },
+      "lr": {
+        "predicted_high": 101,
+        "flagged": 150,
+        "of": 165
+      }
+    },
+    "100": {
+      "v2": {
+        "predicted_high": 129,
+        "flagged": 155,
+        "of": 165
+      },
+      "lr": {
+        "predicted_high": 117,
+        "flagged": 152,
+        "of": 165
+      }
+    },
+    "200": {
+      "v2": {
+        "predicted_high": 129,
+        "flagged": 155,
+        "of": 165
+      },
+      "lr": {
+        "predicted_high": 135,
+        "flagged": 154,
+        "of": 165
+      }
+    }
+  },
+  "age_artifact": {
+    "rows": 161,
+    "by_age": {
+      "49": {
+        "v2": {
+          "mean_p_high": 0.8842071890830994,
+          "predicted_high": 148
+        },
+        "lr": {
+          "mean_p_high": 0.8628471513365558,
+          "predicted_high": 147
+        }
+      },
+      "50": {
+        "v2": {
+          "mean_p_high": 0.8814783692359924,
+          "predicted_high": 148
+        },
+        "lr": {
+          "mean_p_high": 0.8616056939497104,
+          "predicted_high": 147
+        }
+      },
+      "55": {
+        "v2": {
+          "mean_p_high": 0.8616450428962708,
+          "predicted_high": 144
+        },
+        "lr": {
+          "mean_p_high": 0.8551490450914696,
+          "predicted_high": 147
+        }
+      }
+    }
+  },
+  "fairness_scientist": {
+    "oof": {
+      "v2": {
+        "scientist": {
+          "rows": 75,
+          "predicted_high": 56,
+          "flagged": 70
+        },
+        "other": {
+          "rows": 893,
+          "predicted_high": 793,
+          "flagged": 861
+        },
+        "recall_gap": -0.14135125046659203,
+        "catch_gap": -0.030832400149309436
+      },
+      "lr": {
+        "scientist": {
+          "rows": 75,
+          "predicted_high": 58,
+          "flagged": 71
+        },
+        "other": {
+          "rows": 893,
+          "predicted_high": 794,
+          "flagged": 861
+        },
+        "recall_gap": -0.11580440462859276,
+        "catch_gap": -0.017499066815976128
+      }
+    },
+    "validation": {
+      "v2": {
+        "scientist": {
+          "rows": 16,
+          "predicted_high": 12,
+          "flagged": 15
+        },
+        "other": {
+          "rows": 149,
+          "predicted_high": 136,
+          "flagged": 143
+        },
+        "recall_gap": -0.162751677852349,
+        "catch_gap": -0.02223154362416102
+      },
+      "lr": {
+        "scientist": {
+          "rows": 16,
+          "predicted_high": 12,
+          "flagged": 16
+        },
+        "other": {
+          "rows": 149,
+          "predicted_high": 136,
+          "flagged": 142
+        },
+        "recall_gap": -0.162751677852349,
+        "catch_gap": 0.046979865771812124
+      }
+    }
+  },
+  "low_therapy_oof": {
+    "v2": {
+      "rows": 54,
+      "predicted_high": 0,
+      "flagged": 33
+    },
+    "lr": {
+      "rows": 54,
+      "predicted_high": 1,
+      "flagged": 31
+    }
+  },
+  "lr_coefficients_high": {
+    "Sleep Hours": {
+      "coef": -1.013736614622123
+    },
+    "Physical Activity (hrs/week)": {
+      "coef": -0.4499184819470433
+    },
+    "Caffeine Intake (mg/day)": {
+      "coef": 0.8294840821133974
+    },
+    "Stress Level (1-10)": {
+      "coef": 2.0163478782559214
+    },
+    "Heart Rate (bpm)": {
+      "coef": 0.19937181204223897
+    },
+    "Breathing Rate (breaths/min)": {
+      "coef": 0.0992002013372541
+    },
+    "Therapy Sessions (per month)": {
+      "coef": 0.9081496819828757
+    },
+    "Diet Quality (1-10)": {
+      "coef": -0.3244386771043417
+    },
+    "Age": {
+      "coef": -0.2417813397980153
+    },
+    "Occupation": {
+      "range": 1.0407281508677133,
+      "levels": {
+        "Artist": -0.1856756587542123,
+        "Athlete": -0.0445954429925445,
+        "Chef": -0.2344453339579408,
+        "Doctor": -0.6711892495571499,
+        "Engineer": -0.6198719271795294,
+        "Freelancer": 0.033607771150404135,
+        "Lawyer": -0.47016717833866517,
+        "Musician": 0.0463586959452688,
+        "Nurse": -0.5532879934286058,
+        "Other": 0.3695389013105634,
+        "Scientist": -0.3001247880699142,
+        "Student": -0.002181850588454136,
+        "Teacher": 0.302968030015515
+      }
+    },
+    "Family History of Anxiety": {
+      "range": 0.0011116189680366872,
+      "levels": {
+        "No": -1.1650888217066606,
+        "Yes": -1.163977202738624
+      }
+    }
+  },
+  "lr_rank": [
+    "Stress Level (1-10)",
+    "Occupation",
+    "Sleep Hours",
+    "Therapy Sessions (per month)",
+    "Caffeine Intake (mg/day)",
+    "Physical Activity (hrs/week)",
+    "Diet Quality (1-10)",
+    "Age",
+    "Heart Rate (bpm)",
+    "Breathing Rate (breaths/min)",
+    "Family History of Anxiety"
+  ],
+  "v2_shap_rank_oof": [
+    "Stress Level (1-10)",
+    "Therapy Sessions (per month)",
+    "Sleep Hours",
+    "Caffeine Intake (mg/day)",
+    "Physical Activity (hrs/week)",
+    "Diet Quality (1-10)",
+    "Age",
+    "Heart Rate (bpm)",
+    "Breathing Rate (breaths/min)",
+    "Occupation",
+    "Family History of Anxiety"
+  ],
+  "rank_spearman": 0.6636363636363638,
+  "direction": {
+    "Sleep Hours": {
+      "expected": "higher -> less risk",
+      "lr_coef": -1.013736614622123,
+      "lr_matches": true,
+      "v2_matches": true,
+      "v2_oof_spearman": -0.9269778508898686
+    },
+    "Caffeine Intake (mg/day)": {
+      "expected": "higher -> more risk",
+      "lr_coef": 0.8294840821133974,
+      "lr_matches": true,
+      "v2_matches": true,
+      "v2_oof_spearman": 0.8657379332660023
+    },
+    "Physical Activity (hrs/week)": {
+      "expected": "higher -> less risk",
+      "lr_coef": -0.4499184819470433,
+      "lr_matches": true,
+      "v2_matches": true,
+      "v2_oof_spearman": -0.9015361560559019
+    },
+    "Diet Quality (1-10)": {
+      "expected": "higher -> less risk",
+      "lr_coef": -0.3244386771043417,
+      "lr_matches": true,
+      "v2_matches": true,
+      "v2_oof_spearman": -0.7715186570289164
+    }
+  },
+  "guards": {
+    "validation": {
+      "balanced_accuracy": 0.8055,
+      "flagged": 411,
+      "flagged_true_high": 158,
+      "true_high": 165
+    },
+    "low_caffeine": {
+      "rows": 23,
+      "predicted_high": 0,
+      "flagged": 12
+    },
+    "low_therapy": {
+      "rows": 54,
+      "predicted_high": 0,
+      "flagged": 33
+    }
+  },
+  "library_versions": {
+    "scikit-learn": "1.9.1",
+    "numpy": "2.5.3",
+    "pandas": "3.0.5"
+  }
+}
