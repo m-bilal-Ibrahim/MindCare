@@ -728,6 +728,13 @@ preprocessing (Phase 10) is shared between the two targets.
       (+0.0401 at 0.25x std, +0.0847 at 1.0x); flags 2,228 vs 2,361 patients for the same 931/968 true High (LR threshold
       0.0178). v2 is better calibrated for High (ECE 0.0048 vs 0.0112) and Medium. Caffeine/age shortcut checks, SHAP and
       fairness were not run for LR. **Served model unchanged; a decision for the supervisor.**
+- [x] `src/experiments/lr_candidate_evaluation.py` -> `reports/lr_candidate_evaluation.md` / `.json` (2026-10-21, guarded
+      against v2's served, SHAP and robustness numbers). Nested CV, LR vs v2: balanced accuracy 0.8122 vs 0.8121, model High
+      recall 0.8791 vs 0.8812, flag catch 0.9608 vs 0.9546 at flag volume 0.2327 vs 0.2425. Caffeine 0 -> 200 mg/day changes
+      predicted High by +34 of 165 for LR vs +1 for v2. Low-caffeine flagged 9/23 for LR vs 12/23; low-therapy 31/54 vs 33/54.
+      Age 49 -> 55 mean P(High) 0.863 -> 0.855 for LR vs 0.884 -> 0.862. Out-of-fold Scientist model High recall gap
+      -0.116 for LR vs -0.141 for v2, with n=75 (see the Scientist fairness note above; not yet re-assessed). Decision for the
+      supervisor.
 
 ### Phase 21/22 — Clinical validation comparison tool (built, no data yet)
 - [x] Clinical scoring scales and agreement metrics built in `src/evaluation/clinical_scales.py` and `src/evaluation/clinical_agreement.py`
