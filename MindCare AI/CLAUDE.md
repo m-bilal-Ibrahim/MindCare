@@ -7,9 +7,10 @@ psychologists. **Location:** the `MindCare AI/` folder of the MindCare monorepo 
 `MindCare Backend/`, `MindCare App/` and `MindCare Web/`). It replaced a placeholder scaffold there
 on the `ai/anxiety-model-into-mindcare-ai` branch, via `git subtree add`, keeping this project's
 history. Paths in this file are relative to `MindCare AI/`, except `render.yaml` and
-`.github/workflows/keep-alive.yml`, which must be at the repository root. This repo trains a model to predict anxiety risk from patient
-lifestyle/physiological data. **As of 2026-09-14, the primary target is a 3-class
-Low/Medium/High Anxiety Level bucket** (see "Target change" section below); the original
+`.github/workflows/keep-alive.yml`, which must be at the repository root. This repo trains a model to predict the social anxiety level
+(self-rated 1-10, as defined by the source dataset; not a validated clinical scale) from patient
+lifestyle/physiological data. It is not an anxiety-disorder screen. **As of 2026-09-14, the primary target is a 3-class
+Low/Medium/High bucket of the `Anxiety Level (1-10)` column** (see "Target change" section below); the original
 5-class Anxiety Severity target is kept as a secondary/reference target for comparison.
 
 **Critical workflow constraint:** this model's output NEVER goes directly to patients.
@@ -49,8 +50,10 @@ or model card generated from this repo.
 - Our first 19 columns are that file's 19, in order (checked in code); we add Severity, Exercises,
   Sleep_Schedule and Nutrition.
 - **The target is SOCIAL anxiety:** the page says `Anxiety Level (1-10)` "quantifies the individual's social
-  anxiety intensity". It is not a general-anxiety measure and no validated instrument was used. Docs that
-  call it plain "anxiety" are flagged, not yet reworded.
+  anxiety intensity". It is not a general-anxiety measure and no validated instrument was used. Since
+  2026-10-21 the docs describe the target as "social anxiety level (self-rated 1-10, as defined by the
+  source dataset; not a validated clinical scale)" (model card Known Limitations #17). API fields,
+  endpoints, response keys, class labels and code identifiers keep their names.
 - The page contradicts itself: "This synthetic dataset" in its Context, versus "compiled from real-world
   survey responses" in its Disclaimer. Our wording stays **very likely synthetic**.
 - Published use: Nishwa, Abbas & Lee, *Front Psychiatry* 2026;17:1727014, doi:10.3389/fpsyt.2026.1727014
@@ -336,7 +339,7 @@ report balanced accuracy, macro-F1, and per-class recall (especially High) for t
     - The 53-64 band had 3 true-High validation cases, and all 3 were missed.
     - **Update 2026-09-28:** XGBoost, the model since then, barely shows the effect (0.885 →
       0.863). The limit stands anyway: the reason is the data gap, since almost no High cases
-      at 50+ means no evidence either model recognises High anxiety there. The API's rejection
+      at 50+ means no evidence either model recognises a High social anxiety level there. The API's rejection
       message was reworded to say that, rather than claiming the model lowers P(High).
 
     Under-calling High is the most dangerous error for this system. 40 was rejected because

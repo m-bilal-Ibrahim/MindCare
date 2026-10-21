@@ -1,11 +1,13 @@
-# Model Card — MindCare Anxiety Level Classifier (3-Class)
+# Model Card — MindCare Social Anxiety Level Classifier (3-Class)
 
 **Model:** XGBoost (`xgboost.XGBClassifier`), canonical since 2026-09-28, on **11 features since
 2026-10-02** (Sweating Level removed); see "Performance — 11-Feature v2 XGBoost". It replaced a tuned
 Random Forest; see "Performance — 12-Feature XGBoost" and `reports/model_comparison_12feature.md`.
 Sections covering Phases 14-19 below describe the earlier Random Forest models unless they say
 otherwise.
-**Target:** 3-class Anxiety Level — Low / Medium / High (primary target as of 2026-09-14)
+**Target:** social anxiety level (self-rated 1-10, as defined by the source dataset; not a validated
+clinical scale), in 3 classes from the `Anxiety Level (1-10)` column — Low / Medium / High (primary
+target as of 2026-09-14)
 **Status:** Prototype / research model. Not clinically validated.
 
 This card consolidates findings already established and documented in [`CLAUDE.md`](../CLAUDE.md)
@@ -33,8 +35,8 @@ for any other age. Platform rules (decided 2026-09-28):
   for minors. If a minor ever reaches this model, the API rejects them as "not eligible", with
   no referral.
 - **50 and over: can register, and are redirected straight to a psychologist**, with no AI
-  pre-assessment. The training data has almost no High-anxiety cases from age 50 on, so there
-  is almost no evidence the model can recognise High anxiety at these ages.
+  pre-assessment. The training data has almost no High cases (social anxiety level 7-10) from age
+  50 on, so there is almost no evidence the model can recognise a High level at these ages.
 
 See Known Limitations #12.
 
@@ -88,7 +90,9 @@ Recorded from the Kaggle page and its Croissant metadata on 2026-10-20 (`reports
 
 ### Target definition
 
-The 3-class target is derived **directly from the raw `Anxiety Level (1-10)` column**, not from
+The target is the social anxiety level (self-rated 1-10, as defined by the source dataset; not a
+validated clinical scale; see "Data source" above). The 3-class target is derived **directly from the
+raw `Anxiety Level (1-10)` column**, not from
 the 5-class Severity column (their boundaries don't align cleanly per earlier EDA):
 
 - **Low:** Anxiety Level 1-3
@@ -982,7 +986,7 @@ Not yet done for the 5-class Severity target beyond what's already in `reports/f
       Moving under-50 validation rows to age 55 turned off its review flag for 17 of 282.
     - XGBoost (current) barely shows the effect (0.885 → 0.863). The limit stands anyway,
       because the data gap does: with almost no High cases at 50+, nothing shows either model
-      can recognise High anxiety at those ages.
+      can recognise a High social anxiety level at those ages.
 
     This is a data-coverage limit, not a clinical judgement about older adults.
 13. **Nested cross-validation doesn't cover the decisions made outside it**
@@ -1034,6 +1038,12 @@ Not yet done for the 5-class Severity target beyond what's already in `reports/f
     0.0000 (mean P(High) 0.0471), though 75.1% would be flagged. This also
     explains why shifting Stress up barely changes the predicted class. No threshold was changed. Small sample;
     very likely synthetic data.
+17. **The model predicts self-rated social anxiety, from a dataset of uncertain origin; it is not
+    screening for anxiety disorders** (added 2026-10-21, see "Data source"). The target is the source
+    dataset's social anxiety level (self-rated 1-10, not a validated clinical scale). The source page
+    contradicts itself on whether the data are synthetic or real, and its authorship is unclear. The model
+    must not be presented as screening for anxiety disorders in general, such as generalised anxiety
+    disorder.
 
 ### Items needing psychologist review
 

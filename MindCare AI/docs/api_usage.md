@@ -1,6 +1,10 @@
-# MindCare Anxiety Level API — Usage Guide
+# MindCare Social Anxiety Level API — Usage Guide
 
-FastAPI service exposing the canonical XGBoost model (3-class Anxiety Level target; XGBoost
+The target is the social anxiety level (self-rated 1-10, as defined by the source dataset; not a
+validated clinical scale), in 3 classes (Low / Medium / High) from the `Anxiety Level (1-10)` column.
+API field, endpoint and label names are unchanged. See `docs/model_card.md`, "Data source".
+
+FastAPI service exposing the canonical XGBoost model (3-class social anxiety level target; XGBoost
 since 2026-09-28, see [`reports/model_comparison_12feature.md`](../reports/model_comparison_12feature.md);
 11 features since 2026-10-02, see
 [`reports/feature_reduction_sweatlevel_3class.md`](../reports/feature_reduction_sweatlevel_3class.md))
@@ -106,13 +110,13 @@ shouldn't be on the platform at all.
 
 - **Why under 18:** the training data contains no one under 18, and physiological norms (heart
   rate, breathing rate) and consent rules differ for minors.
-- **Why 50 and over:** these ages are in the training data, but the share of High-anxiety cases
-  drops from 12–15% below age 50 to about 1% from 50 on. That's almost certainly an artifact of
+- **Why 50 and over:** these ages are in the training data, but the share of High cases (social
+  anxiety level 7-10) drops from 12–15% below age 50 to about 1% from 50 on. That's almost certainly an artifact of
   a very likely synthetic dataset. With so few High examples at these ages, there is almost no
-  evidence the model can recognise High anxiety in older users. The Random Forest that preceded
+  evidence the model can recognise a High social anxiety level in older users. The Random Forest that preceded
   XGBoost clearly learned the artifact: for otherwise identical people, its mean P(High) fell
   from 0.90 at age 49 to 0.63 at 55. XGBoost barely does (0.885 → 0.863), but a model ignoring a
-  data gap doesn't fill it. Missing High anxiety is the most dangerous error, so the model is
+  data gap doesn't fill it. Missing a High level is the most dangerous error, so the model is
   not used for these ages.
 
 This is a scope limit set by the training data, not a clinical rule. It could be revisited with

@@ -1,4 +1,4 @@
-# Trustworthiness Report — MindCare Anxiety Level Classifier (3-Class)
+# Trustworthiness Report — MindCare Social Anxiety Level Classifier (3-Class)
 
 Answers to the 25 Phase 35 questions, pulled only from
 [`docs/model_card.md`](model_card.md) and [`CLAUDE.md`](../CLAUDE.md), each verified against the
@@ -58,8 +58,9 @@ so explicitly rather than skipping the question or implying otherwise.
 
 ### 1. What clinical problem does the model solve?
 
-It predicts an **anxiety risk level — Low / Medium / High** — from a patient's lifestyle and
-physiological data, as a decision-support suggestion within the MindCare platform
+It predicts a **social anxiety level — Low / Medium / High** (self-rated 1-10, as defined by the
+source dataset; not a validated clinical scale) from a patient's lifestyle and physiological data,
+not an anxiety-disorder screen, as a decision-support suggestion within the MindCare platform
 (`model_card.md`, "Intended Use"; `CLAUDE.md`, "What this is"). It does not diagnose; it produces
 a risk bucket for a psychologist to review.
 
@@ -107,9 +108,10 @@ For the primary (3-class) target: labels are derived **directly from the raw `An
 (1-10)` column** by fixed binning — Low = 1-3, Medium = 4-6, High = 7-10 (`model_card.md`,
 "Target definition"; `CLAUDE.md`, "Target change"). This was a deliberate choice over re-bucketing
 the 5-class Severity column, because Severity's boundaries don't align cleanly with these bins per
-earlier EDA. How the underlying raw `Anxiety Level` and `Severity` values were originally assigned
-in the source dataset itself is not documented — consistent with the dataset's likely-synthetic
-origin (see Q4).
+earlier EDA. The source dataset defines `Anxiety Level` as a social anxiety level (self-rated 1-10,
+not a validated clinical scale; `model_card.md`, "Data source"). How the raw `Anxiety Level` and
+`Severity` values were originally assigned is not documented — consistent with the dataset's
+likely-synthetic origin (see Q4).
 
 ### 6. How was leakage prevented?
 
