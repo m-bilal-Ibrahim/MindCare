@@ -296,3 +296,65 @@ export async function reactivateUser(userId: number) {
     ACCOUNT_NOT_FOUND
   );
 }
+
+// ============================================================
+// Managing admins (super-admins only) — backend PR #67,
+// docs/handoff/admin-panel-2.md §2. Ordinary admins get 403
+// "Only a super-admin can do this." on every call.
+// ============================================================
+
+export interface AdminAccount {
+  id: number;
+  email: string;
+  full_name: string;
+  is_super_admin: boolean;
+  is_active: boolean;
+  must_change_password: boolean;
+  created_at: string;
+  last_login: string | null;
+}
+
+export const NOT_SUPER_ADMIN = 'Only a super-admin can do this.';
+
+function superExplain<T>(res: ApiResponse<T>): ApiResponse<T> {
+  if (res.status === 404) return { ...res, data: null, error: 'No admin with that id.' };
+  return res;
+}
+
+/** GET /accounts/admin/admins/ — oldest first. 403 = the caller isn't a super-admin. */
+export async function listAdmins() {
+  return apiFetch<AdminAccount[]>('/accounts/admin/admins/');
+}
+
+let superAdminCheck: Promise<boolean> | null = null;
+/** True if the signed-in admin is a super-admin (one call per page load, as the handoff suggests). */
+export function isSuperAdmin(): Promise<boolean> {
+  superAdminCheck ??= listAdmins().then((r) => {
+    if (r.status === 0 || (r.status ?? 0) >= 500) superAdminCheck = null; // retry later on network errors
+    return !!r.data;
+  });
+  return superAdminCheck;
+}
+export function resetSuperAdminCheck() {
+  superAdminCheck = null;
+}
+
+/** POST /accounts/admin/admins/ — 201 with temporary_password, shown only in this response. */
+export async function createAdmin(email: string, fullName: string) {
+  return apiFetch<AdminAccount & { temporary_password: string }>('/accounts/admin/admins/', {
+    method: 'POST',
+    body: JSON.stringify({ email, full_name: fullName }),
+  });
+}
+
+const adminAction = async (path: string) =>
+  superExplain(await apiFetch<AdminAccount>(path, { method: 'POST' }));
+
+/** POST /accounts/admin/admins/{id}/promote/ */
+export const promoteAdmin = (id: number) => adminAction(`/accounts/admin/admins/${id}/promote/`);
+/** POST /accounts/admin/admins/me/demote/ — step down yourself (not the last super-admin). */
+export const demoteSelf = () => adminAction('/accounts/admin/admins/me/demote/');
+/** POST /accounts/admin/admins/{id}/deactivate/ — ordinary admins only; signs them out. */
+export const deactivateAdmin = (id: number) => adminAction(`/accounts/admin/admins/${id}/deactivate/`);
+/** POST /accounts/admin/admins/{id}/reactivate/ */
+export const reactivateAdmin = (id: number) => adminAction(`/accounts/admin/admins/${id}/reactivate/`);
