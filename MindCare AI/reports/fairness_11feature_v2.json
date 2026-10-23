@@ -1,0 +1,365 @@
+{
+  "model": "served 11-feature v2 XGBoost, uncalibrated",
+  "review_threshold": 0.025,
+  "gap_rule": 0.05,
+  "validation_split": {
+    "overall": {
+      "rows": 1650,
+      "true_high": 165,
+      "balanced_accuracy": 0.8055111717561768,
+      "high_recall": 0.896969696969697,
+      "flag_catch_rate": 0.9575757575757575
+    },
+    "Gender": {
+      "Female": {
+        "rows": 564,
+        "true_high": 47,
+        "balanced_accuracy": 0.7934292079359256,
+        "high_recall": 0.8723404255319149,
+        "flag_catch_rate": 0.9574468085106383,
+        "flags": [],
+        "ci95": {}
+      },
+      "Male": {
+        "rows": 549,
+        "true_high": 64,
+        "balanced_accuracy": 0.7991981466246173,
+        "high_recall": 0.90625,
+        "flag_catch_rate": 0.96875,
+        "flags": [],
+        "ci95": {}
+      },
+      "Other": {
+        "rows": 537,
+        "true_high": 54,
+        "balanced_accuracy": 0.8234177524032597,
+        "high_recall": 0.9074074074074074,
+        "flag_catch_rate": 0.9444444444444444,
+        "flags": [],
+        "ci95": {}
+      }
+    },
+    "Occupation": {
+      "Artist": {
+        "rows": 128,
+        "true_high": 10,
+        "balanced_accuracy": 0.8334776334776336,
+        "high_recall": 1.0,
+        "flag_catch_rate": 1.0,
+        "flags": [],
+        "ci95": {}
+      },
+      "Athlete": {
+        "rows": 100,
+        "true_high": 12,
+        "balanced_accuracy": 0.870600414078675,
+        "high_recall": 1.0,
+        "flag_catch_rate": 1.0,
+        "flags": [],
+        "ci95": {}
+      },
+      "Chef": {
+        "rows": 131,
+        "true_high": 16,
+        "balanced_accuracy": 0.7974386724386724,
+        "high_recall": 0.875,
+        "flag_catch_rate": 1.0,
+        "flags": [],
+        "ci95": {}
+      },
+      "Doctor": {
+        "rows": 140,
+        "true_high": 12,
+        "balanced_accuracy": 0.8158087726580877,
+        "high_recall": 0.9166666666666666,
+        "flag_catch_rate": 1.0,
+        "flags": [],
+        "ci95": {}
+      },
+      "Engineer": {
+        "rows": 117,
+        "true_high": 14,
+        "balanced_accuracy": 0.7915902964959569,
+        "high_recall": 0.7857142857142857,
+        "flag_catch_rate": 0.8571428571428571,
+        "flags": [
+          "high_recall"
+        ],
+        "ci95": {
+          "high_recall": [
+            0.5415865384615385,
+            1.0
+          ]
+        }
+      },
+      "Freelancer": {
+        "rows": 132,
+        "true_high": 9,
+        "balanced_accuracy": 0.7782614704256495,
+        "high_recall": 0.8888888888888888,
+        "flag_catch_rate": 1.0,
+        "flags": [],
+        "ci95": {}
+      },
+      "Lawyer": {
+        "rows": 115,
+        "true_high": 11,
+        "balanced_accuracy": 0.8032098765432099,
+        "high_recall": 1.0,
+        "flag_catch_rate": 1.0,
+        "flags": [],
+        "ci95": {}
+      },
+      "Musician": {
+        "rows": 122,
+        "true_high": 10,
+        "balanced_accuracy": 0.7952380952380952,
+        "high_recall": 1.0,
+        "flag_catch_rate": 1.0,
+        "flags": [],
+        "ci95": {}
+      },
+      "Nurse": {
+        "rows": 145,
+        "true_high": 13,
+        "balanced_accuracy": 0.7923459624952162,
+        "high_recall": 0.8461538461538461,
+        "flag_catch_rate": 0.9230769230769231,
+        "flags": [
+          "high_recall"
+        ],
+        "ci95": {
+          "high_recall": [
+            0.6108333333333335,
+            1.0
+          ]
+        }
+      },
+      "Other": {
+        "rows": 135,
+        "true_high": 18,
+        "balanced_accuracy": 0.8380240985283001,
+        "high_recall": 0.9444444444444444,
+        "flag_catch_rate": 1.0,
+        "flags": [],
+        "ci95": {}
+      },
+      "Scientist": {
+        "rows": 132,
+        "true_high": 16,
+        "balanced_accuracy": 0.7449826130153999,
+        "high_recall": 0.75,
+        "flag_catch_rate": 0.9375,
+        "flags": [
+          "balanced_accuracy",
+          "high_recall"
+        ],
+        "ci95": {
+          "balanced_accuracy": [
+            0.6555031482025896,
+            0.8320043438906924
+          ],
+          "high_recall": [
+            0.5,
+            0.9411764705882353
+          ]
+        }
+      },
+      "Student": {
+        "rows": 118,
+        "true_high": 14,
+        "balanced_accuracy": 0.8206220157439669,
+        "high_recall": 0.8571428571428571,
+        "flag_catch_rate": 0.8571428571428571,
+        "flags": [],
+        "ci95": {}
+      },
+      "Teacher": {
+        "rows": 135,
+        "true_high": 10,
+        "balanced_accuracy": 0.81194743130227,
+        "high_recall": 0.9,
+        "flag_catch_rate": 0.9,
+        "flags": [],
+        "ci95": {}
+      }
+    }
+  },
+  "out_of_fold": {
+    "overall": {
+      "rows": 9350,
+      "true_high": 968,
+      "balanced_accuracy": 0.8112670757231902,
+      "high_recall": 0.8770661157024794,
+      "flag_catch_rate": 0.9617768595041323
+    },
+    "Gender": {
+      "Female": {
+        "rows": 3163,
+        "true_high": 334,
+        "balanced_accuracy": 0.8067942661073172,
+        "high_recall": 0.8652694610778443,
+        "flag_catch_rate": 0.9491017964071856,
+        "flags": [],
+        "ci95": {}
+      },
+      "Male": {
+        "rows": 3090,
+        "true_high": 323,
+        "balanced_accuracy": 0.8165180868316598,
+        "high_recall": 0.9040247678018576,
+        "flag_catch_rate": 0.9721362229102167,
+        "flags": [],
+        "ci95": {}
+      },
+      "Other": {
+        "rows": 3097,
+        "true_high": 311,
+        "balanced_accuracy": 0.8104192026147055,
+        "high_recall": 0.8617363344051447,
+        "flag_catch_rate": 0.9646302250803859,
+        "flags": [],
+        "ci95": {}
+      }
+    },
+    "Occupation": {
+      "Artist": {
+        "rows": 754,
+        "true_high": 69,
+        "balanced_accuracy": 0.8429144619222368,
+        "high_recall": 0.9565217391304348,
+        "flag_catch_rate": 0.9710144927536232,
+        "flags": [],
+        "ci95": {}
+      },
+      "Athlete": {
+        "rows": 692,
+        "true_high": 70,
+        "balanced_accuracy": 0.8298642409927922,
+        "high_recall": 0.9285714285714286,
+        "flag_catch_rate": 0.9714285714285714,
+        "flags": [],
+        "ci95": {}
+      },
+      "Chef": {
+        "rows": 714,
+        "true_high": 71,
+        "balanced_accuracy": 0.8163057984077741,
+        "high_recall": 0.8591549295774648,
+        "flag_catch_rate": 0.9859154929577465,
+        "flags": [],
+        "ci95": {}
+      },
+      "Doctor": {
+        "rows": 712,
+        "true_high": 78,
+        "balanced_accuracy": 0.8045396125490355,
+        "high_recall": 0.8717948717948718,
+        "flag_catch_rate": 0.9743589743589743,
+        "flags": [],
+        "ci95": {}
+      },
+      "Engineer": {
+        "rows": 718,
+        "true_high": 77,
+        "balanced_accuracy": 0.7834063759836956,
+        "high_recall": 0.8181818181818182,
+        "flag_catch_rate": 0.961038961038961,
+        "flags": [
+          "high_recall"
+        ],
+        "ci95": {
+          "high_recall": [
+            0.7261863992172211,
+            0.9032355227361056
+          ]
+        }
+      },
+      "Freelancer": {
+        "rows": 725,
+        "true_high": 79,
+        "balanced_accuracy": 0.8149109897122186,
+        "high_recall": 0.8607594936708861,
+        "flag_catch_rate": 0.9620253164556962,
+        "flags": [],
+        "ci95": {}
+      },
+      "Lawyer": {
+        "rows": 683,
+        "true_high": 74,
+        "balanced_accuracy": 0.7910928169548859,
+        "high_recall": 0.8378378378378378,
+        "flag_catch_rate": 0.972972972972973,
+        "flags": [],
+        "ci95": {}
+      },
+      "Musician": {
+        "rows": 758,
+        "true_high": 79,
+        "balanced_accuracy": 0.8093022473269512,
+        "high_recall": 0.9113924050632911,
+        "flag_catch_rate": 0.9493670886075949,
+        "flags": [],
+        "ci95": {}
+      },
+      "Nurse": {
+        "rows": 733,
+        "true_high": 71,
+        "balanced_accuracy": 0.8197431598135824,
+        "high_recall": 0.9295774647887324,
+        "flag_catch_rate": 0.971830985915493,
+        "flags": [],
+        "ci95": {}
+      },
+      "Other": {
+        "rows": 727,
+        "true_high": 75,
+        "balanced_accuracy": 0.8206093821360997,
+        "high_recall": 0.92,
+        "flag_catch_rate": 0.96,
+        "flags": [],
+        "ci95": {}
+      },
+      "Scientist": {
+        "rows": 711,
+        "true_high": 75,
+        "balanced_accuracy": 0.7595031192458844,
+        "high_recall": 0.7466666666666667,
+        "flag_catch_rate": 0.9333333333333333,
+        "flags": [
+          "balanced_accuracy",
+          "high_recall"
+        ],
+        "ci95": {
+          "balanced_accuracy": [
+            0.7185416348875545,
+            0.7965878761115777
+          ],
+          "high_recall": [
+            0.6447143114635905,
+            0.8472222222222222
+          ]
+        }
+      },
+      "Student": {
+        "rows": 729,
+        "true_high": 82,
+        "balanced_accuracy": 0.835756972267129,
+        "high_recall": 0.9024390243902439,
+        "flag_catch_rate": 0.9390243902439024,
+        "flags": [],
+        "ci95": {}
+      },
+      "Teacher": {
+        "rows": 694,
+        "true_high": 68,
+        "balanced_accuracy": 0.8043448375660227,
+        "high_recall": 0.8676470588235294,
+        "flag_catch_rate": 0.9558823529411765,
+        "flags": [],
+        "ci95": {}
+      }
+    }
+  },
+  "test_set_used": false
+}

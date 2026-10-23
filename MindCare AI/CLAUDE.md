@@ -383,12 +383,15 @@ model is a meaningfully more broadly-supported model than the 5-class Severity m
 worth noting as a point in the 3-class target's favor when comparing the two, not just as
 a caveat.
 
-## Known finding: Scientist occupation fairness flag is likely noise, not a real gap
+## Known finding: Scientist occupation fairness gap — unexplained, persistent gap (not established bias)
+*The 2026-10-12 update below (cross-validated, served v2) supersedes the original 2026-09 "likely noise" conclusion, which is kept as history.*
+
+**Original investigation (2026-09, Random Forest, single validation split):**
 Both fairness reports (`reports/fairness_report.md` for 5-class, `reports/fairness_report_3class.md`
 for 3-class) flag **Scientist** as having meaningfully weaker recall on the top-severity class
 (High/Severe for 5-class, High for 3-class). Investigated this by comparing Scientist vs
 non-Scientist feature distributions (Stress Level, Sleep Hours, Therapy Sessions — the top SHAP
-features) among True-High(/Severe) rows. **It does not replicate:**
+features) among True-High(/Severe) rows. **At the time, it did not replicate:**
 - On the validation set itself (the data the flag was computed from), none of these feature
   differences are statistically significant (Stress Level Welch t-test p=0.36 for 3-class n=16,
   p=0.16 for 5-class n=39) — the sample sizes are small enough that recall swinging by ~10-15
@@ -399,7 +402,15 @@ features) among True-High(/Severe) rows. **It does not replicate:**
   physiological/lifestyle profile systematically different in a way that should degrade model
   performance for this occupation.
 
-**Conclusion: treat the Scientist recall gap as likely validation-set sampling noise, not a
+**Update 2026-10-12 (served v2 XGBoost, `reports/fairness_11feature_v2.md`): the cross-validated check
+was run and the gap PERSISTS** - out-of-fold over 9,350 rows, Scientist balanced accuracy
+0.760 (95% CI 0.719-0.797) vs
+0.811, model High recall 0.747 (0.645-0.847)
+vs 0.877. This supersedes the "likely noise" conclusion below: describe it as an unexplained,
+persistent gap, still not established bias (13 occupations tested; no Occupation-Stress relationship;
+synthetic data).
+
+**Original conclusion (history, superseded 2026-10-12): treat the Scientist recall gap as likely validation-set sampling noise, not a
 validated fairness issue**, pending a larger sample (e.g. cross-validated fairness evaluation
 instead of a single validation split) before treating it as something to correct for. Do not
 cite this as evidence of occupational bias without that caveat.
@@ -424,7 +435,8 @@ preprocessing (Phase 10) is shared between the two targets.
 ### TEST SET USED — 2026-09-22 (SECOND AND FINAL use, 3-class target, 11-feature model)
 - [x] **The test set (X_test/y_test, 3-class) was used a second time, on 2026-09-22 — this is
       now fully spent for the 3-class target. No further evaluation on it is permitted for
-      either the 17-feature or the 11-feature model.**
+      either the 17-feature or the 11-feature model.** *(History: a third, disclosed use followed on
+      2026-10-11 for a different model, the v3 retrain - see "TEST SET USED — 2026-10-11" below.)*
       (`src/evaluation/final_test_evaluation_11feature.py`,
       `reports/final_test_evaluation_11feature.md`.)
       **Why a second use is disclosed and justified rather than tuning-driven reuse:** this
@@ -448,6 +460,31 @@ preprocessing (Phase 10) is shared between the two targets.
       remains reasonable, but the honest claim is now "no *meaningful* cost" rather than "a
       slight improvement." **This is exactly the kind of finding a disclosed second test-set use
       is for** — checking whether a validation-only result holds up, not chasing a better number.
+
+### TEST SET USED — 2026-10-11 (THIRD use, disclosed, 3-class target, 11-feature v3 balanced XGBoost — NOT the served model)
+- [x] **The 3-class test set was used a third time, on 2026-10-11, at the project owner's explicit
+      request**, overriding the "fully spent" note above for this one evaluation. Model: the
+      11-feature v2 feature set retrained as **v3** - untuned XGBoost (library defaults) with balanced
+      sample weights and a freshly fitted preprocessor (`src/models/train_11feature_v3_balanced.py`;
+      split re-derived and asserted identical to `mindcare_processed_splits.npz`). Scored once, as is,
+      by `src/evaluation/final_test_evaluation_11feature_v3.py`, which refuses to run twice
+      (`reports/final_test_evaluation_11feature_v3.md`). Nothing was refitted or tuned afterwards.
+      **Result (test, n = 1,650):** balanced accuracy 0.8030, macro-F1 0.8088, accuracy 0.7703, High
+      recall 0.8994 (152/169), High precision 0.9441. Validation for the same model: 0.7960 / 0.8060 /
+      0.7612 / 0.8970 - test within +0.01 of validation on every headline metric. Requested sanity
+      check (about 0.81 balanced accuracy) passed (gap -0.007).
+      **The served model is unchanged** (tuned, unweighted v2; its validation balanced accuracy 0.8055
+      is about one point above v3's 0.7960 on the same rows). v3 artifacts
+      (`*_11feature_v3*.pkl`) are not in git; rebuild with the training script.
+      **Justification:** (1) the project owner explicitly decided on this use on 2026-10-11 after being
+      shown the "fully spent" rule above, which allows a further use only with an explicit, documented
+      justification; (2) v3 is a materially different configuration never scored on test (untuned,
+      balanced weights, rebuilt end to end), not a re-run or re-tune of an evaluated model - the same
+      reasoning that justified the second use; (3) it was a one-time sanity check of a from-scratch
+      retrain against an expected ~0.81 balanced accuracy; (4) no refitting, tuning, selection or
+      adoption followed, and the served v2 still has no test-set number.
+      **Consequence:** the test set has now been seen three times. Any further use needs its own
+      explicit, documented justification; treat it as spent again.
 
 ### FEATURE SET CHANGE — 2026-09-22 (THIRD change, 3-class target, Age restored, 12-feature model — VALIDATION ONLY, test set NOT used)
 - [x] **Age was restored as a model input, on top of the 11-feature set, producing the
@@ -490,6 +527,8 @@ preprocessing (Phase 10) is shared between the two targets.
       not reset to "not started"; see caveat below)
 - [x] Phase 13 — Hyperparameter tuning (`src/models/tune_models_3class.py`,
       `reports/tuning_results_3class.json`) — NOTE: also already done, not "not started"
+      (Random Forest era; for the served v2 XGBoost see "Validation/CV-only checks of the served v2
+      model" below: re-tuned on the 11 features, no gain)
 - [x] Phase 14 — Full evaluation (AUROC/AUPRC, per-class metrics —
       `src/evaluation/full_evaluation_3class.py`, `reports/full_evaluation_3class.md`)
 - [x] Phase 17 — Explainability (SHAP) (`src/explainability/shap_analysis_3class.py`,
@@ -497,6 +536,8 @@ preprocessing (Phase 10) is shared between the two targets.
       already done, not "not started"
 - [x] Phase 18 — Fairness / subgroup analysis (`src/fairness/occupation_fairness_3class.py`,
       `reports/fairness_report_3class.md`) — NOTE: also already done, not "not started"
+      (Random Forest era; for the served v2, by Gender and Occupation out-of-fold, see
+      `reports/fairness_11feature_v2.md` and the Scientist "Known finding" above)
 
 ### Phase 12 — Advanced models (3-class target)
 - [x] Phase 12 — done for 3-class Anxiety Level target (`src/models/train_advanced_3class.py`,
@@ -543,7 +584,9 @@ preprocessing (Phase 10) is shared between the two targets.
       `src/evaluation/calibration_3class_full.py` / `reports/calibration_3class_full.md`
       (Brier 0.1518 and 0.1646 respectively, both roughly calibrated on a count-weighted
       average but with real per-bin over/under-confidence patterns — see report). Not yet
-      done for 5-class Severity.
+      done for 5-class Severity. **These are the earlier Random Forest's numbers.** For the served
+      v2 XGBoost (2026-10-12, out-of-fold): already well calibrated on this dataset (very likely synthetic) (ECE at most 0.010 per class),
+      calibration not deployed (`reports/calibration_review_flag_11feature_v2.md`).
 
 ### Input validation (fixes a Phase 19 finding, 3-class target)
 - `src/inference/input_validation.py` — validates the (now 12, originally 17, briefly 11) raw
@@ -650,6 +693,16 @@ preprocessing (Phase 10) is shared between the two targets.
       review attention rather than gatekeeping access to review. Not yet done for 5-class Severity.
       **Superseded 2026-09-28:** the production threshold is now 0.025 on XGBoost; see "Model
       switched from Random Forest to XGBoost" above.
+
+### Validation/CV-only checks of the served v2 model (2026-10-11/12, test set NOT used)
+- [x] Re-tuning on the 11 features (`src/models/tune_models_11feature.py`): no gain, v2 params kept.
+- [x] Derived features (`src/experiments/derived_features_11feature.py`): null result, not adopted.
+- [x] Calibration and review threshold (`src/experiments/calibration_review_flag_11feature_v2.py`): already
+      well calibrated on this dataset (very likely synthetic), calibration not deployed; threshold stays 0.025, with 0.0302 / 0.0349 documented as
+      alternatives. **The threshold is an open clinical decision.**
+- [x] Fairness by Gender and Occupation (`src/fairness/fairness_11feature_v2.py`): Scientist gap persists
+      out-of-fold (see "Known finding" above).
+- Summary in `docs/model_card.md`, "Current Status Summary".
 
 ### Phase 21/22 — Clinical validation comparison tool (built, no data yet)
 - [x] Clinical scoring scales and agreement metrics built in `src/evaluation/clinical_scales.py` and `src/evaluation/clinical_agreement.py`

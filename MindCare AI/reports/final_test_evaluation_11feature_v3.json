@@ -1,0 +1,129 @@
+{
+  "test_set_use": "third, disclosed (2026-10-11)",
+  "model": "XGBClassifier, library defaults (untuned), balanced sample weights",
+  "artifacts": [
+    "data/processed/mindcare_preprocessor_11feature_v3.pkl",
+    "data/processed/mindcare_final_model_11feature_v3_xgb_balanced.pkl"
+  ],
+  "library_versions": {
+    "python": "3.13.13",
+    "xgboost": "3.4.1",
+    "scikit-learn": "1.9.1",
+    "numpy": "2.5.3",
+    "pandas": "3.0.5"
+  },
+  "test": {
+    "n": 1650,
+    "accuracy": 0.7703030303030303,
+    "balanced_accuracy": 0.8029781774743855,
+    "macro_f1": 0.8087929872678785,
+    "per_class": {
+      "Low": {
+        "precision": 0.775483870967742,
+        "recall": 0.7695262483994878,
+        "f1": 0.7724935732647815,
+        "support": 781
+      },
+      "Medium": {
+        "precision": 0.7254901960784313,
+        "recall": 0.74,
+        "f1": 0.7326732673267327,
+        "support": 700
+      },
+      "High": {
+        "precision": 0.9440993788819876,
+        "recall": 0.8994082840236687,
+        "f1": 0.9212121212121213,
+        "support": 169
+      }
+    },
+    "high_recall": 0.8994082840236687,
+    "confusion_matrix": {
+      "labels": [
+        "Low",
+        "Medium",
+        "High"
+      ],
+      "rows_true_cols_pred": [
+        [
+          601,
+          179,
+          1
+        ],
+        [
+          174,
+          518,
+          8
+        ],
+        [
+          0,
+          17,
+          152
+        ]
+      ]
+    }
+  },
+  "validation": {
+    "n": 1650,
+    "accuracy": 0.7612121212121212,
+    "balanced_accuracy": 0.7960422667312637,
+    "macro_f1": 0.806041423988581,
+    "per_class": {
+      "Low": {
+        "precision": 0.7619663648124192,
+        "recall": 0.7570694087403599,
+        "f1": 0.7595099935525468,
+        "support": 778
+      },
+      "Medium": {
+        "precision": 0.7158620689655173,
+        "recall": 0.7340876944837341,
+        "f1": 0.7248603351955307,
+        "support": 707
+      },
+      "High": {
+        "precision": 0.9736842105263158,
+        "recall": 0.896969696969697,
+        "f1": 0.9337539432176656,
+        "support": 165
+      }
+    },
+    "high_recall": 0.896969696969697,
+    "confusion_matrix": {
+      "labels": [
+        "Low",
+        "Medium",
+        "High"
+      ],
+      "rows_true_cols_pred": [
+        [
+          589,
+          189,
+          0
+        ],
+        [
+          184,
+          519,
+          4
+        ],
+        [
+          0,
+          17,
+          148
+        ]
+      ]
+    }
+  },
+  "test_minus_validation": {
+    "balanced_accuracy": 0.006935910743121831,
+    "macro_f1": 0.0027515632792974865,
+    "accuracy": 0.009090909090909038,
+    "high_recall": 0.002438587053971708
+  },
+  "sanity_check": {
+    "target_balanced_accuracy": 0.81,
+    "tolerance": 0.03,
+    "gap": -0.007021822525614563,
+    "passed": true
+  }
+}
