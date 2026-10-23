@@ -205,6 +205,16 @@ export type RiskClass = 'Low' | 'Medium' | 'High';
 
 export type SeverityTier = 'Minimal (1-2)' | 'Mild (3-4)' | 'Moderate (5-6)' | 'High (7-8)' | 'Severe (9-10)';
 
+export type AttentionLevel = 'urgent' | 'elevated' | 'notice' | 'clear';
+
+/** One rule-based alert from the AI's alert layer (draft thresholds, pending psychologist review). */
+export interface AlertFlag {
+  name: string;
+  feature: string;
+  value: number;
+  threshold: number;
+}
+
 export interface AnxietyPrediction {
   predicted_class: RiskClass;
   probabilities: Record<RiskClass, number>;
@@ -230,6 +240,12 @@ export interface AnxietyPrediction {
     sleep_schedule: string;
     nutrition: string;
   };
+  // The AI's alert layer. Absent from AI deploys that predate it, so optional.
+  alert_flags?: AlertFlag[];
+  alert_flag_count?: number;
+  attention_level?: AttentionLevel;
+  model_class?: RiskClass;
+  final_risk_class?: RiskClass;
 }
 
 const post = (input: Partial<AnxietyPredictionInput>) =>
