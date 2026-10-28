@@ -357,4 +357,20 @@ new service, selector, or API endpoint. Keep entries one row per function/class.
 | `apps/journals/services.py` | `create_check_in()`, `update_check_in()`, `delete_check_in()` | One per local day, editable only that day, deletable any time; every write audited | `POST .../check-ins/`, `PATCH/DELETE .../check-ins/{id}/` | MindCare App |
 | `apps/journals/services.py` | `read_moods_for_psychologist()` | A current patient's moods and feelings (never notes) with insights; audited, fail closed | `GET /api/v1/journals/psychologist/patients/{relationship_id}/moods/` | MindCare Web |
 
+### Phase 2 module 4: booking and fees
+
+| File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
+|---|---|---|---|---|
+| `apps/appointments/models.py` | `BookingSettings`, `WorkingWindow`, `DayOff`, `Session` | Fee (PKR), length (30/50/60) and video link; weekly windows in the psychologist's timezone; days off; sessions with an exclusion constraint against double booking | — | — |
+| `apps/appointments/selectors.py` | `booking_settings_for()`, `not_bookable_reason()`, `windows_for()`, `days_off_for()` | A psychologist's set-up and whether patients can book | `GET /api/v1/appointments/psychologist/settings/`, `.../working-hours/`, `.../days-off/` | MindCare Web |
+| `apps/appointments/selectors.py` | `free_slots()`, `slots_for_patient()` | Free slots 12 h to 30 days ahead on the length + 10-minute grid, minus days off and booked ranges | `GET /api/v1/appointments/slots/`, `GET .../psychologist/slots/` | MindCare App, MindCare Web |
+| `apps/appointments/selectors.py` | `patient_sessions()`, `psychologist_sessions()`, `patient_upcoming_count()` | Own sessions only; psychologist views `requests` / `upcoming` / `past` | `GET .../sessions/`, `GET .../psychologist/sessions/` | MindCare App, MindCare Web |
+| `apps/appointments/services.py` | `update_booking_settings()`, `replace_working_windows()`, `add_day_off()`, `remove_day_off()` | Psychologist set-up with the window and day-off rules | `PATCH .../psychologist/settings/`, `PUT .../working-hours/`, `POST/DELETE .../days-off/` | MindCare Web |
+| `apps/appointments/services.py` | `book_session()` | Request a free slot: accepted relationship, notice, horizon, 2-upcoming limit, fee snapshot; audited; emails the psychologist | `POST /api/v1/appointments/sessions/` | MindCare App |
+| `apps/appointments/services.py` | `accept_proposal()`, `patient_cancel_session()` | Accept the psychologist's new time; cancel (late if under 24 h before a confirmed session) | `POST .../sessions/{id}/accept/`, `.../cancel/` | MindCare App |
+| `apps/appointments/services.py` | `confirm_session()`, `propose_time()`, `psychologist_cancel_session()`, `mark_outcome()` | Confirm, move to another free slot, cancel, mark completed / no-show; audited; emails the patient | `POST .../psychologist/sessions/{id}/confirm/`, `/propose/`, `/cancel/`, `/outcome/` | MindCare Web |
+| `apps/appointments/services.py` | `cancel_for_ended_relationship()` | Called by `end_relationship()`: cancels future sessions, expires stale requests | — | neither |
+| `apps/psychologists/api/serializers.py` | `DirectoryCardSerializer.session_fee_pkr`, `.session_minutes` | Fee and length on directory cards | `GET /api/v1/psychologists/directory/` | MindCare App |
+| `apps/notifications/emails.py` | `session_requested()`, `session_confirmed()`, `session_proposed()`, `session_proposal_accepted()`, `session_cancelled_by_patient()`, `session_cancelled_by_psychologist()` | Session emails; the psychologist's never name the patient, none carries the video link | — | neither |
+
 <!-- Add new `### apps/<app_name>` sections below as modules are implemented. -->

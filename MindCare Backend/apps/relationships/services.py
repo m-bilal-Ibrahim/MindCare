@@ -256,6 +256,10 @@ def end_relationship(*, relationship, ended_by, reason, actor_id=None):
         rel.save(
             update_fields=["status", "ended_at", "ended_by", "end_reason", "updated_at"]
         )
+        # Future sessions end with the care (Phase 2 module 4).
+        from apps.appointments.services import cancel_for_ended_relationship
+
+        cancel_for_ended_relationship(relationship=rel)
         _log_after_commit(
             event="ended",
             relationship_id=rel.pk,

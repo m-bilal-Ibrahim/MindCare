@@ -146,6 +146,8 @@ DIRECTORY_CARD_FIELDS = [
     "is_accepting_patients",
     "last_active",
     "photo_url",
+    "session_fee_pkr",
+    "session_minutes",
 ]
 
 
@@ -163,6 +165,12 @@ class DirectoryCardSerializer(serializers.ModelSerializer):
     photo_url = serializers.SerializerMethodField(
         help_text="Signed link to the psychologist's photo (a few minutes); null if none."
     )
+    session_fee_pkr = serializers.SerializerMethodField(
+        help_text="Fee per session in PKR; null until the psychologist sets one."
+    )
+    session_minutes = serializers.SerializerMethodField(
+        help_text="30, 50 or 60; null until the psychologist sets a fee."
+    )
 
     class Meta:
         model = PsychologistProfile
@@ -175,6 +183,14 @@ class DirectoryCardSerializer(serializers.ModelSerializer):
 
     def get_photo_url(self, obj) -> str | None:
         return url_or_none(obj.photo_key)
+
+    def get_session_fee_pkr(self, obj) -> int | None:
+        settings = getattr(obj, "booking_settings", None)
+        return settings.fee_pkr if settings else None
+
+    def get_session_minutes(self, obj) -> int | None:
+        settings = getattr(obj, "booking_settings", None)
+        return settings.session_minutes if settings and settings.fee_pkr else None
 
 
 class MinimalCardSerializer(serializers.ModelSerializer):

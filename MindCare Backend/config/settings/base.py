@@ -202,6 +202,7 @@ REST_FRAMEWORK = {
         "password_change": "10/hour",
         "emergency_contacts": "30/hour",
         "check_ins": "30/hour",
+        "bookings": "60/hour",
         "password_reset": "5/hour",
         "password_reset_confirm": "20/hour",
     },
@@ -287,6 +288,8 @@ SPECTACULAR_SETTINGS = {
         "ContactRelationshipEnum": "apps.emergency.models.ContactRelationship",
         "MoodEnum": "apps.journals.models.Mood",
         "EmotionTagEnum": "apps.journals.models.EmotionTag",
+        "SessionStatusEnum": "apps.appointments.models.SessionStatus",
+        "SessionLengthEnum": "apps.appointments.models.SessionLength",
     },
 }
 

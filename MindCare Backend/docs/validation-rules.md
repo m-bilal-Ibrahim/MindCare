@@ -260,3 +260,12 @@ as GPS location. Audio types: MP3, M4A, OGG. Documents: PDF.
 | one per day | `journals/check-ins/` (POST) | — | — | — | `You've already checked in today. Edit today's check-in instead.` |
 | edit window | `journals/check-ins/{id}/` (PATCH) | — | — | — | `A check-in can only be edited on the day it was made.` |
 | `days` | `journals/psychologist/patients/{id}/moods/` (query) | — | Choice (7, 30, 90) | no | default 30 |
+| `session_minutes` | `appointments/psychologist/settings/` | — | Choice (30, 50, 60) | no | default 50 |
+| `fee_pkr` | `appointments/psychologist/settings/` | Session fee | Number 100–100000 (PKR) | needed to be bookable | `Session fee must be a whole number between 100 and 100000.` |
+| `video_link` | `appointments/psychologist/settings/` | Video link | HTTPS URL, domains `zoom.us`, `meet.google.com` | needed to confirm or propose | empty clears it; missing on confirm → `Add your Zoom or Google Meet link before confirming sessions.` |
+| `windows[]` | `appointments/psychologist/working-hours/` (PUT) | — | at most 21; `weekday` Choice 0–6 (Monday = 0), `start_time` / `end_time` `HH:MM` | yes (may be empty) | `Times must be on the quarter hour (e.g. 09:00, 09:15).`, `End time must be after the start time.`, `Each window must fit at least one session.`, `Working hours on the same day can't overlap.`, `You can set at most 3 windows per day.` |
+| `date` | `appointments/psychologist/days-off/` | — | Date (psychologist's local day) | yes | `A day off can't be in the past.`, `Choose a day within the next 365 days.`, `That day is already a day off.`, `You have sessions on that day. Cancel or move them first.` |
+| `starts_at` | `appointments/sessions/` (POST), `psychologist/sessions/{id}/propose/` | — | ISO 8601 date-time with offset; one of the free slots | yes | `Book at least 12 hours ahead.`, `You can book up to 30 days ahead.`, `That time isn't available any more. Pick another slot.`, `Choose a different time from the current one.` |
+| upcoming limit | `appointments/sessions/` (POST) | — | — | — | `You can have at most 2 upcoming sessions.` |
+| `outcome` | `appointments/psychologist/sessions/{id}/outcome/` | — | Choice (`completed`, `no_show`) | yes | before the session ends → `You can mark the outcome once a confirmed session has ended.` |
+| `view` | `appointments/psychologist/sessions/` (query) | — | Choice (`requests`, `upcoming`, `past`) | no | default `upcoming` |
