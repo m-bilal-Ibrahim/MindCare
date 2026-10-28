@@ -147,3 +147,66 @@ def sos_psychologist_alert(*, psychologist_name, pseudonym, when):
         [greeting, body, EMERGENCY_LINE],
         [escape(greeting), escape(body), EMERGENCY_LINE],
     )
+
+
+# --- Sessions (Phase 2 module 4). Times only: the psychologist's emails never
+# name the patient, and no email carries the video link (it's in the app). ---
+
+
+def _simple(subject, greeting, body):
+    return _finish(subject, [greeting, body], [escape(greeting), escape(body)])
+
+
+def session_requested(*, psychologist_name, when):
+    return _simple(
+        f"New session request ({PRODUCT})",
+        f"Hi {psychologist_name},",
+        f"One of your patients asked for a session on {when}. Open {PRODUCT} to "
+        "confirm it or propose another time. It expires if it isn't confirmed "
+        "before it starts.",
+    )
+
+
+def session_proposal_accepted(*, psychologist_name, when):
+    return _simple(
+        f"Session confirmed ({PRODUCT})",
+        f"Hi {psychologist_name},",
+        f"Your patient accepted the time you proposed: {when}. The session is "
+        "confirmed.",
+    )
+
+
+def session_cancelled_by_patient(*, psychologist_name, when):
+    return _simple(
+        f"Session cancelled ({PRODUCT})",
+        f"Hi {psychologist_name},",
+        f"One of your patients cancelled the session on {when}. The time is free "
+        "again.",
+    )
+
+
+def session_confirmed(*, patient_name, psychologist_name, when):
+    return _simple(
+        f"Your session is confirmed ({PRODUCT})",
+        f"Hi {patient_name},",
+        f"{psychologist_name} confirmed your session on {when}. The video link is "
+        f"in {PRODUCT}. You can cancel for free up to 24 hours before.",
+    )
+
+
+def session_proposed(*, patient_name, psychologist_name, when):
+    return _simple(
+        f"A new time for your session ({PRODUCT})",
+        f"Hi {patient_name},",
+        f"{psychologist_name} proposed {when} for your session. Open {PRODUCT} to "
+        "accept it or cancel. It expires if it isn't accepted before it starts.",
+    )
+
+
+def session_cancelled_by_psychologist(*, patient_name, psychologist_name, when):
+    return _simple(
+        f"Session cancelled ({PRODUCT})",
+        f"Hi {patient_name},",
+        f"{psychologist_name} cancelled your session on {when}. You can book "
+        f"another time in {PRODUCT}.",
+    )

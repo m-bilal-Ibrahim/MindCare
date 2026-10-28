@@ -129,6 +129,10 @@ has relationship rows **can't be deleted from Django admin**. To remove test
 accounts, delete in this order, scoped to the test users' ids (replace `<ids>`):
 
 ```sql
+-- 0. sessions (Phase 2 module 4; they PROTECT relationships and profiles)
+DELETE FROM appointments_session
+ WHERE patient_id IN (SELECT id FROM patients_patientprofile WHERE user_id IN (<ids>))
+    OR psychologist_id IN (SELECT id FROM psychologists_psychologistprofile WHERE user_id IN (<ids>));
 -- 1. relationship rows first (PROTECT blocks everything else otherwise)
 DELETE FROM relationships_carerelationship
  WHERE patient_id IN (SELECT id FROM patients_patientprofile WHERE user_id IN (<ids>))
@@ -152,6 +156,20 @@ Check the ids with a `SELECT` first, and run it inside a transaction
   Settings → S3 Connection: note the endpoint and region, and create an access key
   (copy the secret at once; it's shown only once). Put all five values on Render
   (see the table above).
+
+- **`btree_gist` extension: ON** (needed from Phase 2 module 4, before deploying
+  it). The no-double-booking constraint in `appointments.0001_initial` needs it.
+  The migration runs `CREATE EXTENSION IF NOT EXISTS btree_gist` itself, which
+  works when the migration role may create extensions; to be safe, enable it
+  first: Supabase → Database → Extensions → search `btree_gist` → enable (the
+  default `extensions` schema is fine). Or in the SQL editor:
+  `CREATE EXTENSION IF NOT EXISTS btree_gist WITH SCHEMA extensions;`
+  Check with `SELECT extname FROM pg_extension WHERE extname = 'btree_gist';`.
+  If the migration still fails, the deploy stops before the new code runs; enable
+  the extension and redeploy. An error like "data type bigint has no default
+  operator class for access method gist" means the extension's schema isn't on the
+  connection's `search_path`: run `SHOW search_path;` and, if `extensions` is
+  missing, enable `btree_gist` in the `public` schema instead.
 
 - **Data API: OFF** (turned off 2026-10-10). Django never used it, and with it on,
   any table without RLS was readable with the anon key. Keep it off; see

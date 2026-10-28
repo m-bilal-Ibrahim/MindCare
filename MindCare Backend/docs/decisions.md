@@ -740,6 +740,10 @@ means Phase 3 needs no exception to that rule.
 300-character decline note wiped after the cooldown.
 
 ## 2026-10-06 - Phase 9 forward-note: subscriptions plug into the relationship; pro-rata refunds
+**Superseded 2026-10-28 (Phase 2 module 4, Q27 A):** the fee is now per session,
+set by the psychologist; there is no subscription. See "Phase 2 module 4: booking
+and fees" below. Kept for the record.
+
 **Decision (record only):**
 - Phase 9 adds `Subscription → CareRelationship` (additive). Lapse calls
   `end_relationship(…, ended_by="system", reason="subscription_lapsed")`; the reason
@@ -1356,3 +1360,55 @@ SMS to contacts (paid provider and package); alerting every accepting psychologi
 decrypted in Python, and the score isn't free text); several check-ins a day (noisy
 trends, no clear streak); showing notes to the psychologist (the journal belongs to
 the patient, project-vision section 11).
+
+
+## 2026-10-28 - Phase 2 module 4: booking and fees
+**Decision (module 4 answers Q27-Q34):**
+- **Per-session fee set by the psychologist (Q27 A)**, which replaces the 2026-10-06
+  subscription forward-note (marked superseded there). **PKR only (Q28 B)**, 100 to
+  100,000, shown in the psychologist directory (`session_fee_pkr`). The fee is copied
+  onto each session when it is booked, so later changes don't touch existing
+  bookings. **Payments stay in 6.11 (Phase 3)**: nothing is charged now.
+- **Length and hours (Q29):** 30, 50 or 60 minutes, always followed by a 10-minute
+  gap. Weekly working windows are wall-clock times in the psychologist's profile
+  timezone, on the quarter hour, at most 3 a day, no overlaps, each long enough for
+  one session; plus single days off (not in the past, up to a year ahead, refused on a
+  day that still has sessions). Slots start at a window's start and step by length +
+  gap. Editing hours or length never moves existing sessions.
+- **Who books (Q30 A):** only a patient with an accepted relationship, only with that
+  psychologist (`get_active_relationship()`, so a paused psychologist can't be booked).
+  Picking a slot creates a **request**; the psychologist **confirms** it or **proposes
+  another free slot**, which the patient accepts (or cancels). A request or proposal
+  that isn't answered **expires when its slot starts** (evaluated on read, persisted on
+  the next write, like relationship expiry).
+- **Rules (Q31 A):** at least 12 h notice, at most 30 days ahead, at most 2 upcoming
+  sessions per patient (the patient row is locked while booking, so two parallel
+  bookings can't both pass). Cancelling is free up to 24 h before a confirmed session;
+  later the patient's cancellation is recorded as `is_late_cancellation` for 6.11. A
+  psychologist's cancellation is never "late".
+- **Video link (Q32 A):** the psychologist's personal Zoom or Meet link (https only,
+  `zoom.us` or `meet.google.com` and their subdomains). Required before confirming or
+  proposing; the patient sees it **only on confirmed sessions**; no email carries it.
+  Stored in plain text: it's the psychologist's own contact detail, not patient data.
+- **No double booking (Q33 A):** a Postgres exclusion constraint (`btree_gist`, enabled
+  by `BtreeGistExtension` in the migration) refuses two requested / proposed /
+  confirmed sessions of one psychologist whose `[start, end + gap)` ranges overlap. The
+  slot check before it gives the clear message; the constraint settles races. Manual
+  Supabase step in `docs/deployment.md`.
+- **After the session (Q34 A):** the psychologist marks a confirmed session
+  `completed` or `no_show` once it has ended. No reminders yet. Emails for a new
+  request, confirmation, proposal, accepted proposal and cancellation go through the
+  module 1 email layer after commit. **The psychologist's emails never name the
+  patient**; the patient's name the psychologist.
+- **Care ending** cancels the relationship's future sessions (`cancelled_by=system`, no
+  email: the relationship ending is the news) inside `end_relationship()`.
+- **Audit:** every session write (book, confirm, propose, accept, cancel, outcome,
+  system cancel) writes an `appointment` audit row in its transaction (fail closed).
+  Schedule reads aren't audited: they show times and the display name the viewer may
+  already see, no health data. There's no free text on sessions, so nothing to encrypt.
+- Sessions `PROTECT` their relationship and profiles (6.11's records); `seed_demo
+  --remove` and the SQL in `docs/deployment.md` delete them first.
+**Alternatives considered:** a subscription (the 2026-10-06 note; replaced by Q27);
+instant booking without confirmation (the psychologist can't vet a time); generated
+Zoom meetings through the Zoom API (an OAuth app per psychologist, out of scope); an
+application-level overlap check only (two requests at the same moment would both pass).

@@ -12,8 +12,8 @@ role in the bullet).
 The Web is the psychologist/admin client; the App is the patient client. "Branch"
 means the work sits on an unmerged branch.
 
-Last updated: 2026-10-28 (Phase 2 module 3: mood check-ins, backend). Same day:
-Phase 2 module 2 (SOS, backend). Before that: 2026-10-19
+Last updated: 2026-10-28 (Phase 2 module 4: booking and fees, backend). Same day:
+module 3 (mood check-ins) and module 2 (SOS), backend. Before that: 2026-10-19
 (Phase 2 module 1: password reset + email, backend).
 Before that: 2026-10-15 (Phase 2 module 0: super-admin workflow + admin-panel-2,
 backend). Earlier: 2026-10-11 (6.10 backend). Re-checked against `origin` on
@@ -34,7 +34,7 @@ backend). Earlier: 2026-10-11 (6.10 backend). Re-checked against `origin` on
 |---|---|---|---|---|
 | Register with personal and professional info, certifications, background, specializations | done | done | — | Text credentials at registration (Phase 2). Web: searchable city field (PR #38) and the name rule (PR #40) merged 2026-10-11; the other signup fields don't follow validation-rules.md yet (see the partner message) |
 | Upload credentials and licences for verification | done (PR 6.2) | not started | — | Multipart registration with license, degree and up to 3 more; private storage. Files **optional** until `REQUIRE_CREDENTIAL_DOCS=true`, so the live JSON signup keeps working. The Web upload step is the partner's |
-| Set availability, manage session bookings, video conferencing (Zoom / Meet) | partial | partial | — | Only the "accepting new patients" switch exists. **Deferred to Phase 2** (Q21): working hours, booking and video links are designed together |
+| Set availability, manage session bookings, video conferencing (Zoom / Meet) | done (Phase 2 module 4) | partial | mock only | Weekly hours in the psychologist's timezone + days off, 30/50/60-minute sessions with a 10-minute gap, request → confirm / propose another time, cancel, completed / no-show, personal Zoom or Meet link shown on confirmed sessions; exclusion constraint against double booking. Web and App screens are the partner's: `docs/handoff/booking-fees.md` |
 
 ## 6.3 Admin Panel
 
@@ -104,9 +104,9 @@ backend). Earlier: 2026-10-11 (6.10 backend). Re-checked against `origin` on
 
 | Bullet | Backend | Web | App | Notes |
 |---|---|---|---|---|
-| View session fees, total sessions and total paid | not started | mock only | mock only | Roadmap Phase 9 |
+| View session fees, total sessions and total paid | partial (Phase 2 module 4) | mock only | mock only | Per-session fee in PKR on the directory and on every session (snapshot at booking); session history with completed / no-show / late cancellations recorded. Totals paid come with payments (Phase 3, 6.11) |
 | Multiple secure payment methods (card, mobile wallets) | not started | mock only | mock only | Stripe test mode only (decisions.md 2026-10-06) |
-| Invoicing, receipts and session booking | not started | mock only | mock only | |
+| Invoicing, receipts and session booking | partial (Phase 2 module 4) | mock only | mock only | Session booking done; invoices and receipts come with 6.11 |
 
 ## 6.12 NGO Onboarding and Emergency SOS
 

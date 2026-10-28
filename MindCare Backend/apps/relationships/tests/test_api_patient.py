@@ -42,6 +42,8 @@ EXPECTED_CARD_KEYS = {
     "is_accepting_patients",
     "last_active",
     "photo_url",
+    "session_fee_pkr",
+    "session_minutes",
 }
 
 

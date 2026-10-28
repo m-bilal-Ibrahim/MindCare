@@ -30,7 +30,13 @@ def visible_psychologists():
             user__is_active=True,
             user__approval_status=ApprovalStatus.APPROVED,
         )
-        .select_related("user", "country", "city__country", "license_issuing_country")
+        .select_related(
+            "user",
+            "country",
+            "city__country",
+            "license_issuing_country",
+            "booking_settings",
+        )
         .prefetch_related("specializations", "languages")
     )
 

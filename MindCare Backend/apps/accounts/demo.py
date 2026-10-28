@@ -302,7 +302,54 @@ def seed_demo_accounts(*, password):
     _ensure_demo_city()
     _ensure_demo_emergency_contact()
     _ensure_demo_check_ins()
+    _ensure_demo_bookings()
     return {"created": created, "existing": existing}
+
+
+# Phase 2 module 4: every demo psychologist gets a fee, a session length and
+# weekday hours 10:00-17:00 in their timezone, plus a clearly fake Zoom link.
+# Demo patient 1 has one session request with Dr. Sara Ahmed, so her requests
+# list has something to confirm live.
+DEMO_FEES_PKR = [3500, 2500, 4000, 3000, 5000, 2000]
+DEMO_SESSION_MINUTES = [50, 30, 60, 50, 50, 30]
+DEMO_VIDEO_LINK = "https://zoom.us/j/0000000000"
+
+
+def _ensure_demo_bookings():
+    from datetime import time
+
+    from apps.appointments import selectors as booking_selectors
+    from apps.appointments import services as booking_services
+    from apps.appointments.models import BLOCKING_STATUSES, Session
+
+    for index, spec in enumerate(DEMO_PSYCHOLOGISTS):
+        profile = User.objects.get(email=spec["email"]).psychologist_profile
+        booking_services.update_booking_settings(
+            psychologist_profile=profile,
+            fee_pkr=DEMO_FEES_PKR[index % len(DEMO_FEES_PKR)],
+            session_minutes=DEMO_SESSION_MINUTES[index % len(DEMO_SESSION_MINUTES)],
+            video_link=DEMO_VIDEO_LINK,
+        )
+        if not booking_selectors.windows_for(profile).exists():
+            booking_services.replace_working_windows(
+                psychologist_profile=profile,
+                windows=[
+                    {"weekday": day, "start_time": time(10), "end_time": time(17)}
+                    for day in range(5)
+                ],
+            )
+
+    patient = User.objects.get(email=DEMO_PATIENT_EMAILS[0])
+    if Session.objects.filter(
+        patient__user=patient, status__in=BLOCKING_STATUSES
+    ).exists():
+        return
+    rel = patient_current(patient_user=patient)
+    if rel is None or rel.status != RelationshipStatus.ACCEPTED:
+        return
+    slots = booking_selectors.free_slots(rel.psychologist)
+    if slots:
+        booking_services.book_session(patient_user=patient, starts_at=slots[0])
 
 
 # Phase 2 module 3: a week of fictional mood check-ins for patient 1, ending
@@ -531,6 +578,11 @@ def remove_demo_accounts():
     from apps.emergency.models import SOSEvent
 
     SOSEvent.objects.filter(patient__user__in=users).delete()  # PROTECT
+    from apps.appointments.models import Session
+
+    Session.objects.filter(  # PROTECT
+        Q(patient__user__in=users) | Q(psychologist__user__in=users)
+    ).delete()
     from apps.patients.models import PatientProfile
     from apps.psychologists.models import PsychologistProfile
 
