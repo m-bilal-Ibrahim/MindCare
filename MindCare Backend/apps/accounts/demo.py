@@ -300,7 +300,27 @@ def seed_demo_accounts(*, password):
         created += 1
     _ensure_demo_report()
     _ensure_demo_city()
+    _ensure_demo_emergency_contact()
     return {"created": created, "existing": existing}
+
+
+# 6.12: one fictional emergency contact for patient 1 (an @example.com address,
+# so an SOS in the demo emails nobody real). No helplines or hospitals are seeded:
+# only numbers an admin has verified may ever be shown.
+DEMO_EMERGENCY_CONTACT = {
+    "name": "Sara Malik",
+    "relationship": "sibling",
+    "email": "sara.malik.contact@example.com",
+}
+
+
+def _ensure_demo_emergency_contact():
+    from apps.emergency.models import EmergencyContact
+    from apps.emergency.services import add_contact
+
+    hina = User.objects.get(email=DEMO_PATIENT_EMAILS[0])
+    if not EmergencyContact.objects.filter(patient=hina.patient_profile).exists():
+        add_contact(patient_user=hina, **DEMO_EMERGENCY_CONTACT)
 
 
 # admin-panel-2: one fictional, unverified city for the admin verification screen.
@@ -474,6 +494,9 @@ def remove_demo_accounts():
 
     users = User.objects.filter(email__in=DEMO_EMAILS)
     Report.objects.filter(Q(reporter__in=users) | Q(reported_user__in=users)).delete()
+    from apps.emergency.models import SOSEvent
+
+    SOSEvent.objects.filter(patient__user__in=users).delete()  # PROTECT
     from apps.patients.models import PatientProfile
     from apps.psychologists.models import PsychologistProfile
 

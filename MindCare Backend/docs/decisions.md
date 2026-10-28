@@ -1281,3 +1281,50 @@ code (needs deep links in the App and a Web page; the code works the same in bot
   mandatory. Short handoff docs.
 - **Working agreement:** one phase per session, partner fixes as small PRs, and a
   `docs/status/phase-<N>-summary.md` at the end of each phase (CLAUDE.md).
+
+
+## 2026-10-28 - Phase 2 module 2: SOS (6.12)
+**Decision (module 2 answers Q11-Q20):**
+- **Manual button only** (Q11). Wearable and chatbot triggers wait for 6.5 and 6.7;
+  no thresholds are invented.
+- **SOS never blocks the patient.** `POST /emergency/sos/` has no throttle and always
+  answers 201 with the fixed message "If you are in immediate danger, call your local
+  emergency number now." plus whatever resources load. If recording the alert fails,
+  `alert` is null and the failure is logged by exception type only. Malformed
+  coordinates are dropped, not refused.
+- **Helplines and hospitals are entered by admins in Django admin; nothing is seeded**
+  in code, migrations or `seed_demo` (Q12, Q13). A helpline has a country, or none
+  ("works from any country"); the patient sees their profile country's helplines plus
+  the any-country ones. Hospitals are listed per city (the profile city). Numbers use a
+  new **service number** rule, because short codes like 1122 fail E.164.
+- **Location (Q14):** optional device coordinates, rounded to 3 decimals, stored
+  encrypted for admin follow-up, and cleared after 90 days (`purge_sos_locations`, and
+  on every new SOS). They are not used to pick hospitals: that would need geocoding (a
+  new service or package). Helplines, hospitals and NGOs follow the profile city, then
+  the profile country.
+- **Emergency contacts (Q15):** up to 3, every field encrypted, the patient confirms
+  each one agreed. **Email is required and phone optional**, since email is the only
+  channel we send on (no SMS). Writes are audited; reads by the patient are not (same
+  as the mental health history).
+- **Notifications (Q16, Q20):** contacts and the current psychologist are emailed, at
+  most once per 30 minutes per patient; later presses are still recorded. Contacts get
+  the patient's real name (the patient chose them); the psychologist's email names the
+  patient **by pseudonym only** and sends them to the app. Delivery is fire-and-forget:
+  the alert records what was queued, and a failed send shows up only as an
+  `email_failed` log line with the template name. No "any available psychologist" pool.
+- **Psychologists** get `GET /emergency/psychologist/alerts/`: their current patients'
+  alerts from the last 30 days, every row audited. Access ends when care ends.
+- **NGOs shown to patients (Q17):** approved, active NGOs whose service area covers the
+  profile city or the whole country: name, official phone, website, service area. The
+  official email stays admin-only.
+- **Admins (Q18):** list with pseudonyms (open oldest first); opening an alert is
+  audited and reveals the patient (audited), their email and phone, and the
+  coordinates. Statuses open / cancelled → followed up → closed with a fixed outcome.
+  SOS events and contacts are not registered in Django admin, so the audited API is the
+  only way in. Ordinary admins may manage helplines and hospitals.
+- **Cancel (Q19):** within 5 minutes; contacts who were alerted get a "safe" email; the
+  alert stays on record and admins can still follow it up.
+**Alternatives considered:** seeding well-known numbers (rejected: only verified
+numbers may be shown); geocoding device coordinates to pick hospitals (new dependency);
+SMS to contacts (paid provider and package); alerting every accepting psychologist
+(tells strangers about a crisis).

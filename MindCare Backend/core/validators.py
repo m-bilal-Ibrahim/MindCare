@@ -276,6 +276,35 @@ class IdentifierValidator:
 
 
 @deconstructible
+class ServiceNumberValidator:
+    """Helpline and hospital numbers, which include short codes like 1122 or 15
+    that E.164 would refuse: digits, spaces, + and -; 2-20; at least 2 digits."""
+
+    PATTERN = re.compile(r"[0-9 +\-]*")
+
+    def __init__(self, label):
+        self.label = label
+
+    def __call__(self, value):
+        value = value or ""
+        if not self.PATTERN.fullmatch(value):
+            raise ValidationError(
+                f"{self.label} can only contain digits, spaces, plus (+) and "
+                "hyphens (-).",
+                code="characters",
+            )
+        if not 2 <= len(value) <= 20:
+            raise ValidationError(_length_message(self.label, 2, 20), code="length")
+        if sum(ch.isdigit() for ch in value) < 2:
+            raise ValidationError(
+                f"{self.label} must contain at least 2 digits.", code="digits"
+            )
+
+    def __eq__(self, other):
+        return isinstance(other, ServiceNumberValidator) and self.label == other.label
+
+
+@deconstructible
 class HttpsUrlValidator:
     """A valid https:// URL, at most 200 characters, optionally restricted to
     some domains (and their subdomains)."""

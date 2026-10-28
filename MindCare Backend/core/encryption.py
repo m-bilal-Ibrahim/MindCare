@@ -76,6 +76,54 @@ class EncryptedTextField(models.TextField):
         return super().get_lookup(lookup_name)
 
 
+class EncryptedSingleLineField(EncryptedTextField):
+    """Third-party contact details (a name, phone or email) validated in plain
+    form with the usual rule for `kind`, then stored encrypted."""
+
+    KINDS = ("person_name", "phone", "email")
+
+    def __init__(self, *args, kind="person_name", label="Name", **kwargs):
+        if kind not in self.KINDS:
+            raise ValueError(f"Unknown kind: {kind!r}")
+        self.kind = kind
+        self.label = label
+        super().__init__(*args, **kwargs)
+        self.validators.append(self._validator())
+
+    def _validator(self):
+        from django.core.validators import EmailValidator
+
+        from core.validators import E164_VALIDATOR, PersonNameValidator
+
+        if self.kind == "person_name":
+            return PersonNameValidator(self.label)
+        if self.kind == "phone":
+            return E164_VALIDATOR
+        return EmailValidator(message="Enter a valid email address.")
+
+    def to_python(self, value):
+        from core.validators import (
+            normalize_email_address,
+            normalize_phone,
+            normalize_single_line,
+        )
+
+        value = super().to_python(value)
+        if isinstance(value, str) and value:
+            value = {
+                "person_name": normalize_single_line,
+                "phone": normalize_phone,
+                "email": normalize_email_address,
+            }[self.kind](value)
+        return value
+
+    def deconstruct(self):
+        name, path, args, kwargs = super().deconstruct()
+        kwargs.update(kind=self.kind, label=self.label)
+        kwargs.pop("validators", None)
+        return name, path, args, kwargs
+
+
 class EncryptedFreeTextField(EncryptedTextField):
     """Free text that is validated in plain form (normalised, the free-text rule
     in docs/validation-rules.md) and then stored encrypted."""
