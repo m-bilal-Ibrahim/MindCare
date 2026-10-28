@@ -24,13 +24,15 @@ class AIPredictionRateThrottle(UserRateThrottle):
 
 class AnxietyPredictionView(APIView):
     """Decision support for an approved psychologist: forwards the entered
-    features to the AI service and returns its anxiety-risk prediction. Never
-    patient-facing; nothing is stored."""
+    features to the AI service and returns its self-rated social anxiety
+    prediction (Low / Medium / High), estimated severity tier and recommendation
+    bundle. Never patient-facing; nothing is stored or logged."""
 
     permission_classes = [IsAuthenticated, IsPsychologist, IsApprovedPsychologist]
     throttle_classes = [AIPredictionRateThrottle]
 
     @extend_schema(
+        summary="Social anxiety assessment (psychologists only)",
         request=AnxietyPredictionRequestSerializer,
         responses={
             200: AnxietyPredictionResponseSerializer,
