@@ -115,7 +115,10 @@ class AnxietyPredictionResponseSerializer(serializers.Serializer):
         help_text="Always first: the tier and bundle are an estimate for clinician "
         "review, not validated advice. Show it before the results."
     )
-    predicted_class = serializers.ChoiceField(choices=["Low", "Medium", "High"])
+    predicted_class = serializers.ChoiceField(
+        choices=["Low", "Medium", "High"],
+        help_text="Predicted self-rated social anxiety level.",
+    )
     probabilities = _Probabilities()
     uncertainty_flag = serializers.BooleanField(
         help_text="P(High) >= 0.025: recommend priority review."

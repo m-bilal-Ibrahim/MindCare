@@ -79,6 +79,19 @@ Before implementing any new feature, significant change, or design decision, run
   batch everything again.
 - Never run anything against production; give me the exact commands.
 - One branch per module, off main. Files staged by name. No .env changes.
+- One phase per session. Each phase runs in its own fresh Claude Code session.
+- During a phase, fixes and requests from the frontend partner, the AI partner or
+  testing (bugs, missing fields, contract changes) are handled in the same session:
+  small fixes as their own small PR into main (never stacked); anything bigger, say
+  whether it fits this phase or should move to the next. Log each one in
+  decisions.md / the tracker as usual.
+- When the phase is finished (planned modules plus the fixes done during it), write
+  `docs/status/phase-<N>-summary.md`: what was built (PR numbers); fixes and partner
+  requests handled (PR numbers); decisions made; manual steps done / still pending;
+  known gaps; the agreed scope of the next phase. Update module-tracker.md. Then stop
+  and say the phase is complete.
+- A new session starts by reading CLAUDE.md, the latest `phase-<N>-summary.md`,
+  module-tracker.md and decisions.md. Never rely on memory from an earlier session.
 
 ### Definition of done (every module)
 A module is done only when every bullet in its description in @docs/modules.md works

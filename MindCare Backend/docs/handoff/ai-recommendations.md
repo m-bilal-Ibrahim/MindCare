@@ -1,4 +1,4 @@
-# Handoff: AI assessment with recommendations (psychologist, Web)
+# Handoff: AI social anxiety assessment with recommendations (psychologist, Web)
 
 Implements `MindCare Web/docs/ai-recommendations-api-contract.md` (on the
 `web/ai-recommendations` branch) exactly. **No Web change is needed**: that branch
@@ -21,12 +21,26 @@ filled them in; `null` is also accepted):
 
 Bounds and messages for all keys: `docs/validation-rules.md` (AI form rows).
 
+### What the model predicts
+**Self-rated social anxiety** (Low / Medium / High). Call it "social anxiety" on every
+screen, never just "anxiety" or a diagnosis. The URL keeps its old name.
+
 ### Response 200
-Everything it returned before, plus:
+Full example (the AI's `/patient-summary` answer, returned unchanged):
 
 ```json
 {
   "caveat": "Estimated severity and recommendation are a best-guess reconstruction (...) not validated clinical advice.",
+  "predicted_class": "Medium",
+  "probabilities": {"Low": 0.31, "Medium": 0.67, "High": 0.02},
+  "uncertainty_flag": false,
+  "warnings": [],
+  "estimated_caffeine_mg": 285.0,
+  "estimated_stress_level": 6,
+  "confidence": 0.67,
+  "confidence_label": "borderline",
+  "borderline_reasons": ["top two classes are close"],
+  "borderline_between": ["Low", "Medium"],
   "estimated_severity_tier": "Moderate (5-6)",
   "severity_tier_basis": {
     "method": "most common tier for this predicted level and stress level in the data",

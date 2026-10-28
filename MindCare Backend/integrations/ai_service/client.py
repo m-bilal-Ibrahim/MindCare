@@ -23,7 +23,7 @@ logger = logging.getLogger("mindcare.integrations.ai_service")
 # /patient-summary returns a strict superset of /predict's fields (its response is
 # built from the /predict result plus the summary fields), with the same
 # validation and 422s, so existing callers keep working.
-PREDICT_PATH = "/patient-summary"
+PATIENT_SUMMARY_PATH = "/patient-summary"
 # Statuses that mean "this input was refused". Any other 4xx (404 from a wrong
 # URL or a missing Render service, 429, ...) is a service problem, not the input's.
 REJECTION_STATUSES = {400, 422}
@@ -69,7 +69,7 @@ def predict(*, base_url, features, timeout):
         raise AIServiceUnavailable("AI_SERVICE_URL is not set")
 
     request = Request(
-        base_url.rstrip("/") + PREDICT_PATH,
+        base_url.rstrip("/") + PATIENT_SUMMARY_PATH,
         data=json.dumps(features).encode(),
         headers={"Content-Type": "application/json", "Accept": "application/json"},
         method="POST",

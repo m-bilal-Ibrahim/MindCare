@@ -1260,3 +1260,24 @@ change from silent failure); `django-anymail` (a new package for two HTTP calls)
 sending during the request (slower, and timing would reveal which emails have
 accounts); a Celery task (needs a paid worker on Render); a reset link instead of a
 code (needs deep links in the App and a Web page; the code works the same in both).
+
+
+## 2026-10-28 - AI gateway wording: "social anxiety"; speed mode for the rest of Phase 2
+**Decision:**
+- **The gateway was already correct on `main`.** `POST /api/v1/ai/anxiety-prediction/`
+  forwards to `/patient-summary` (2026-10-11) and documents `caveat`,
+  `estimated_severity_tier`, `severity_tier_basis` and `recommendation_bundle`, with
+  optional `Gender` and `Alcohol Consumption (drinks/week)`. The AI partner's report
+  came from the client constant's old name, `PREDICT_PATH`; it is now
+  `PATIENT_SUMMARY_PATH`. No behaviour change.
+- **User-facing wording says "social anxiety"**: the model predicts **self-rated
+  social anxiety** (Low / Medium / High), not anxiety in general and not a diagnosis.
+  OpenAPI summary, view docstring, module reference and handoff use it. The URL and
+  the AI's own request keys stay unchanged.
+- **Speed mode for the rest of Phase 2** (modules 2–5, replaces "tests first"): build
+  the module, then one compact test file per module (happy path per endpoint,
+  permission checks, safety rules); affected app's tests plus the full suite once
+  before pushing. Validation on every field, the audit trail and encryption stay
+  mandatory. Short handoff docs.
+- **Working agreement:** one phase per session, partner fixes as small PRs, and a
+  `docs/status/phase-<N>-summary.md` at the end of each phase (CLAUDE.md).
