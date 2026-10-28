@@ -16,6 +16,7 @@ from core.validators import (
     IdentifierValidator,
     OrganisationNameValidator,
     PersonNameValidator,
+    ServiceNumberValidator,
     normalize_identifier,
     normalize_multiline_text,
     normalize_phone,
@@ -116,6 +117,21 @@ class PhoneField(_NormalisingMixin, models.CharField):
     def deconstruct(self):
         name, path, args, kwargs = super().deconstruct()
         kwargs.pop("validators", None)
+        return name, path, args, kwargs
+
+
+class ServiceNumberField(_NormalisingMixin, models.CharField):
+    """A helpline or hospital number; short codes allowed (validation-rules.md)."""
+
+    def __init__(self, *args, label="Number", **kwargs):
+        self.label = label
+        kwargs.setdefault("max_length", 20)
+        super().__init__(*args, **kwargs)
+        self.validators.append(ServiceNumberValidator(label))
+
+    def deconstruct(self):
+        name, path, args, kwargs = super().deconstruct()
+        kwargs["label"] = self.label
         return name, path, args, kwargs
 
 

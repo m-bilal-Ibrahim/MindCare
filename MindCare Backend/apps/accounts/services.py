@@ -529,6 +529,10 @@ ADMIN_GROUP_PERMISSIONS = {
         "specialization": ("add", "change", "view"),
     },
     "accounts": {"user": ("view",)},
+    "emergency": {
+        "helpline": ("add", "change", "delete", "view"),
+        "hospital": ("add", "change", "delete", "view"),
+    },
 }
 
 

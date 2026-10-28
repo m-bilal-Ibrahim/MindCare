@@ -329,4 +329,22 @@ new service, selector, or API endpoint. Keep entries one row per function/class.
 | `core/checks.py` | `check_email_provider()` | `mindcare.E003` (console in production), `E004` (unknown provider or missing key), `W001` (email disabled) | — | neither |
 | `core/audit.py` | `AUTH_EVENT_TYPES` | New events `password_reset_requested`, `password_reset` | — | neither |
 
+### Phase 2 module 2: SOS (6.12)
+
+| File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
+|---|---|---|---|---|
+| `apps/emergency/models.py` | `Helpline`, `Hospital`, `EmergencyContact`, `SOSEvent` | Admin-curated helplines (per country, or any country) and hospitals (per city); up to 3 encrypted emergency contacts per patient; SOS alerts with encrypted, rounded device coordinates | — | — |
+| `apps/emergency/selectors.py` | `emergency_resources()`, `helplines_for()`, `hospitals_for()`, `ngos_for()` | What the SOS screen shows: fixed emergency message, helplines, hospitals in the profile city, current psychologist, approved NGOs serving the area (no official email) | `GET /api/v1/emergency/resources/` | MindCare App |
+| `apps/emergency/selectors.py` | `events_for_patient()`, `contacts_for()`, `events_for_admin()`, `events_for_psychologist()` | Own alerts and contacts; admin list (open oldest first); a psychologist's CURRENT patients' alerts, last 30 days | see below | App, Web |
+| `apps/emergency/services.py` | `press_sos()`, `trigger_sos()` | The SOS button: never raises, never throttled; records the alert, emails contacts and the current psychologist at most once per 30 minutes; purges coordinates older than 90 days | `POST /api/v1/emergency/sos/`, `GET /api/v1/emergency/sos/` | MindCare App |
+| `apps/emergency/services.py` | `cancel_sos()` | "I'm safe" within 5 minutes; notified contacts get a follow-up email | `POST /api/v1/emergency/sos/{id}/cancel/` | MindCare App |
+| `apps/emergency/services.py` | `add_contact()`, `update_contact()`, `delete_contact()` | Up to 3 contacts, consent required, every write audited | `GET/POST /api/v1/emergency/contacts/`, `PATCH/DELETE /api/v1/emergency/contacts/{id}/` | MindCare App |
+| `apps/emergency/services.py` | `read_events_for_psychologist()` | Every alert shown to a psychologist is audited | `GET /api/v1/emergency/psychologist/alerts/` | MindCare Web |
+| `apps/emergency/services.py` | `read_event_for_admin()`, `follow_up_event()`, `close_event()` | Audited detail (identity reveal, coordinates, contact details); open → followed up → closed with a fixed outcome | `GET /api/v1/emergency/admin/sos/`, `GET .../admin/sos/{id}/`, `POST .../follow-up/`, `POST .../close/` | MindCare Web |
+| `apps/emergency/services.py` | `purge_old_locations()` | Clears coordinates older than 90 days | `manage.py purge_sos_locations` | neither |
+| `apps/emergency/admin.py` | `HelplineAdmin`, `HospitalAdmin` | Admins enter verified numbers; SOS events and contacts are not in Django admin | `/admin/` | neither (Django admin) |
+| `apps/notifications/emails.py` | `sos_contact_alert()`, `sos_contact_safe()`, `sos_psychologist_alert()` | SOS emails; the psychologist's names the patient by pseudonym only | — | neither |
+| `core/validators.py`, `core/fields.py` | `ServiceNumberValidator`, `ServiceNumberField` | Helpline/hospital numbers, short codes allowed | — | neither |
+| `core/encryption.py` | `EncryptedSingleLineField` | Name / phone / email validated in plain form, stored encrypted | — | neither |
+
 <!-- Add new `### apps/<app_name>` sections below as modules are implemented. -->

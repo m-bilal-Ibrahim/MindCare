@@ -12,7 +12,8 @@ role in the bullet).
 The Web is the psychologist/admin client; the App is the patient client. "Branch"
 means the work sits on an unmerged branch.
 
-Last updated: 2026-10-19 (Phase 2 module 1: password reset + email, backend).
+Last updated: 2026-10-28 (Phase 2 module 2: SOS, backend). Before that: 2026-10-19
+(Phase 2 module 1: password reset + email, backend).
 Before that: 2026-10-15 (Phase 2 module 0: super-admin workflow + admin-panel-2,
 backend). Earlier: 2026-10-11 (6.10 backend). Re-checked against `origin` on
 2026-10-11: the partner merged Web PRs #38 (city search), #40 (name validation), #44
@@ -110,9 +111,9 @@ backend). Earlier: 2026-10-11 (6.10 backend). Re-checked against `origin` on
 
 | Bullet | Backend | Web | App | Notes |
 |---|---|---|---|---|
-| SOS button on every screen starts an emergency flow | not started | — | mock only | NGO signup and profile done (backend) |
-| Helplines, nearby hospitals, emergency contacts, live psychologist connection | not started | mock only | mock only | Thresholds and escalation must not be invented (project-vision §27) |
-| Chatbot detects distress and activates SOS; emergency activity logged for admins | not started | mock only | — | Depends on 6.7 |
+| SOS button on every screen starts an emergency flow | done (Phase 2 module 2) | — | mock only | `POST /emergency/sos/`: manual button only, never throttled or blocked, cancel within 5 min. App screens are the partner's: `docs/handoff/sos.md` |
+| Helplines, nearby hospitals, emergency contacts, live psychologist connection | done (Phase 2 module 2) | not started | mock only | Admin-entered helplines (per country) and hospitals (per city), none seeded; up to 3 encrypted contacts emailed on SOS; the current psychologist is emailed (no on-call pool); approved NGOs serving the area. Device coordinates encrypted, cleared after 90 days |
+| Chatbot detects distress and activates SOS; emergency activity logged for admins | partial (Phase 2 module 2) | not started | — | Admin SOS log done (audited detail, follow up, close with an outcome) plus a psychologist alert list. **Chatbot trigger deferred to 6.7** (no chatbot yet; thresholds must not be invented) |
 
 ## 6.13 Engagement and Rewards
 

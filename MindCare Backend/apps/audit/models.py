@@ -28,6 +28,8 @@ class AuditResource(models.TextChoices):
     MENTAL_HEALTH_HISTORY = "mental_health_history", "Mental health history"
     CREDENTIAL_DOCUMENT = "credential_document", "Credential document"
     REPORT_DESCRIPTION = "report_description", "Report description"
+    EMERGENCY_CONTACT = "emergency_contact", "Emergency contact"
+    SOS_EVENT = "sos_event", "SOS event"
 
 
 class AppendOnlyQuerySet(models.QuerySet):

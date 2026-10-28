@@ -199,6 +199,7 @@ REST_FRAMEWORK = {
         "reports": "10/day",
         "uploads": "20/hour",
         "password_change": "10/hour",
+        "emergency_contacts": "30/hour",
         "password_reset": "5/hour",
         "password_reset_confirm": "20/hour",
     },
@@ -278,6 +279,10 @@ SPECTACULAR_SETTINGS = {
         "RelationshipStatusEnum": "apps.relationships.models.RelationshipStatus",
         "YesNoUnsureEnum": "apps.patients.models.YesNoUnsure",
         "YesNoEnum": "apps.patients.models.YesNo",
+        "SOSStatusEnum": "apps.emergency.models.SOSStatus",
+        "SOSOutcomeEnum": "apps.emergency.models.SOSOutcome",
+        "LocationSourceEnum": "apps.emergency.models.LocationSource",
+        "ContactRelationshipEnum": "apps.emergency.models.ContactRelationship",
     },
 }
 

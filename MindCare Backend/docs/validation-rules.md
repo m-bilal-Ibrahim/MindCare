@@ -126,6 +126,14 @@ The frontends check length (8+) and "not only digits" while typing. "Too common"
 Any key a serializer doesn't declare → `This field can't be set.`
 (`RejectUnknownFieldsMixin`).
 
+### Service number
+Used for: helpline and hospital numbers (admin-entered), which include short codes
+such as `1122` that E.164 refuses. Single-line normalisation.
+1. Only digits, spaces, `+` and `-`
+   → `{Label} can only contain digits, spaces, plus (+) and hyphens (-).`
+2. Length 2–20 → `{Label} must be between 2 and 20 characters.`
+3. At least 2 digits → `{Label} must contain at least 2 digits.`
+
 ### Search text (query parameters)
 Single-line normalisation, max 120 characters. Not stored, so no character rule.
 (`GET /reference/cities/` rejects a null character with `Null characters are not
@@ -233,3 +241,16 @@ as GPS location. Audio types: MP3, M4A, OGG. Documents: PDF.
 | Surah `name_english`, `name_meaning` | Django admin, admin API | English name / Meaning | Organisation name 2–100 | yes | |
 | Surah `ayah_count` | Django admin, admin API | Ayah count | Number 1–286 | yes | |
 | Recitation upload | Django admin (dua / surah) | Recitation | File: MP3, M4A, OGG; 15 MB | no | replaces the current audio |
+| `latitude`, `longitude` | `emergency/sos/` | Latitude / Longitude | Decimal −90–90 / −180–180 | no | both or neither (`Send both latitude and longitude, or neither.`); a bad pair is dropped and never blocks the SOS; stored rounded to 3 decimals |
+| contact `name` | `emergency/contacts/` | Name | Person name | yes | encrypted at rest |
+| contact `relationship` | `emergency/contacts/` | — | Choice (`parent`, `sibling`, `spouse_partner`, `child`, `relative`, `friend`, `other`) | yes | |
+| contact `email` | `emergency/contacts/` | Email | Email | yes | not unique; encrypted |
+| contact `phone` | `emergency/contacts/` | Phone | Phone | no | encrypted |
+| `consent_confirmed` | `emergency/contacts/` (POST) | — | Choice (`true`) | yes | `Confirm this person agreed to be your emergency contact.` |
+| contact count | `emergency/contacts/` (POST) | — | at most 3 | — | `You can add up to 3 emergency contacts.` |
+| `outcome` | `emergency/admin/sos/{id}/close/` | — | Choice (`patient_safe`, `contacted_patient`, `referred_emergency_services`, `false_alarm`, `unreachable`, `other`) | yes | |
+| admin SOS `status` | `emergency/admin/sos/` (query) | — | Choice (`open`, `cancelled`, `followed_up`, `closed`) | no | |
+| Helpline `name`, Hospital `name` | Django admin | Name | Organisation name | yes | |
+| Helpline `number`, Hospital `phone` | Django admin | Number / Phone | Service number | yes | |
+| Helpline `description` | Django admin | Description | Free text 10–300 | no | |
+| Hospital `address` | Django admin | Address | Free text 10–300 | yes | |
