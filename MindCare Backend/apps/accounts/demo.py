@@ -301,7 +301,41 @@ def seed_demo_accounts(*, password):
     _ensure_demo_report()
     _ensure_demo_city()
     _ensure_demo_emergency_contact()
+    _ensure_demo_check_ins()
     return {"created": created, "existing": existing}
+
+
+# Phase 2 module 3: a week of fictional mood check-ins for patient 1, ending
+# yesterday, so the insights and the psychologist's mood view have data and
+# today's check-in can still be made live in a demo.
+DEMO_CHECK_INS = [  # (days ago, mood, tags)
+    (7, 2, ["anxious", "tired"]),
+    (6, 3, ["stressed"]),
+    (5, 3, ["calm"]),
+    (4, 2, ["lonely", "sad"]),
+    (3, 4, ["hopeful"]),
+    (2, 4, ["calm", "grateful"]),
+    (1, 5, ["happy", "motivated"]),
+]
+
+
+def _ensure_demo_check_ins():
+    from datetime import timedelta
+
+    from apps.journals.models import MoodCheckIn
+    from apps.journals.selectors import patient_today
+
+    profile = User.objects.get(email=DEMO_PATIENT_EMAILS[0]).patient_profile
+    if MoodCheckIn.objects.filter(patient=profile).exists():
+        return
+    today = patient_today(profile)
+    for days_ago, mood, tags in DEMO_CHECK_INS:
+        MoodCheckIn.objects.create(
+            patient=profile,
+            local_date=today - timedelta(days=days_ago),
+            mood=mood,
+            tags=tags,
+        )
 
 
 # 6.12: one fictional emergency contact for patient 1 (an @example.com address,

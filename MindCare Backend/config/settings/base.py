@@ -62,6 +62,7 @@ DJANGO_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.postgres",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -200,6 +201,7 @@ REST_FRAMEWORK = {
         "uploads": "20/hour",
         "password_change": "10/hour",
         "emergency_contacts": "30/hour",
+        "check_ins": "30/hour",
         "password_reset": "5/hour",
         "password_reset_confirm": "20/hour",
     },
@@ -283,6 +285,8 @@ SPECTACULAR_SETTINGS = {
         "SOSOutcomeEnum": "apps.emergency.models.SOSOutcome",
         "LocationSourceEnum": "apps.emergency.models.LocationSource",
         "ContactRelationshipEnum": "apps.emergency.models.ContactRelationship",
+        "MoodEnum": "apps.journals.models.Mood",
+        "EmotionTagEnum": "apps.journals.models.EmotionTag",
     },
 }
 

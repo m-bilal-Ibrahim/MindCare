@@ -1328,3 +1328,31 @@ code (needs deep links in the App and a Web page; the code works the same in bot
 numbers may be shown); geocoding device coordinates to pick hospitals (new dependency);
 SMS to contacts (paid provider and package); alerting every accepting psychologist
 (tells strangers about a crisis).
+
+
+## 2026-10-28 - Phase 2 module 3: mood check-ins
+**Decision (module 3 answers Q21-Q26):**
+- **Lives in `apps/journals`** (`MoodCheckIn`), the app for patient-authored entries,
+  under `/api/v1/journals/check-ins/`.
+- **Shape (Q21):** mood 1-5 (Very low ... Great), up to 5 feelings from a fixed list of
+  12, and an optional note of 10-500 characters, **encrypted** and private to the
+  patient. Mood and feelings stay readable so insights can be calculated in the
+  database; they hold no free text.
+- **One per local day (Q22):** the patient's timezone, or Asia/Karachi if none. A
+  database constraint enforces it. Editable only on that day; the streak is consecutive
+  local days ending today, or yesterday if today's isn't in yet.
+- **Psychologist (Q23):** the CURRENT assigned psychologist sees mood and feelings with
+  insights, never the note; every read is audited (fail closed). Access ends with care.
+- **Insights (Q24):** 7/30/90-day average, distribution, top 3 feelings, streak.
+  Calculated, not AI.
+- **Low mood (Q25):** no automatic action and no threshold; the App links to the
+  helplines on the check-in screen.
+- **Delete (Q26):** hard delete, audited. Every write is audited; the patient's own
+  reads aren't (same as the mental health history).
+- **`django.contrib.postgres` added to `INSTALLED_APPS`** (part of Django, no new
+  package): Django requires it for `ArrayField`, and module 4 needs it for the
+  exclusion constraint.
+**Alternatives considered:** encrypting the mood too (insights would need every row
+decrypted in Python, and the score isn't free text); several check-ins a day (noisy
+trends, no clear streak); showing notes to the psychologist (the journal belongs to
+the patient, project-vision section 11).

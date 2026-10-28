@@ -254,3 +254,9 @@ as GPS location. Audio types: MP3, M4A, OGG. Documents: PDF.
 | Helpline `number`, Hospital `phone` | Django admin | Number / Phone | Service number | yes | |
 | Helpline `description` | Django admin | Description | Free text 10–300 | no | |
 | Hospital `address` | Django admin | Address | Free text 10–300 | yes | |
+| `mood` | `journals/check-ins/` | Mood | Number 1–5 | yes (on POST) | `Mood must be a whole number between 1 and 5.` |
+| `tags` | `journals/check-ins/` | — | Choice (`calm`, `happy`, `grateful`, `hopeful`, `motivated`, `tired`, `anxious`, `stressed`, `sad`, `lonely`, `angry`, `overwhelmed`), at most 5, duplicates dropped | no | more than 5 → `Choose at most 5 feelings.` |
+| `note` | `journals/check-ins/` | Note | Free text 10–500 | no | encrypted; private to the patient |
+| one per day | `journals/check-ins/` (POST) | — | — | — | `You've already checked in today. Edit today's check-in instead.` |
+| edit window | `journals/check-ins/{id}/` (PATCH) | — | — | — | `A check-in can only be edited on the day it was made.` |
+| `days` | `journals/psychologist/patients/{id}/moods/` (query) | — | Choice (7, 30, 90) | no | default 30 |
