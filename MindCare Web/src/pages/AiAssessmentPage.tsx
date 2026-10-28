@@ -220,10 +220,10 @@ const AiAssessmentPage: React.FC = () => {
   return (
     <TherapistLayout breadcrumb={['Care', 'AI assessment']}>
       <h1 className="text-5xl font-black text-gray-900 mb-2">
-        Anxiety-risk <span className="italic font-serif font-normal">assessment.</span>
+        Social anxiety <span className="italic font-serif font-normal">assessment.</span>
       </h1>
       <p className="text-gray-500 mb-4 max-w-2xl">
-        Enter a patient’s answers to get the AI model’s anxiety-risk estimate. It supports your judgement — it doesn’t
+        Enter a patient’s answers to get the AI model’s social-anxiety estimate. It supports your judgement — it doesn’t
         replace it.
       </p>
       <div className="flex items-start gap-3 bg-white/70 border border-gray-200 rounded-xl px-4 py-3 mb-8 max-w-3xl text-sm text-gray-600">
@@ -440,7 +440,7 @@ const ResultCard: React.FC<{ result: AnxietyPrediction }> = ({ result }) => {
           <span className="whitespace-pre-line">{result.caveat}</span>
         </div>
       )}
-      <p className="text-[11px] font-semibold tracking-widest text-gray-500 uppercase mb-1">Predicted anxiety risk</p>
+      <p className="text-[11px] font-semibold tracking-widest text-gray-500 uppercase mb-1">Predicted social anxiety level</p>
       <p className={`text-5xl font-black mb-1 ${style.text}`}>{result.predicted_class}</p>
       <p className="text-sm text-gray-700 mb-5">
         Confidence <span className="font-bold">{pct(result.confidence)}</span>
@@ -469,7 +469,7 @@ const ResultCard: React.FC<{ result: AnxietyPrediction }> = ({ result }) => {
           <AlertTriangle size={15} className="shrink-0 mt-0.5" aria-hidden="true" />
           <span>
             <span className="font-semibold">Priority review recommended</span> — the model sees a meaningful chance of
-            High anxiety.
+            High social anxiety.
           </span>
         </div>
       )}

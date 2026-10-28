@@ -54,7 +54,7 @@ const SECTIONS: ModelSection[] = [
     color: 'bg-orange-500',
     title: 'AI as decision support',
     points: [
-      'The anxiety-risk assessment is a tool for you, not for patients: only approved psychologists can use it.',
+      'The social-anxiety assessment is a tool for you, not for patients: only approved psychologists can use it.',
       'You enter the answers; it returns Low, Medium or High with a confidence level and any warnings.',
       'A result is never shown to the patient, and nothing you enter is saved.',
       'It supports ages 18–49. Every result needs your clinical review — a confident result doesn’t mean the patient is safe.',
