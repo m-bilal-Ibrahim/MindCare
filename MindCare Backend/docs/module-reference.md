@@ -347,4 +347,14 @@ new service, selector, or API endpoint. Keep entries one row per function/class.
 | `core/validators.py`, `core/fields.py` | `ServiceNumberValidator`, `ServiceNumberField` | Helpline/hospital numbers, short codes allowed | — | neither |
 | `core/encryption.py` | `EncryptedSingleLineField` | Name / phone / email validated in plain form, stored encrypted | — | neither |
 
+### Phase 2 module 3: mood check-ins
+
+| File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
+|---|---|---|---|---|
+| `apps/journals/models.py` | `MoodCheckIn`, `Mood`, `EmotionTag` | One check-in per patient per local day: mood 1-5, up to 5 feelings, optional encrypted note | — | — |
+| `apps/journals/selectors.py` | `patient_today()`, `today_check_in()`, `check_ins_for()` | Local day from the patient's timezone (Asia/Karachi fallback); own check-ins newest first | `GET /api/v1/journals/check-ins/`, `GET .../check-ins/today/` | MindCare App |
+| `apps/journals/selectors.py` | `insights()`, `streak()` | 7/30/90-day average, distribution and top feelings, plus the streak; calculated, not AI | `GET /api/v1/journals/check-ins/insights/` | MindCare App |
+| `apps/journals/services.py` | `create_check_in()`, `update_check_in()`, `delete_check_in()` | One per local day, editable only that day, deletable any time; every write audited | `POST .../check-ins/`, `PATCH/DELETE .../check-ins/{id}/` | MindCare App |
+| `apps/journals/services.py` | `read_moods_for_psychologist()` | A current patient's moods and feelings (never notes) with insights; audited, fail closed | `GET /api/v1/journals/psychologist/patients/{relationship_id}/moods/` | MindCare Web |
+
 <!-- Add new `### apps/<app_name>` sections below as modules are implemented. -->

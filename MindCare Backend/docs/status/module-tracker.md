@@ -12,7 +12,8 @@ role in the bullet).
 The Web is the psychologist/admin client; the App is the patient client. "Branch"
 means the work sits on an unmerged branch.
 
-Last updated: 2026-10-28 (Phase 2 module 2: SOS, backend). Before that: 2026-10-19
+Last updated: 2026-10-28 (Phase 2 module 3: mood check-ins, backend). Same day:
+Phase 2 module 2 (SOS, backend). Before that: 2026-10-19
 (Phase 2 module 1: password reset + email, backend).
 Before that: 2026-10-15 (Phase 2 module 0: super-admin workflow + admin-panel-2,
 backend). Earlier: 2026-10-11 (6.10 backend). Re-checked against `origin` on
@@ -48,8 +49,8 @@ backend). Earlier: 2026-10-11 (6.10 backend). Re-checked against `origin` on
 | Bullet | Backend | Web | App | Notes |
 |---|---|---|---|---|
 | Psychologists keep therapy notes and observations after each session | not started | mock only | — | Needs the PHI audit trail (roadmap Phase 5) |
-| Psychologists track progress and changes over time | not started | mock only | — | |
-| Users view summarised insights of their progress | not started | — | mock only | |
+| Psychologists track progress and changes over time | partial (Phase 2 module 3) | mock only | — | A current patient's mood history and insights (never notes), audited. Progress ratings come with module 5 |
+| Users view summarised insights of their progress | partial (Phase 2 module 3) | — | mock only | Mood insights done: 7/30/90-day averages, distribution, top feelings, streak (`journals/check-ins/insights/`). Session count and the psychologist's patient summary come with modules 4–5. App screens: `docs/handoff/mood-check-ins.md` |
 
 ## 6.5 Sensor Monitoring and Health Tracking
 
@@ -119,7 +120,7 @@ backend). Earlier: 2026-10-11 (6.10 backend). Re-checked against `origin` on
 
 | Bullet | Backend | Web | App | Notes |
 |---|---|---|---|---|
-| Points, badges and streaks for activities, sessions and check-ins | not started | — | mock only | |
+| Points, badges and streaks for activities, sessions and check-ins | partial (Phase 2 module 3) | — | mock only | Daily mood check-ins and their streak exist; points and badges are 6.13 |
 | Levels and milestones | not started | — | mock only | |
 | Rewards (discounts, premium content, session benefits), optional leaderboards | not started | — | mock only | Premium model not decided (project-vision §28); leaderboards need a privacy review against the pseudonym rules |
 

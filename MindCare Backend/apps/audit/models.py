@@ -30,6 +30,7 @@ class AuditResource(models.TextChoices):
     REPORT_DESCRIPTION = "report_description", "Report description"
     EMERGENCY_CONTACT = "emergency_contact", "Emergency contact"
     SOS_EVENT = "sos_event", "SOS event"
+    MOOD_CHECK_IN = "mood_check_in", "Mood check-in"
 
 
 class AppendOnlyQuerySet(models.QuerySet):
