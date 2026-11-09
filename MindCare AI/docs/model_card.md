@@ -766,6 +766,10 @@ coin-flip, so the reviewing psychologist knows where their own judgement matters
 > field says which rule fired (`"model_p_high"`, `"severe_sleep"`). The cutoff is provisional,
 > pending psychologist/supervisor sign-off. All flag-coverage figures in this section are for the
 > P(High) rule alone. See limitation 15.
+>
+> **Added 2026-11-10: a heart rate below 40 or above 130 bpm, or a breathing rate below 8 or above
+> 30 per minute, also forces the review flag** (`"abnormal_vital_signs"`), with a warning
+> suggesting medical follow-up. Provisional cutoffs; see limitation 16.
 
 **Production rule:** flag a validation row **"borderline — recommend review"** if
 **P(High) ≥ 0.10**, unconditional on the predicted class.
@@ -996,9 +1000,22 @@ Not yet done for the 5-class Severity target beyond what's already in `reports/f
 
     Since 2026-11-09 the API forces the review flag for Sleep Hours < 4
     (`review_reasons: ["severe_sleep"]`) and adds a warning; the prediction itself is unchanged.
-    **The 4-hour cutoff is provisional** and needs psychologist/supervisor sign-off. Other
-    clinically extreme inputs outside the training range (for example heart or breathing rate) may
-    have the same blind spot and have not yet been checked.
+    **The 4-hour cutoff is provisional** and needs psychologist/supervisor sign-off. The other
+    numeric inputs were checked on 2026-11-10 and show the same blind spot; see limitation 16.
+16. **Heart rate and breathing rate barely affect the model, even at dangerous values, and inputs
+    stop having any effect outside their training range** (`reports/extremes_sweep_11feature_v2.md`).
+    The sweep changed one input at a time on four reference patients. For the low-risk, moderate
+    and form-default patients:
+    - Heart rate 30–220 bpm moves P(High) by at most 0.001.
+    - Breathing rate 5–60 per minute moves it by nothing at all.
+    - Neither ever reaches the 0.025 review threshold.
+
+    Every input is flat beyond its training range, so for example 220 bpm is treated exactly like
+    119. Caffeine is the only input that triggers the flag on its own, at about 600 mg/day, and it
+    too is flat above that. Since 2026-11-10 a safety rule forces review for abnormal vital signs
+    (`"abnormal_vital_signs"`). **The cutoffs (heart rate 40/130 bpm, breathing 8/30 per minute)
+    are provisional** and need clinical sign-off. Heart rate from the wearable band feeds this same
+    input.
 
 ---
 

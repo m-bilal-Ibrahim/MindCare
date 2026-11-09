@@ -1,0 +1,2408 @@
+{
+ "results": {
+  "low_risk": {
+   "Heart Rate (bpm)": [
+    {
+     "value": 30,
+     "predicted_class": "Low",
+     "p_high": 0.0006016268162056804,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 40,
+     "predicted_class": "Low",
+     "p_high": 0.0006016268162056804,
+     "review_reasons": []
+    },
+    {
+     "value": 50,
+     "predicted_class": "Low",
+     "p_high": 0.0006016268162056804,
+     "review_reasons": []
+    },
+    {
+     "value": 60,
+     "predicted_class": "Low",
+     "p_high": 0.0006016268162056804,
+     "review_reasons": []
+    },
+    {
+     "value": 70,
+     "predicted_class": "Low",
+     "p_high": 0.0006718078511767089,
+     "review_reasons": []
+    },
+    {
+     "value": 80,
+     "predicted_class": "Low",
+     "p_high": 0.0006470310036092997,
+     "review_reasons": []
+    },
+    {
+     "value": 90,
+     "predicted_class": "Low",
+     "p_high": 0.0006646335823461413,
+     "review_reasons": []
+    },
+    {
+     "value": 100,
+     "predicted_class": "Low",
+     "p_high": 0.000682427897118032,
+     "review_reasons": []
+    },
+    {
+     "value": 110,
+     "predicted_class": "Low",
+     "p_high": 0.0007583550759591162,
+     "review_reasons": []
+    },
+    {
+     "value": 119,
+     "predicted_class": "Low",
+     "p_high": 0.0008610525983385742,
+     "review_reasons": []
+    },
+    {
+     "value": 130,
+     "predicted_class": "Low",
+     "p_high": 0.0008610525983385742,
+     "review_reasons": []
+    },
+    {
+     "value": 150,
+     "predicted_class": "Low",
+     "p_high": 0.0008610525983385742,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 180,
+     "predicted_class": "Low",
+     "p_high": 0.0008610525983385742,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 220,
+     "predicted_class": "Low",
+     "p_high": 0.0008610525983385742,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    }
+   ],
+   "Breathing Rate (breaths/min)": [
+    {
+     "value": 5,
+     "predicted_class": "Low",
+     "p_high": 0.0008425973355770111,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 8,
+     "predicted_class": "Low",
+     "p_high": 0.0008425973355770111,
+     "review_reasons": []
+    },
+    {
+     "value": 10,
+     "predicted_class": "Low",
+     "p_high": 0.0008425973355770111,
+     "review_reasons": []
+    },
+    {
+     "value": 12,
+     "predicted_class": "Low",
+     "p_high": 0.0008425973355770111,
+     "review_reasons": []
+    },
+    {
+     "value": 16,
+     "predicted_class": "Low",
+     "p_high": 0.0006164535880088806,
+     "review_reasons": []
+    },
+    {
+     "value": 20,
+     "predicted_class": "Low",
+     "p_high": 0.0006165531231090426,
+     "review_reasons": []
+    },
+    {
+     "value": 25,
+     "predicted_class": "Low",
+     "p_high": 0.0006052631069906056,
+     "review_reasons": []
+    },
+    {
+     "value": 29,
+     "predicted_class": "Low",
+     "p_high": 0.000616355100646615,
+     "review_reasons": []
+    },
+    {
+     "value": 35,
+     "predicted_class": "Low",
+     "p_high": 0.000616355100646615,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 40,
+     "predicted_class": "Low",
+     "p_high": 0.000616355100646615,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 50,
+     "predicted_class": "Low",
+     "p_high": 0.000616355100646615,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 60,
+     "predicted_class": "Low",
+     "p_high": 0.000616355100646615,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    }
+   ],
+   "Sleep Hours": [
+    {
+     "value": 0,
+     "predicted_class": "Low",
+     "p_high": 0.0022283790167421103,
+     "review_reasons": [
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 2,
+     "predicted_class": "Low",
+     "p_high": 0.0022283790167421103,
+     "review_reasons": [
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 2.3,
+     "predicted_class": "Low",
+     "p_high": 0.0022283790167421103,
+     "review_reasons": [
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 4,
+     "predicted_class": "Low",
+     "p_high": 0.0022260972764343023,
+     "review_reasons": []
+    },
+    {
+     "value": 6,
+     "predicted_class": "Low",
+     "p_high": 0.0008851843304000795,
+     "review_reasons": []
+    },
+    {
+     "value": 8,
+     "predicted_class": "Low",
+     "p_high": 0.0006743076373822987,
+     "review_reasons": []
+    },
+    {
+     "value": 10,
+     "predicted_class": "Low",
+     "p_high": 0.0006291830795817077,
+     "review_reasons": []
+    },
+    {
+     "value": 11.3,
+     "predicted_class": "Low",
+     "p_high": 0.0006291830795817077,
+     "review_reasons": []
+    },
+    {
+     "value": 14,
+     "predicted_class": "Low",
+     "p_high": 0.0006291830795817077,
+     "review_reasons": []
+    },
+    {
+     "value": 18,
+     "predicted_class": "Low",
+     "p_high": 0.0006291830795817077,
+     "review_reasons": []
+    },
+    {
+     "value": 24,
+     "predicted_class": "Low",
+     "p_high": 0.0006291830795817077,
+     "review_reasons": []
+    }
+   ],
+   "cups_of_coffee": [
+    {
+     "value": 0,
+     "predicted_class": "Low",
+     "p_high": 0.0007861956837587059,
+     "review_reasons": []
+    },
+    {
+     "value": 1,
+     "predicted_class": "Low",
+     "p_high": 0.0006693991599604487,
+     "review_reasons": []
+    },
+    {
+     "value": 2,
+     "predicted_class": "Low",
+     "p_high": 0.0007035490125417709,
+     "review_reasons": []
+    },
+    {
+     "value": 3,
+     "predicted_class": "Low",
+     "p_high": 0.0007931822910904884,
+     "review_reasons": []
+    },
+    {
+     "value": 4,
+     "predicted_class": "Low",
+     "p_high": 0.0008699274039827287,
+     "review_reasons": []
+    },
+    {
+     "value": 5,
+     "predicted_class": "Low",
+     "p_high": 0.0013903456274420023,
+     "review_reasons": []
+    },
+    {
+     "value": 6,
+     "predicted_class": "Low",
+     "p_high": 0.0015745630953460932,
+     "review_reasons": []
+    },
+    {
+     "value": 7,
+     "predicted_class": "Low",
+     "p_high": 0.008758462965488434,
+     "review_reasons": []
+    },
+    {
+     "value": 8,
+     "predicted_class": "Low",
+     "p_high": 0.008758462965488434,
+     "review_reasons": []
+    },
+    {
+     "value": 9,
+     "predicted_class": "Low",
+     "p_high": 0.008758462965488434,
+     "review_reasons": []
+    },
+    {
+     "value": 10,
+     "predicted_class": "Low",
+     "p_high": 0.008758462965488434,
+     "review_reasons": []
+    },
+    {
+     "value": 11,
+     "predicted_class": "Low",
+     "p_high": 0.008758462965488434,
+     "review_reasons": []
+    },
+    {
+     "value": 12,
+     "predicted_class": "Low",
+     "p_high": 0.008758462965488434,
+     "review_reasons": []
+    }
+   ],
+   "Physical Activity (hrs/week)": [
+    {
+     "value": 0,
+     "predicted_class": "Low",
+     "p_high": 0.0007930653518997133,
+     "review_reasons": []
+    },
+    {
+     "value": 2,
+     "predicted_class": "Low",
+     "p_high": 0.0007357795257121325,
+     "review_reasons": []
+    },
+    {
+     "value": 5,
+     "predicted_class": "Low",
+     "p_high": 0.000668229185976088,
+     "review_reasons": []
+    },
+    {
+     "value": 10.1,
+     "predicted_class": "Low",
+     "p_high": 0.0008022951078601182,
+     "review_reasons": []
+    },
+    {
+     "value": 20,
+     "predicted_class": "Low",
+     "p_high": 0.0008022951078601182,
+     "review_reasons": []
+    },
+    {
+     "value": 40,
+     "predicted_class": "Low",
+     "p_high": 0.0008022951078601182,
+     "review_reasons": []
+    },
+    {
+     "value": 80,
+     "predicted_class": "Low",
+     "p_high": 0.0008022951078601182,
+     "review_reasons": []
+    },
+    {
+     "value": 168,
+     "predicted_class": "Low",
+     "p_high": 0.0008022951078601182,
+     "review_reasons": []
+    }
+   ],
+   "Therapy Sessions (per month)": [
+    {
+     "value": 0,
+     "predicted_class": "Low",
+     "p_high": 0.0006693991599604487,
+     "review_reasons": []
+    },
+    {
+     "value": 2,
+     "predicted_class": "Low",
+     "p_high": 0.0008246749057434499,
+     "review_reasons": []
+    },
+    {
+     "value": 4,
+     "predicted_class": "Low",
+     "p_high": 0.0009887913474813104,
+     "review_reasons": []
+    },
+    {
+     "value": 8,
+     "predicted_class": "Low",
+     "p_high": 0.0015383417485281825,
+     "review_reasons": []
+    },
+    {
+     "value": 12,
+     "predicted_class": "Low",
+     "p_high": 0.0015391893684864044,
+     "review_reasons": []
+    },
+    {
+     "value": 20,
+     "predicted_class": "Low",
+     "p_high": 0.0015391893684864044,
+     "review_reasons": []
+    },
+    {
+     "value": 31,
+     "predicted_class": "Low",
+     "p_high": 0.0015391893684864044,
+     "review_reasons": []
+    }
+   ],
+   "Diet Quality (1-10)": [
+    {
+     "value": 0,
+     "predicted_class": "Low",
+     "p_high": 0.0007335153059102595,
+     "review_reasons": []
+    },
+    {
+     "value": 1,
+     "predicted_class": "Low",
+     "p_high": 0.0007335153059102595,
+     "review_reasons": []
+    },
+    {
+     "value": 3,
+     "predicted_class": "Low",
+     "p_high": 0.0006945557543076575,
+     "review_reasons": []
+    },
+    {
+     "value": 5,
+     "predicted_class": "Low",
+     "p_high": 0.0006842352449893951,
+     "review_reasons": []
+    },
+    {
+     "value": 8,
+     "predicted_class": "Low",
+     "p_high": 0.0006693991599604487,
+     "review_reasons": []
+    },
+    {
+     "value": 10,
+     "predicted_class": "Low",
+     "p_high": 0.0008133372175507247,
+     "review_reasons": []
+    },
+    {
+     "value": 12,
+     "predicted_class": "Low",
+     "p_high": 0.0008133372175507247,
+     "review_reasons": []
+    }
+   ]
+  },
+  "moderate": {
+   "Heart Rate (bpm)": [
+    {
+     "value": 30,
+     "predicted_class": "Low",
+     "p_high": 0.004211238585412502,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 40,
+     "predicted_class": "Low",
+     "p_high": 0.004211238585412502,
+     "review_reasons": []
+    },
+    {
+     "value": 50,
+     "predicted_class": "Low",
+     "p_high": 0.004211238585412502,
+     "review_reasons": []
+    },
+    {
+     "value": 60,
+     "predicted_class": "Low",
+     "p_high": 0.004211238585412502,
+     "review_reasons": []
+    },
+    {
+     "value": 70,
+     "predicted_class": "Medium",
+     "p_high": 0.0038313509430736303,
+     "review_reasons": []
+    },
+    {
+     "value": 80,
+     "predicted_class": "Medium",
+     "p_high": 0.003739434527233243,
+     "review_reasons": []
+    },
+    {
+     "value": 90,
+     "predicted_class": "Medium",
+     "p_high": 0.0038346305955201387,
+     "review_reasons": []
+    },
+    {
+     "value": 100,
+     "predicted_class": "Medium",
+     "p_high": 0.003773338394239545,
+     "review_reasons": []
+    },
+    {
+     "value": 110,
+     "predicted_class": "Medium",
+     "p_high": 0.004034229554235935,
+     "review_reasons": []
+    },
+    {
+     "value": 119,
+     "predicted_class": "Medium",
+     "p_high": 0.004584288224577904,
+     "review_reasons": []
+    },
+    {
+     "value": 130,
+     "predicted_class": "Medium",
+     "p_high": 0.004584288224577904,
+     "review_reasons": []
+    },
+    {
+     "value": 150,
+     "predicted_class": "Medium",
+     "p_high": 0.004584288224577904,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 180,
+     "predicted_class": "Medium",
+     "p_high": 0.004584288224577904,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 220,
+     "predicted_class": "Medium",
+     "p_high": 0.004584288224577904,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    }
+   ],
+   "Breathing Rate (breaths/min)": [
+    {
+     "value": 5,
+     "predicted_class": "Medium",
+     "p_high": 0.0037787621840834618,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 8,
+     "predicted_class": "Medium",
+     "p_high": 0.0037787621840834618,
+     "review_reasons": []
+    },
+    {
+     "value": 10,
+     "predicted_class": "Medium",
+     "p_high": 0.0037787621840834618,
+     "review_reasons": []
+    },
+    {
+     "value": 12,
+     "predicted_class": "Medium",
+     "p_high": 0.0037787621840834618,
+     "review_reasons": []
+    },
+    {
+     "value": 16,
+     "predicted_class": "Medium",
+     "p_high": 0.0036625266075134277,
+     "review_reasons": []
+    },
+    {
+     "value": 20,
+     "predicted_class": "Medium",
+     "p_high": 0.003762097330763936,
+     "review_reasons": []
+    },
+    {
+     "value": 25,
+     "predicted_class": "Medium",
+     "p_high": 0.003682721173390746,
+     "review_reasons": []
+    },
+    {
+     "value": 29,
+     "predicted_class": "Medium",
+     "p_high": 0.0037309906911104918,
+     "review_reasons": []
+    },
+    {
+     "value": 35,
+     "predicted_class": "Medium",
+     "p_high": 0.0037309906911104918,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 40,
+     "predicted_class": "Medium",
+     "p_high": 0.0037309906911104918,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 50,
+     "predicted_class": "Medium",
+     "p_high": 0.0037309906911104918,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 60,
+     "predicted_class": "Medium",
+     "p_high": 0.0037309906911104918,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    }
+   ],
+   "Sleep Hours": [
+    {
+     "value": 0,
+     "predicted_class": "Medium",
+     "p_high": 0.010592768900096416,
+     "review_reasons": [
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 2,
+     "predicted_class": "Medium",
+     "p_high": 0.010592768900096416,
+     "review_reasons": [
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 2.3,
+     "predicted_class": "Medium",
+     "p_high": 0.010592768900096416,
+     "review_reasons": [
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 4,
+     "predicted_class": "Medium",
+     "p_high": 0.010323001071810722,
+     "review_reasons": []
+    },
+    {
+     "value": 6,
+     "predicted_class": "Medium",
+     "p_high": 0.004254451021552086,
+     "review_reasons": []
+    },
+    {
+     "value": 8,
+     "predicted_class": "Low",
+     "p_high": 0.0029345224611461163,
+     "review_reasons": []
+    },
+    {
+     "value": 10,
+     "predicted_class": "Low",
+     "p_high": 0.002934579271823168,
+     "review_reasons": []
+    },
+    {
+     "value": 11.3,
+     "predicted_class": "Low",
+     "p_high": 0.002934579271823168,
+     "review_reasons": []
+    },
+    {
+     "value": 14,
+     "predicted_class": "Low",
+     "p_high": 0.002934579271823168,
+     "review_reasons": []
+    },
+    {
+     "value": 18,
+     "predicted_class": "Low",
+     "p_high": 0.002934579271823168,
+     "review_reasons": []
+    },
+    {
+     "value": 24,
+     "predicted_class": "Low",
+     "p_high": 0.002934579271823168,
+     "review_reasons": []
+    }
+   ],
+   "cups_of_coffee": [
+    {
+     "value": 0,
+     "predicted_class": "Medium",
+     "p_high": 0.0023697030264884233,
+     "review_reasons": []
+    },
+    {
+     "value": 1,
+     "predicted_class": "Medium",
+     "p_high": 0.0025713443756103516,
+     "review_reasons": []
+    },
+    {
+     "value": 2,
+     "predicted_class": "Medium",
+     "p_high": 0.002830752171576023,
+     "review_reasons": []
+    },
+    {
+     "value": 3,
+     "predicted_class": "Medium",
+     "p_high": 0.0037766944151371717,
+     "review_reasons": []
+    },
+    {
+     "value": 4,
+     "predicted_class": "Medium",
+     "p_high": 0.004300333093851805,
+     "review_reasons": []
+    },
+    {
+     "value": 5,
+     "predicted_class": "Medium",
+     "p_high": 0.006030210759490728,
+     "review_reasons": []
+    },
+    {
+     "value": 6,
+     "predicted_class": "Medium",
+     "p_high": 0.006788633763790131,
+     "review_reasons": []
+    },
+    {
+     "value": 7,
+     "predicted_class": "Medium",
+     "p_high": 0.03663228079676628,
+     "review_reasons": [
+      "model_p_high"
+     ]
+    },
+    {
+     "value": 8,
+     "predicted_class": "Medium",
+     "p_high": 0.03663228079676628,
+     "review_reasons": [
+      "model_p_high"
+     ]
+    },
+    {
+     "value": 9,
+     "predicted_class": "Medium",
+     "p_high": 0.03663228079676628,
+     "review_reasons": [
+      "model_p_high"
+     ]
+    },
+    {
+     "value": 10,
+     "predicted_class": "Medium",
+     "p_high": 0.03663228079676628,
+     "review_reasons": [
+      "model_p_high"
+     ]
+    },
+    {
+     "value": 11,
+     "predicted_class": "Medium",
+     "p_high": 0.03663228079676628,
+     "review_reasons": [
+      "model_p_high"
+     ]
+    },
+    {
+     "value": 12,
+     "predicted_class": "Medium",
+     "p_high": 0.03663228079676628,
+     "review_reasons": [
+      "model_p_high"
+     ]
+    }
+   ],
+   "Physical Activity (hrs/week)": [
+    {
+     "value": 0,
+     "predicted_class": "Medium",
+     "p_high": 0.005460930056869984,
+     "review_reasons": []
+    },
+    {
+     "value": 2,
+     "predicted_class": "Medium",
+     "p_high": 0.004206264857202768,
+     "review_reasons": []
+    },
+    {
+     "value": 5,
+     "predicted_class": "Medium",
+     "p_high": 0.0031826382037252188,
+     "review_reasons": []
+    },
+    {
+     "value": 10.1,
+     "predicted_class": "Medium",
+     "p_high": 0.002149818930774927,
+     "review_reasons": []
+    },
+    {
+     "value": 20,
+     "predicted_class": "Medium",
+     "p_high": 0.002149818930774927,
+     "review_reasons": []
+    },
+    {
+     "value": 40,
+     "predicted_class": "Medium",
+     "p_high": 0.002149818930774927,
+     "review_reasons": []
+    },
+    {
+     "value": 80,
+     "predicted_class": "Medium",
+     "p_high": 0.002149818930774927,
+     "review_reasons": []
+    },
+    {
+     "value": 168,
+     "predicted_class": "Medium",
+     "p_high": 0.002149818930774927,
+     "review_reasons": []
+    }
+   ],
+   "Therapy Sessions (per month)": [
+    {
+     "value": 0,
+     "predicted_class": "Medium",
+     "p_high": 0.0027469557244330645,
+     "review_reasons": []
+    },
+    {
+     "value": 2,
+     "predicted_class": "Medium",
+     "p_high": 0.0037766944151371717,
+     "review_reasons": []
+    },
+    {
+     "value": 4,
+     "predicted_class": "Medium",
+     "p_high": 0.005062687676399946,
+     "review_reasons": []
+    },
+    {
+     "value": 8,
+     "predicted_class": "Medium",
+     "p_high": 0.011253949254751205,
+     "review_reasons": []
+    },
+    {
+     "value": 12,
+     "predicted_class": "Medium",
+     "p_high": 0.01174954790621996,
+     "review_reasons": []
+    },
+    {
+     "value": 20,
+     "predicted_class": "Medium",
+     "p_high": 0.01174954790621996,
+     "review_reasons": []
+    },
+    {
+     "value": 31,
+     "predicted_class": "Medium",
+     "p_high": 0.01174954790621996,
+     "review_reasons": []
+    }
+   ],
+   "Diet Quality (1-10)": [
+    {
+     "value": 0,
+     "predicted_class": "Medium",
+     "p_high": 0.004128185100853443,
+     "review_reasons": []
+    },
+    {
+     "value": 1,
+     "predicted_class": "Medium",
+     "p_high": 0.004128185100853443,
+     "review_reasons": []
+    },
+    {
+     "value": 3,
+     "predicted_class": "Medium",
+     "p_high": 0.003838054370135069,
+     "review_reasons": []
+    },
+    {
+     "value": 5,
+     "predicted_class": "Medium",
+     "p_high": 0.0037766944151371717,
+     "review_reasons": []
+    },
+    {
+     "value": 8,
+     "predicted_class": "Medium",
+     "p_high": 0.0037436834536492825,
+     "review_reasons": []
+    },
+    {
+     "value": 10,
+     "predicted_class": "Medium",
+     "p_high": 0.004971950780600309,
+     "review_reasons": []
+    },
+    {
+     "value": 12,
+     "predicted_class": "Medium",
+     "p_high": 0.004971950780600309,
+     "review_reasons": []
+    }
+   ]
+  },
+  "form_default": {
+   "Heart Rate (bpm)": [
+    {
+     "value": 30,
+     "predicted_class": "Low",
+     "p_high": 0.0020321430638432503,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 40,
+     "predicted_class": "Low",
+     "p_high": 0.0020321430638432503,
+     "review_reasons": []
+    },
+    {
+     "value": 50,
+     "predicted_class": "Low",
+     "p_high": 0.0020321430638432503,
+     "review_reasons": []
+    },
+    {
+     "value": 60,
+     "predicted_class": "Low",
+     "p_high": 0.0020321430638432503,
+     "review_reasons": []
+    },
+    {
+     "value": 70,
+     "predicted_class": "Low",
+     "p_high": 0.00203188369050622,
+     "review_reasons": []
+    },
+    {
+     "value": 80,
+     "predicted_class": "Low",
+     "p_high": 0.0018972443649545312,
+     "review_reasons": []
+    },
+    {
+     "value": 90,
+     "predicted_class": "Low",
+     "p_high": 0.001891382853500545,
+     "review_reasons": []
+    },
+    {
+     "value": 100,
+     "predicted_class": "Low",
+     "p_high": 0.0018972670659422874,
+     "review_reasons": []
+    },
+    {
+     "value": 110,
+     "predicted_class": "Low",
+     "p_high": 0.002152305794879794,
+     "review_reasons": []
+    },
+    {
+     "value": 119,
+     "predicted_class": "Low",
+     "p_high": 0.0025303056463599205,
+     "review_reasons": []
+    },
+    {
+     "value": 130,
+     "predicted_class": "Low",
+     "p_high": 0.0025303056463599205,
+     "review_reasons": []
+    },
+    {
+     "value": 150,
+     "predicted_class": "Low",
+     "p_high": 0.0025303056463599205,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 180,
+     "predicted_class": "Low",
+     "p_high": 0.0025303056463599205,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 220,
+     "predicted_class": "Low",
+     "p_high": 0.0025303056463599205,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    }
+   ],
+   "Breathing Rate (breaths/min)": [
+    {
+     "value": 5,
+     "predicted_class": "Low",
+     "p_high": 0.0022214283235371113,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 8,
+     "predicted_class": "Low",
+     "p_high": 0.0022214283235371113,
+     "review_reasons": []
+    },
+    {
+     "value": 10,
+     "predicted_class": "Low",
+     "p_high": 0.0022214283235371113,
+     "review_reasons": []
+    },
+    {
+     "value": 12,
+     "predicted_class": "Low",
+     "p_high": 0.0022214283235371113,
+     "review_reasons": []
+    },
+    {
+     "value": 16,
+     "predicted_class": "Low",
+     "p_high": 0.0018972443649545312,
+     "review_reasons": []
+    },
+    {
+     "value": 20,
+     "predicted_class": "Low",
+     "p_high": 0.001901230774819851,
+     "review_reasons": []
+    },
+    {
+     "value": 25,
+     "predicted_class": "Low",
+     "p_high": 0.0017839549109339714,
+     "review_reasons": []
+    },
+    {
+     "value": 29,
+     "predicted_class": "Low",
+     "p_high": 0.001804686733521521,
+     "review_reasons": []
+    },
+    {
+     "value": 35,
+     "predicted_class": "Low",
+     "p_high": 0.001804686733521521,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 40,
+     "predicted_class": "Low",
+     "p_high": 0.001804686733521521,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 50,
+     "predicted_class": "Low",
+     "p_high": 0.001804686733521521,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 60,
+     "predicted_class": "Low",
+     "p_high": 0.001804686733521521,
+     "review_reasons": [
+      "abnormal_vital_signs"
+     ]
+    }
+   ],
+   "Sleep Hours": [
+    {
+     "value": 0,
+     "predicted_class": "Medium",
+     "p_high": 0.005460284650325775,
+     "review_reasons": [
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 2,
+     "predicted_class": "Medium",
+     "p_high": 0.005460284650325775,
+     "review_reasons": [
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 2.3,
+     "predicted_class": "Medium",
+     "p_high": 0.005460284650325775,
+     "review_reasons": [
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 4,
+     "predicted_class": "Medium",
+     "p_high": 0.005320843309164047,
+     "review_reasons": []
+    },
+    {
+     "value": 6,
+     "predicted_class": "Medium",
+     "p_high": 0.0025590306613594294,
+     "review_reasons": []
+    },
+    {
+     "value": 8,
+     "predicted_class": "Low",
+     "p_high": 0.0017043212428689003,
+     "review_reasons": []
+    },
+    {
+     "value": 10,
+     "predicted_class": "Low",
+     "p_high": 0.0017351183341816068,
+     "review_reasons": []
+    },
+    {
+     "value": 11.3,
+     "predicted_class": "Low",
+     "p_high": 0.0017351183341816068,
+     "review_reasons": []
+    },
+    {
+     "value": 14,
+     "predicted_class": "Low",
+     "p_high": 0.0017351183341816068,
+     "review_reasons": []
+    },
+    {
+     "value": 18,
+     "predicted_class": "Low",
+     "p_high": 0.0017351183341816068,
+     "review_reasons": []
+    },
+    {
+     "value": 24,
+     "predicted_class": "Low",
+     "p_high": 0.0017351183341816068,
+     "review_reasons": []
+    }
+   ],
+   "cups_of_coffee": [
+    {
+     "value": 0,
+     "predicted_class": "Low",
+     "p_high": 0.0017403014935553074,
+     "review_reasons": []
+    },
+    {
+     "value": 1,
+     "predicted_class": "Low",
+     "p_high": 0.0018972443649545312,
+     "review_reasons": []
+    },
+    {
+     "value": 2,
+     "predicted_class": "Low",
+     "p_high": 0.0020273691043257713,
+     "review_reasons": []
+    },
+    {
+     "value": 3,
+     "predicted_class": "Low",
+     "p_high": 0.0027417996898293495,
+     "review_reasons": []
+    },
+    {
+     "value": 4,
+     "predicted_class": "Medium",
+     "p_high": 0.003263623220846057,
+     "review_reasons": []
+    },
+    {
+     "value": 5,
+     "predicted_class": "Medium",
+     "p_high": 0.004872151650488377,
+     "review_reasons": []
+    },
+    {
+     "value": 6,
+     "predicted_class": "Medium",
+     "p_high": 0.005411206744611263,
+     "review_reasons": []
+    },
+    {
+     "value": 7,
+     "predicted_class": "Medium",
+     "p_high": 0.02917367033660412,
+     "review_reasons": [
+      "model_p_high"
+     ]
+    },
+    {
+     "value": 8,
+     "predicted_class": "Medium",
+     "p_high": 0.02917367033660412,
+     "review_reasons": [
+      "model_p_high"
+     ]
+    },
+    {
+     "value": 9,
+     "predicted_class": "Medium",
+     "p_high": 0.02917367033660412,
+     "review_reasons": [
+      "model_p_high"
+     ]
+    },
+    {
+     "value": 10,
+     "predicted_class": "Medium",
+     "p_high": 0.02917367033660412,
+     "review_reasons": [
+      "model_p_high"
+     ]
+    },
+    {
+     "value": 11,
+     "predicted_class": "Medium",
+     "p_high": 0.02917367033660412,
+     "review_reasons": [
+      "model_p_high"
+     ]
+    },
+    {
+     "value": 12,
+     "predicted_class": "Medium",
+     "p_high": 0.02917367033660412,
+     "review_reasons": [
+      "model_p_high"
+     ]
+    }
+   ],
+   "Physical Activity (hrs/week)": [
+    {
+     "value": 0,
+     "predicted_class": "Low",
+     "p_high": 0.0022850895766168833,
+     "review_reasons": []
+    },
+    {
+     "value": 2,
+     "predicted_class": "Low",
+     "p_high": 0.0020298471208661795,
+     "review_reasons": []
+    },
+    {
+     "value": 5,
+     "predicted_class": "Low",
+     "p_high": 0.0018498024437576532,
+     "review_reasons": []
+    },
+    {
+     "value": 10.1,
+     "predicted_class": "Low",
+     "p_high": 0.0018230994464829564,
+     "review_reasons": []
+    },
+    {
+     "value": 20,
+     "predicted_class": "Low",
+     "p_high": 0.0018230994464829564,
+     "review_reasons": []
+    },
+    {
+     "value": 40,
+     "predicted_class": "Low",
+     "p_high": 0.0018230994464829564,
+     "review_reasons": []
+    },
+    {
+     "value": 80,
+     "predicted_class": "Low",
+     "p_high": 0.0018230994464829564,
+     "review_reasons": []
+    },
+    {
+     "value": 168,
+     "predicted_class": "Low",
+     "p_high": 0.0018230994464829564,
+     "review_reasons": []
+    }
+   ],
+   "Therapy Sessions (per month)": [
+    {
+     "value": 0,
+     "predicted_class": "Low",
+     "p_high": 0.001784002291969955,
+     "review_reasons": []
+    },
+    {
+     "value": 2,
+     "predicted_class": "Low",
+     "p_high": 0.002411150373518467,
+     "review_reasons": []
+    },
+    {
+     "value": 4,
+     "predicted_class": "Low",
+     "p_high": 0.0032671522349119186,
+     "review_reasons": []
+    },
+    {
+     "value": 8,
+     "predicted_class": "Medium",
+     "p_high": 0.006875523831695318,
+     "review_reasons": []
+    },
+    {
+     "value": 12,
+     "predicted_class": "Low",
+     "p_high": 0.007126809563487768,
+     "review_reasons": []
+    },
+    {
+     "value": 20,
+     "predicted_class": "Low",
+     "p_high": 0.007126809563487768,
+     "review_reasons": []
+    },
+    {
+     "value": 31,
+     "predicted_class": "Low",
+     "p_high": 0.007126809563487768,
+     "review_reasons": []
+    }
+   ],
+   "Diet Quality (1-10)": [
+    {
+     "value": 0,
+     "predicted_class": "Low",
+     "p_high": 0.0021297663915902376,
+     "review_reasons": []
+    },
+    {
+     "value": 1,
+     "predicted_class": "Low",
+     "p_high": 0.0021297663915902376,
+     "review_reasons": []
+    },
+    {
+     "value": 3,
+     "predicted_class": "Low",
+     "p_high": 0.0019250564510002732,
+     "review_reasons": []
+    },
+    {
+     "value": 5,
+     "predicted_class": "Low",
+     "p_high": 0.0018972443649545312,
+     "review_reasons": []
+    },
+    {
+     "value": 8,
+     "predicted_class": "Low",
+     "p_high": 0.0018925097538158298,
+     "review_reasons": []
+    },
+    {
+     "value": 10,
+     "predicted_class": "Low",
+     "p_high": 0.002435236005112529,
+     "review_reasons": []
+    },
+    {
+     "value": 12,
+     "predicted_class": "Low",
+     "p_high": 0.002435236005112529,
+     "review_reasons": []
+    }
+   ]
+  },
+  "high_risk": {
+   "Heart Rate (bpm)": [
+    {
+     "value": 30,
+     "predicted_class": "High",
+     "p_high": 0.9782359600067139,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep",
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 40,
+     "predicted_class": "High",
+     "p_high": 0.9782359600067139,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 50,
+     "predicted_class": "High",
+     "p_high": 0.9782359600067139,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 60,
+     "predicted_class": "High",
+     "p_high": 0.9782359600067139,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 70,
+     "predicted_class": "High",
+     "p_high": 0.9750000834465027,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 80,
+     "predicted_class": "High",
+     "p_high": 0.9760486483573914,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 90,
+     "predicted_class": "High",
+     "p_high": 0.9863423705101013,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 100,
+     "predicted_class": "High",
+     "p_high": 0.9868398904800415,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 110,
+     "predicted_class": "High",
+     "p_high": 0.9880948662757874,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 119,
+     "predicted_class": "High",
+     "p_high": 0.9897067546844482,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 130,
+     "predicted_class": "High",
+     "p_high": 0.9897067546844482,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 150,
+     "predicted_class": "High",
+     "p_high": 0.9897067546844482,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep",
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 180,
+     "predicted_class": "High",
+     "p_high": 0.9897067546844482,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep",
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 220,
+     "predicted_class": "High",
+     "p_high": 0.9897067546844482,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep",
+      "abnormal_vital_signs"
+     ]
+    }
+   ],
+   "Breathing Rate (breaths/min)": [
+    {
+     "value": 5,
+     "predicted_class": "High",
+     "p_high": 0.9854625463485718,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep",
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 8,
+     "predicted_class": "High",
+     "p_high": 0.9854625463485718,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 10,
+     "predicted_class": "High",
+     "p_high": 0.9854625463485718,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 12,
+     "predicted_class": "High",
+     "p_high": 0.9854625463485718,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 16,
+     "predicted_class": "High",
+     "p_high": 0.9863816499710083,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 20,
+     "predicted_class": "High",
+     "p_high": 0.988362729549408,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 25,
+     "predicted_class": "High",
+     "p_high": 0.9881369471549988,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 29,
+     "predicted_class": "High",
+     "p_high": 0.9881844520568848,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 35,
+     "predicted_class": "High",
+     "p_high": 0.9881844520568848,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep",
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 40,
+     "predicted_class": "High",
+     "p_high": 0.9881844520568848,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep",
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 50,
+     "predicted_class": "High",
+     "p_high": 0.9881844520568848,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep",
+      "abnormal_vital_signs"
+     ]
+    },
+    {
+     "value": 60,
+     "predicted_class": "High",
+     "p_high": 0.9881844520568848,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep",
+      "abnormal_vital_signs"
+     ]
+    }
+   ],
+   "Sleep Hours": [
+    {
+     "value": 0,
+     "predicted_class": "High",
+     "p_high": 0.9881844520568848,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 2,
+     "predicted_class": "High",
+     "p_high": 0.9881844520568848,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 2.3,
+     "predicted_class": "High",
+     "p_high": 0.9881844520568848,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 4,
+     "predicted_class": "High",
+     "p_high": 0.9876042604446411,
+     "review_reasons": [
+      "model_p_high"
+     ]
+    },
+    {
+     "value": 6,
+     "predicted_class": "High",
+     "p_high": 0.7026417851448059,
+     "review_reasons": [
+      "model_p_high"
+     ]
+    },
+    {
+     "value": 8,
+     "predicted_class": "Medium",
+     "p_high": 0.3181700110435486,
+     "review_reasons": [
+      "model_p_high"
+     ]
+    },
+    {
+     "value": 10,
+     "predicted_class": "Medium",
+     "p_high": 0.3238532841205597,
+     "review_reasons": [
+      "model_p_high"
+     ]
+    },
+    {
+     "value": 11.3,
+     "predicted_class": "Medium",
+     "p_high": 0.3238532841205597,
+     "review_reasons": [
+      "model_p_high"
+     ]
+    },
+    {
+     "value": 14,
+     "predicted_class": "Medium",
+     "p_high": 0.3238532841205597,
+     "review_reasons": [
+      "model_p_high"
+     ]
+    },
+    {
+     "value": 18,
+     "predicted_class": "Medium",
+     "p_high": 0.3238532841205597,
+     "review_reasons": [
+      "model_p_high"
+     ]
+    },
+    {
+     "value": 24,
+     "predicted_class": "Medium",
+     "p_high": 0.3238532841205597,
+     "review_reasons": [
+      "model_p_high"
+     ]
+    }
+   ],
+   "cups_of_coffee": [
+    {
+     "value": 0,
+     "predicted_class": "High",
+     "p_high": 0.7353806495666504,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 1,
+     "predicted_class": "High",
+     "p_high": 0.7629331350326538,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 2,
+     "predicted_class": "High",
+     "p_high": 0.795674741268158,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 3,
+     "predicted_class": "High",
+     "p_high": 0.9007284045219421,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 4,
+     "predicted_class": "High",
+     "p_high": 0.985673725605011,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 5,
+     "predicted_class": "High",
+     "p_high": 0.9882386922836304,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 6,
+     "predicted_class": "High",
+     "p_high": 0.9881712198257446,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 7,
+     "predicted_class": "High",
+     "p_high": 0.9878671169281006,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 8,
+     "predicted_class": "High",
+     "p_high": 0.9878671169281006,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 9,
+     "predicted_class": "High",
+     "p_high": 0.9878671169281006,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 10,
+     "predicted_class": "High",
+     "p_high": 0.9878671169281006,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 11,
+     "predicted_class": "High",
+     "p_high": 0.9878671169281006,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 12,
+     "predicted_class": "High",
+     "p_high": 0.9878671169281006,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    }
+   ],
+   "Physical Activity (hrs/week)": [
+    {
+     "value": 0,
+     "predicted_class": "High",
+     "p_high": 0.9883285760879517,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 2,
+     "predicted_class": "High",
+     "p_high": 0.9860871434211731,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 5,
+     "predicted_class": "High",
+     "p_high": 0.9371926188468933,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 10.1,
+     "predicted_class": "High",
+     "p_high": 0.9058459401130676,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 20,
+     "predicted_class": "High",
+     "p_high": 0.9058459401130676,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 40,
+     "predicted_class": "High",
+     "p_high": 0.9058459401130676,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 80,
+     "predicted_class": "High",
+     "p_high": 0.9058459401130676,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 168,
+     "predicted_class": "High",
+     "p_high": 0.9058459401130676,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    }
+   ],
+   "Therapy Sessions (per month)": [
+    {
+     "value": 0,
+     "predicted_class": "High",
+     "p_high": 0.5383360385894775,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 2,
+     "predicted_class": "High",
+     "p_high": 0.6082479953765869,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 4,
+     "predicted_class": "High",
+     "p_high": 0.9835572242736816,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 8,
+     "predicted_class": "High",
+     "p_high": 0.9922335147857666,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 12,
+     "predicted_class": "High",
+     "p_high": 0.992713987827301,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 20,
+     "predicted_class": "High",
+     "p_high": 0.992713987827301,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 31,
+     "predicted_class": "High",
+     "p_high": 0.992713987827301,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    }
+   ],
+   "Diet Quality (1-10)": [
+    {
+     "value": 0,
+     "predicted_class": "High",
+     "p_high": 0.988553524017334,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 1,
+     "predicted_class": "High",
+     "p_high": 0.988553524017334,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 3,
+     "predicted_class": "High",
+     "p_high": 0.9877501130104065,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 5,
+     "predicted_class": "High",
+     "p_high": 0.9704565405845642,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 8,
+     "predicted_class": "High",
+     "p_high": 0.9551453590393066,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 10,
+     "predicted_class": "High",
+     "p_high": 0.9543944597244263,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    },
+    {
+     "value": 12,
+     "predicted_class": "High",
+     "p_high": 0.9543944597244263,
+     "review_reasons": [
+      "model_p_high",
+      "severe_sleep"
+     ]
+    }
+   ]
+  }
+ },
+ "summaries": {
+  "low_risk": {
+   "Heart Rate (bpm)": {
+    "p_high_min": 0.0006016268162056804,
+    "p_high_max": 0.0008610525983385742,
+    "model_flag_values": [],
+    "flat_below_training_range": true,
+    "flat_above_training_range": true
+   },
+   "Breathing Rate (breaths/min)": {
+    "p_high_min": 0.0006052631069906056,
+    "p_high_max": 0.0008425973355770111,
+    "model_flag_values": [],
+    "flat_below_training_range": true,
+    "flat_above_training_range": true
+   },
+   "Sleep Hours": {
+    "p_high_min": 0.0006291830795817077,
+    "p_high_max": 0.0022283790167421103,
+    "model_flag_values": [],
+    "flat_below_training_range": true,
+    "flat_above_training_range": true
+   },
+   "cups_of_coffee": {
+    "p_high_min": 0.0006693991599604487,
+    "p_high_max": 0.008758462965488434,
+    "model_flag_values": [],
+    "flat_below_training_range": null,
+    "flat_above_training_range": false
+   },
+   "Physical Activity (hrs/week)": {
+    "p_high_min": 0.000668229185976088,
+    "p_high_max": 0.0008022951078601182,
+    "model_flag_values": [],
+    "flat_below_training_range": null,
+    "flat_above_training_range": true
+   },
+   "Therapy Sessions (per month)": {
+    "p_high_min": 0.0006693991599604487,
+    "p_high_max": 0.0015391893684864044,
+    "model_flag_values": [],
+    "flat_below_training_range": null,
+    "flat_above_training_range": true
+   },
+   "Diet Quality (1-10)": {
+    "p_high_min": 0.0006693991599604487,
+    "p_high_max": 0.0008133372175507247,
+    "model_flag_values": [],
+    "flat_below_training_range": true,
+    "flat_above_training_range": true
+   }
+  },
+  "moderate": {
+   "Heart Rate (bpm)": {
+    "p_high_min": 0.003739434527233243,
+    "p_high_max": 0.004584288224577904,
+    "model_flag_values": [],
+    "flat_below_training_range": true,
+    "flat_above_training_range": true
+   },
+   "Breathing Rate (breaths/min)": {
+    "p_high_min": 0.0036625266075134277,
+    "p_high_max": 0.0037787621840834618,
+    "model_flag_values": [],
+    "flat_below_training_range": true,
+    "flat_above_training_range": true
+   },
+   "Sleep Hours": {
+    "p_high_min": 0.0029345224611461163,
+    "p_high_max": 0.010592768900096416,
+    "model_flag_values": [],
+    "flat_below_training_range": true,
+    "flat_above_training_range": true
+   },
+   "cups_of_coffee": {
+    "p_high_min": 0.0023697030264884233,
+    "p_high_max": 0.03663228079676628,
+    "model_flag_values": [
+     7,
+     8,
+     9,
+     10,
+     11,
+     12
+    ],
+    "flat_below_training_range": null,
+    "flat_above_training_range": false
+   },
+   "Physical Activity (hrs/week)": {
+    "p_high_min": 0.002149818930774927,
+    "p_high_max": 0.005460930056869984,
+    "model_flag_values": [],
+    "flat_below_training_range": null,
+    "flat_above_training_range": true
+   },
+   "Therapy Sessions (per month)": {
+    "p_high_min": 0.0027469557244330645,
+    "p_high_max": 0.01174954790621996,
+    "model_flag_values": [],
+    "flat_below_training_range": null,
+    "flat_above_training_range": true
+   },
+   "Diet Quality (1-10)": {
+    "p_high_min": 0.0037436834536492825,
+    "p_high_max": 0.004971950780600309,
+    "model_flag_values": [],
+    "flat_below_training_range": true,
+    "flat_above_training_range": true
+   }
+  },
+  "form_default": {
+   "Heart Rate (bpm)": {
+    "p_high_min": 0.001891382853500545,
+    "p_high_max": 0.0025303056463599205,
+    "model_flag_values": [],
+    "flat_below_training_range": true,
+    "flat_above_training_range": true
+   },
+   "Breathing Rate (breaths/min)": {
+    "p_high_min": 0.0017839549109339714,
+    "p_high_max": 0.0022214283235371113,
+    "model_flag_values": [],
+    "flat_below_training_range": true,
+    "flat_above_training_range": true
+   },
+   "Sleep Hours": {
+    "p_high_min": 0.0017043212428689003,
+    "p_high_max": 0.005460284650325775,
+    "model_flag_values": [],
+    "flat_below_training_range": true,
+    "flat_above_training_range": true
+   },
+   "cups_of_coffee": {
+    "p_high_min": 0.0017403014935553074,
+    "p_high_max": 0.02917367033660412,
+    "model_flag_values": [
+     7,
+     8,
+     9,
+     10,
+     11,
+     12
+    ],
+    "flat_below_training_range": null,
+    "flat_above_training_range": false
+   },
+   "Physical Activity (hrs/week)": {
+    "p_high_min": 0.0018230994464829564,
+    "p_high_max": 0.0022850895766168833,
+    "model_flag_values": [],
+    "flat_below_training_range": null,
+    "flat_above_training_range": true
+   },
+   "Therapy Sessions (per month)": {
+    "p_high_min": 0.001784002291969955,
+    "p_high_max": 0.007126809563487768,
+    "model_flag_values": [],
+    "flat_below_training_range": null,
+    "flat_above_training_range": true
+   },
+   "Diet Quality (1-10)": {
+    "p_high_min": 0.0018925097538158298,
+    "p_high_max": 0.002435236005112529,
+    "model_flag_values": [],
+    "flat_below_training_range": true,
+    "flat_above_training_range": true
+   }
+  },
+  "high_risk": {
+   "Heart Rate (bpm)": {
+    "p_high_min": 0.9750000834465027,
+    "p_high_max": 0.9897067546844482,
+    "model_flag_values": [
+     30,
+     40,
+     50,
+     60,
+     70,
+     80,
+     90,
+     100,
+     110,
+     119,
+     130,
+     150,
+     180,
+     220
+    ],
+    "flat_below_training_range": true,
+    "flat_above_training_range": true
+   },
+   "Breathing Rate (breaths/min)": {
+    "p_high_min": 0.9854625463485718,
+    "p_high_max": 0.988362729549408,
+    "model_flag_values": [
+     5,
+     8,
+     10,
+     12,
+     16,
+     20,
+     25,
+     29,
+     35,
+     40,
+     50,
+     60
+    ],
+    "flat_below_training_range": true,
+    "flat_above_training_range": true
+   },
+   "Sleep Hours": {
+    "p_high_min": 0.3181700110435486,
+    "p_high_max": 0.9881844520568848,
+    "model_flag_values": [
+     0,
+     2,
+     2.3,
+     4,
+     6,
+     8,
+     10,
+     11.3,
+     14,
+     18,
+     24
+    ],
+    "flat_below_training_range": true,
+    "flat_above_training_range": true
+   },
+   "cups_of_coffee": {
+    "p_high_min": 0.7353806495666504,
+    "p_high_max": 0.9882386922836304,
+    "model_flag_values": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12
+    ],
+    "flat_below_training_range": null,
+    "flat_above_training_range": false
+   },
+   "Physical Activity (hrs/week)": {
+    "p_high_min": 0.9058459401130676,
+    "p_high_max": 0.9883285760879517,
+    "model_flag_values": [
+     0,
+     2,
+     5,
+     10.1,
+     20,
+     40,
+     80,
+     168
+    ],
+    "flat_below_training_range": null,
+    "flat_above_training_range": true
+   },
+   "Therapy Sessions (per month)": {
+    "p_high_min": 0.5383360385894775,
+    "p_high_max": 0.992713987827301,
+    "model_flag_values": [
+     0,
+     2,
+     4,
+     8,
+     12,
+     20,
+     31
+    ],
+    "flat_below_training_range": null,
+    "flat_above_training_range": true
+   },
+   "Diet Quality (1-10)": {
+    "p_high_min": 0.9543944597244263,
+    "p_high_max": 0.988553524017334,
+    "model_flag_values": [
+     0,
+     1,
+     3,
+     5,
+     8,
+     10,
+     12
+    ],
+    "flat_below_training_range": true,
+    "flat_above_training_range": true
+   }
+  }
+ }
+}

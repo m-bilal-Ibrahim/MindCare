@@ -237,19 +237,21 @@ caffeine mg value and the *computed* Stress Level, not the raw serving counts or
 - `predicted_class`: one of `"Low"`, `"Medium"`, `"High"` — the model's top prediction.
 - `probabilities`: full 3-class probability distribution, keys always `Low`/`Medium`/`High`,
   values sum to 1.0.
-- `uncertainty_flag`: `true` if `probabilities.High >= 0.025` **or** Sleep Hours is below 4 (a
-  safety rule outside the model; see `review_reasons`) — the priority-review rule
+- `uncertainty_flag`: `true` if `probabilities.High >= 0.025` **or** a safety rule outside the
+  model fires: Sleep Hours below 4, heart rate below 40 or above 130 bpm, or breathing rate below 8
+  or above 30 per minute (see `review_reasons`) — the priority-review rule
   (`HIGH_PROBA_THRESHOLD` in `src/api/main.py`). It was 0.10 for the earlier Random Forest.
   XGBoost's probabilities are better calibrated, so it uses 0.025: the level at which it catches
   as many High cases as the old rule did on validation data (158 of 165). This means
   **"recommend priority review"**, not "reject this prediction" — every prediction should go through
   psychologist review regardless of this flag; it only reprioritizes attention.
 - `review_reasons`: why the flag is set: `"model_p_high"` (P(High) ≥ 0.025) and/or
-  `"severe_sleep"` (Sleep Hours < 4). Empty when not flagged. Show the reason from this field,
-  not from warning text.
+  `"severe_sleep"` (Sleep Hours < 4) and/or `"abnormal_vital_signs"` (heart rate < 40 or > 130 bpm,
+  or breathing < 8 or > 30 per minute; its warning also suggests medical follow-up). Empty when
+  not flagged. Show the reason from this field, not from warning text.
 - `warnings`: list of human-readable strings. Each is either a field that was valid but outside
-  the training data's observed range, or the severe-sleep safety rule (Sleep Hours < 4; see
-  `review_reasons`). Empty list if none. Show these to the reviewing psychologist; don't parse
+  the training data's observed range, or a safety rule (severe sleep or an abnormal vital sign;
+  see `review_reasons`). Empty list if none. Show these to the reviewing psychologist; don't parse
   them, because the wording may change. Use `review_reasons` for logic.
 - `estimated_caffeine_mg`: the computed daily caffeine total (mg) the model actually used,
   derived from the 4 serving-count fields — shown so a caller can display/log exactly what was
@@ -263,8 +265,9 @@ caffeine mg value and the *computed* Stress Level, not the raw serving counts or
   and does not make the model more accurate**; it tells the reviewing psychologist which predictions
   the model itself is unsure about. A prediction is `"confident"` only if `confidence` is at least
   0.70 **and** it is not a flagged non-High prediction (P(High) ≥ 0.025, i.e. `"model_p_high"` in
-  `review_reasons`, while `predicted_class` is Low or Medium). The severe-sleep rule does **not**
-  affect this label: a sleep-only flag says nothing about whether the model is unsure. Evidence
+  `review_reasons`, while `predicted_class` is Low or Medium). The safety rules (severe sleep,
+  abnormal vital signs) do **not** affect this label: a flag from them says nothing about whether
+  the model is unsure. Evidence
   ([`reports/confidence_label_11feature_v2.md`](../reports/confidence_label_11feature_v2.md),
   out-of-fold over the 9,350 train + validation rows): 56.2% of predictions are confident and 85.8%
   of those are correct; borderline predictions are 70.2% correct. **"Confident" means the model is
