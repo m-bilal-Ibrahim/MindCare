@@ -118,6 +118,7 @@ def test_severe_sleep_deprivation_forces_review_flag(client: TestClient) -> None
     patient = {**API_PATIENTS["clearly_low_risk"], "Sleep Hours": 2.0}
     body = client.post("/predict", json=patient).json()
     assert body["uncertainty_flag"] is True
+    assert body["review_reasons"] == ["severe_sleep"]
     assert any("severe sleep deprivation" in w for w in body["warnings"])
 
 
@@ -125,7 +126,18 @@ def test_sleep_at_cutoff_does_not_force_flag(client: TestClient) -> None:
     patient = {**API_PATIENTS["clearly_low_risk"], "Sleep Hours": 4.0}
     body = client.post("/predict", json=patient).json()
     assert body["uncertainty_flag"] is False
+    assert body["review_reasons"] == []
     assert not any("severe sleep deprivation" in w for w in body["warnings"])
+
+
+def test_review_reasons_model_and_sleep(client: TestClient) -> None:
+    # clearly_high_risk reports 3.5h of sleep, so it trips both rules as-is.
+    both = client.post("/predict", json=API_PATIENTS["clearly_high_risk"]).json()
+    assert both["review_reasons"] == ["model_p_high", "severe_sleep"]
+    high = client.post("/predict", json={**API_PATIENTS["clearly_high_risk"], "Sleep Hours": 6.0}).json()
+    assert high["review_reasons"] == ["model_p_high"]
+    summary = client.post("/patient-summary", json={**SUMMARY_WITH_EXTRAS, "Sleep Hours": 2.0}).json()
+    assert "severe_sleep" in summary["review_reasons"]
 
 
 def test_caffeine_conversion_in_response(client: TestClient) -> None:

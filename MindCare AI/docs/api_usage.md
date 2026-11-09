@@ -223,6 +223,7 @@ caffeine mg value and the *computed* Stress Level, not the raw serving counts or
     "High": 0.0007
   },
   "uncertainty_flag": false,
+  "review_reasons": [],
   "warnings": [],
   "estimated_caffeine_mg": 95.0,
   "estimated_stress_level": 2,
@@ -236,12 +237,16 @@ caffeine mg value and the *computed* Stress Level, not the raw serving counts or
 - `predicted_class`: one of `"Low"`, `"Medium"`, `"High"` — the model's top prediction.
 - `probabilities`: full 3-class probability distribution, keys always `Low`/`Medium`/`High`,
   values sum to 1.0.
-- `uncertainty_flag`: `true` if `probabilities.High >= 0.025` — the priority-review rule
+- `uncertainty_flag`: `true` if `probabilities.High >= 0.025` **or** Sleep Hours is below 4 (a
+  safety rule outside the model; see `review_reasons`) — the priority-review rule
   (`HIGH_PROBA_THRESHOLD` in `src/api/main.py`). It was 0.10 for the earlier Random Forest.
   XGBoost's probabilities are better calibrated, so it uses 0.025: the level at which it catches
   as many High cases as the old rule did on validation data (158 of 165). This means
   **"recommend priority review"**, not "reject this prediction" — every prediction should go through
   psychologist review regardless of this flag; it only reprioritizes attention.
+- `review_reasons`: why the flag is set: `"model_p_high"` (P(High) ≥ 0.025) and/or
+  `"severe_sleep"` (Sleep Hours < 4). Empty when not flagged. Show the reason from this field,
+  not from warning text.
 - `warnings`: list of human-readable strings for any field that was valid but outside the
   training data's observed range. Empty list if none.
 - `estimated_caffeine_mg`: the computed daily caffeine total (mg) the model actually used,
@@ -335,6 +340,7 @@ Content-Type: application/json
     "High": 0.0006624316447414458
   },
   "uncertainty_flag": false,
+  "review_reasons": [],
   "warnings": [],
   "estimated_caffeine_mg": 95.0,
   "estimated_stress_level": 2,
@@ -402,6 +408,7 @@ answers 3/1/1/3, plus `"Gender": "Female"` and `"Alcohol Consumption (drinks/wee
   "predicted_class": "Medium",
   "probabilities": {"Low": 0.16264456510543823, "Medium": 0.8181824088096619, "High": 0.019173085689544678},
   "uncertainty_flag": false,
+  "review_reasons": [],
   "warnings": [],
   "estimated_caffeine_mg": 284.0,
   "estimated_stress_level": 8,
