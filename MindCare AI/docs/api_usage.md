@@ -247,8 +247,10 @@ caffeine mg value and the *computed* Stress Level, not the raw serving counts or
 - `review_reasons`: why the flag is set: `"model_p_high"` (P(High) ≥ 0.025) and/or
   `"severe_sleep"` (Sleep Hours < 4). Empty when not flagged. Show the reason from this field,
   not from warning text.
-- `warnings`: list of human-readable strings for any field that was valid but outside the
-  training data's observed range. Empty list if none.
+- `warnings`: list of human-readable strings. Each is either a field that was valid but outside
+  the training data's observed range, or the severe-sleep safety rule (Sleep Hours < 4; see
+  `review_reasons`). Empty list if none. Show these to the reviewing psychologist; don't parse
+  them, because the wording may change. Use `review_reasons` for logic.
 - `estimated_caffeine_mg`: the computed daily caffeine total (mg) the model actually used,
   derived from the 4 serving-count fields — shown so a caller can display/log exactly what was
   assumed rather than treating the conversion as a black box.
@@ -260,8 +262,9 @@ caffeine mg value and the *computed* Stress Level, not the raw serving counts or
 - `confidence_label`: `"confident"` or `"borderline"` (added 2026-10-02). **It changes no prediction
   and does not make the model more accurate**; it tells the reviewing psychologist which predictions
   the model itself is unsure about. A prediction is `"confident"` only if `confidence` is at least
-  0.70 **and** it is not a flagged non-High prediction (`uncertainty_flag` true while
-  `predicted_class` is Low or Medium). Evidence
+  0.70 **and** it is not a flagged non-High prediction (P(High) ≥ 0.025, i.e. `"model_p_high"` in
+  `review_reasons`, while `predicted_class` is Low or Medium). The severe-sleep rule does **not**
+  affect this label: a sleep-only flag says nothing about whether the model is unsure. Evidence
   ([`reports/confidence_label_11feature_v2.md`](../reports/confidence_label_11feature_v2.md),
   out-of-fold over the 9,350 train + validation rows): 56.2% of predictions are confident and 85.8%
   of those are correct; borderline predictions are 70.2% correct. **"Confident" means the model is

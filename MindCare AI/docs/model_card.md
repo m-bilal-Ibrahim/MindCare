@@ -761,6 +761,12 @@ coin-flip, so the reviewing psychologist knows where their own judgement matters
 > review work), with a false-flag rate of 0.615. This is validation-only evidence, like the
 > rest of this section. The analysis below is kept as the Random Forest history.
 
+> **Safety rule added 2026-11-09: Sleep Hours below 4 also forces the review flag**, independent
+> of the model (`SEVERE_SLEEP_DEPRIVATION_HOURS` in `src/api/main.py`). The API's `review_reasons`
+> field says which rule fired (`"model_p_high"`, `"severe_sleep"`). The cutoff is provisional,
+> pending psychologist/supervisor sign-off. All flag-coverage figures in this section are for the
+> P(High) rule alone. See limitation 15.
+
 **Production rule:** flag a validation row **"borderline — recommend review"** if
 **P(High) ≥ 0.10**, unconditional on the predicted class.
 
@@ -980,6 +986,19 @@ Not yet done for the 5-class Severity target beyond what's already in `reports/f
       Reusing 0.025 would flag far more patients: 41.8% of rows in that fold, against about 25%.
     - Calibration, SHAP, fairness and robustness were measured on the 12-feature XGBoost and were
       not re-run for the 11-feature v2 model.
+15. **The model does not respond to severe sleep deprivation; a safety rule covers it.** On the
+    live model, with all other inputs held fixed, predictions are identical at 0, 1, 2 and 3 hours
+    of sleep (Medium, P(High) 0.5%) and almost unchanged at 4 hours. Sleep moves Low vs Medium but
+    barely changes P(High) at any value. Two causes:
+    - The training data's minimum is 2.3 hours, and tree models can't extrapolate below it, so
+      lower values are treated like 2.3 hours.
+    - In this dataset (very likely synthetic), High is driven by other features.
+
+    Since 2026-11-09 the API forces the review flag for Sleep Hours < 4
+    (`review_reasons: ["severe_sleep"]`) and adds a warning; the prediction itself is unchanged.
+    **The 4-hour cutoff is provisional** and needs psychologist/supervisor sign-off. Other
+    clinically extreme inputs outside the training range (for example heart or breathing rate) may
+    have the same blind spot and have not yet been checked.
 
 ---
 
