@@ -58,6 +58,10 @@ SEVERE_SLEEP_WARNING = (
     "does not respond to sleep below ~4h)."
 )
 
+# Why uncertainty_flag is set, so a client can say why without parsing warning text.
+# Empty list = not flagged. Codes are stable; the wording a client shows is up to it.
+ReviewReason = Literal["model_p_high", "severe_sleep"]
+
 # Average caffeine content per serving (mg) - commonly-cited USDA/Mayo-Clinic-style figures.
 # These are population averages, not measurements: actual caffeine content varies substantially
 # by brand, brew strength, and serving size. Used only to convert a patient-friendly serving
@@ -196,6 +200,7 @@ class PredictionResponse(BaseModel):
     predicted_class: Literal["Low", "Medium", "High"]
     probabilities: dict[str, float]
     uncertainty_flag: bool
+    review_reasons: list[ReviewReason]
     warnings: list[str]
     estimated_caffeine_mg: float
     estimated_stress_level: int
@@ -284,10 +289,16 @@ def predict(patient: PatientFeatures) -> PredictionResponse:
     severe_sleep = sleep < SEVERE_SLEEP_DEPRIVATION_HOURS
     if severe_sleep:
         warnings.append(SEVERE_SLEEP_WARNING.format(sleep=sleep, cutoff=SEVERE_SLEEP_DEPRIVATION_HOURS))
+    review_reasons: list[ReviewReason] = []
+    if model_review_flag:
+        review_reasons.append("model_p_high")
+    if severe_sleep:
+        review_reasons.append("severe_sleep")
     return PredictionResponse(
         predicted_class=predicted_class,
         probabilities=probability_by_class,
-        uncertainty_flag=model_review_flag or severe_sleep,
+        uncertainty_flag=bool(review_reasons),
+        review_reasons=review_reasons,
         warnings=warnings,
         estimated_caffeine_mg=caffeine_mg,
         estimated_stress_level=stress_level,
@@ -322,6 +333,7 @@ class PatientSummaryResponse(BaseModel):
     predicted_class: Literal["Low", "Medium", "High"]
     probabilities: dict[str, float]
     uncertainty_flag: bool
+    review_reasons: list[ReviewReason]
     warnings: list[str]
     estimated_caffeine_mg: float
     estimated_stress_level: int
