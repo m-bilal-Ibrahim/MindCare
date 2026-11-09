@@ -140,6 +140,33 @@ def test_review_reasons_model_and_sleep(client: TestClient) -> None:
     assert "severe_sleep" in summary["review_reasons"]
 
 
+@pytest.mark.parametrize("feature,value", [
+    ("Heart Rate (bpm)", 150), ("Heart Rate (bpm)", 35),
+    ("Breathing Rate (breaths/min)", 40), ("Breathing Rate (breaths/min)", 6),
+])
+def test_abnormal_vital_sign_forces_review_flag(client: TestClient, feature: str, value: int) -> None:
+    body = client.post("/predict", json={**API_PATIENTS["clearly_low_risk"], feature: value}).json()
+    assert body["uncertainty_flag"] is True
+    assert body["review_reasons"] == ["abnormal_vital_signs"]
+    assert body["predicted_class"] == "Low"  # prediction unchanged
+    assert any("abnormal resting vital sign" in w for w in body["warnings"])
+
+
+@pytest.mark.parametrize("feature,value", [
+    ("Heart Rate (bpm)", 40), ("Heart Rate (bpm)", 130),
+    ("Breathing Rate (breaths/min)", 8), ("Breathing Rate (breaths/min)", 30),
+])
+def test_vital_sign_at_cutoff_does_not_force_flag(client: TestClient, feature: str, value: int) -> None:
+    body = client.post("/predict", json={**API_PATIENTS["clearly_low_risk"], feature: value}).json()
+    assert "abnormal_vital_signs" not in body["review_reasons"]
+
+
+def test_abnormal_vitals_and_sleep_reasons_combine(client: TestClient) -> None:
+    patient = {**API_PATIENTS["clearly_low_risk"], "Sleep Hours": 2.0, "Heart Rate (bpm)": 150}
+    body = client.post("/predict", json=patient).json()
+    assert body["review_reasons"] == ["severe_sleep", "abnormal_vital_signs"]
+
+
 def test_caffeine_conversion_in_response(client: TestClient) -> None:
     """2 cups coffee + 1 tea = 2*95 + 47 = 237mg - verify this exact number
     appears in the API response's estimated_caffeine_mg field."""

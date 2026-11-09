@@ -58,9 +58,21 @@ SEVERE_SLEEP_WARNING = (
     "does not respond to sleep below ~4h)."
 )
 
+# Clinical safety rule for vital signs, independent of the model. The extremes sweep
+# (reports/extremes_sweep_11feature_v2.md) found heart rate 30-220 bpm and breathing 5-60/min never
+# flag a low or moderate patient: P(High) moves by <=0.001, and is flat outside the training range
+# (HR 60-119, breathing 12-29). Provisional cutoffs (added 2026-11-10), pending clinical sign-off.
+HEART_RATE_ALARM_BPM = (40.0, 130.0)  # alarm if strictly below the first or above the second
+BREATHING_RATE_ALARM_PER_MIN = (8.0, 30.0)
+ABNORMAL_VITAL_WARNING = (
+    "{feature}={value} is outside {low:g}-{high:g} - an abnormal resting vital sign. Consider medical "
+    "follow-up as well as psychological review. Priority review forced by a safety rule, independent "
+    "of the model's prediction (the model barely responds to this vital sign)."
+)
+
 # Why uncertainty_flag is set, so a client can say why without parsing warning text.
 # Empty list = not flagged. Codes are stable; the wording a client shows is up to it.
-ReviewReason = Literal["model_p_high", "severe_sleep"]
+ReviewReason = Literal["model_p_high", "severe_sleep", "abnormal_vital_signs"]
 
 # Average caffeine content per serving (mg) - commonly-cited USDA/Mayo-Clinic-style figures.
 # These are population averages, not measurements: actual caffeine content varies substantially
@@ -289,11 +301,20 @@ def predict(patient: PatientFeatures) -> PredictionResponse:
     severe_sleep = sleep < SEVERE_SLEEP_DEPRIVATION_HOURS
     if severe_sleep:
         warnings.append(SEVERE_SLEEP_WARNING.format(sleep=sleep, cutoff=SEVERE_SLEEP_DEPRIVATION_HOURS))
+    abnormal_vitals = False
+    for feature, (low, high) in (("Heart Rate (bpm)", HEART_RATE_ALARM_BPM),
+                                 ("Breathing Rate (breaths/min)", BREATHING_RATE_ALARM_PER_MIN)):
+        value = patient_dict[feature]
+        if value < low or value > high:
+            abnormal_vitals = True
+            warnings.append(ABNORMAL_VITAL_WARNING.format(feature=feature, value=value, low=low, high=high))
     review_reasons: list[ReviewReason] = []
     if model_review_flag:
         review_reasons.append("model_p_high")
     if severe_sleep:
         review_reasons.append("severe_sleep")
+    if abnormal_vitals:
+        review_reasons.append("abnormal_vital_signs")
     return PredictionResponse(
         predicted_class=predicted_class,
         probabilities=probability_by_class,
