@@ -231,6 +231,13 @@ document.getElementById('predict-form').addEventListener('submit', async (event)
       : '';
 
     const esc = (text) => String(text).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+    // Plain-words label for each review_reasons code; an unknown future code is shown as-is.
+    const REASON_LABELS = {
+      model_p_high: 'the model sees a meaningful chance of High (P(High) ≥ 0.025)',
+      severe_sleep: 'sleep under 4 hours (safety rule)',
+      abnormal_vital_signs: 'abnormal heart or breathing rate (safety rule) — consider medical follow-up',
+    };
+    const reasons = (data.review_reasons || []).map(code => esc(REASON_LABELS[code] || code));
     const list = (text) => '<ul>' + text.split('; ').map(item => '<li>' + esc(item) + '</li>').join('') + '</ul>';
     const basis = data.severity_tier_basis;
     const tierDetail = basis.share_of_matching_patients === null
@@ -258,7 +265,8 @@ document.getElementById('predict-form').addEventListener('submit', async (event)
         (data.borderline_between ? '<br>Borderline between ' + esc(data.borderline_between.join(' and ')) +
           '. Reason: ' + esc(data.borderline_reasons.join('; ')) + '.' : '') + '</p>' +
       bars +
-      '<p>Priority-review flag (P(High) ≥ 0.025): <span class="flag ' + (data.uncertainty_flag ? 'yes">YES — recommend review' : 'no">no') + '</span></p>' +
+      '<p>Priority-review flag: <span class="flag ' + (data.uncertainty_flag ? 'yes">YES — recommend review' : 'no">no') + '</span>' +
+        (reasons.length ? '<br>Why: ' + reasons.join('; ') + '.' : '') + '</p>' +
       '<p>Estimated caffeine intake: ' + data.estimated_caffeine_mg + ' mg/day</p>' +
       '<p>Stress Level (from PSS-4): ' + data.estimated_stress_level + ' / 10</p>' +
       warnings + advice;
