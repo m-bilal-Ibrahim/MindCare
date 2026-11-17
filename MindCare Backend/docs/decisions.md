@@ -776,9 +776,11 @@ and fees" below. Kept for the record.
 - **Phase 5 clinical notes belong to the patient–psychologist pair,** shared across
   all `CareRelationship` rows for that pair (each request creates a new row, so a
   returning patient continues the same notes). Patient X with Dr A and with Dr B have
-  separate notes; Dr B never sees Dr A's notes. After care ends, the psychologist
+  separate notes; Dr B never sees Dr A's notes. ~~After care ends, the psychologist
   keeps read access to their **own** notes about the former patient, identified by
-  pseudonym; access to the real name and profile ends. Phase 5 decides the details;
+  pseudonym~~ (**replaced 2026-11-18**, Phase 2 module 5: only the current
+  psychologist reads notes; access ends with care); access to the real name and
+  profile ends. Phase 5 decides the details;
   Phase 3 needs no schema change for this.
 - **Phase 10:** email the psychologist on each new request and a reminder 3–5 hours
   before it expires (`expires_at` is stored for this; the scheduler comes with Phase
@@ -1412,3 +1414,43 @@ the patient, project-vision section 11).
 instant booking without confirmation (the psychologist can't vet a time); generated
 Zoom meetings through the Zoom API (an OAuth app per psychologist, out of scope); an
 application-level overlap check only (two requests at the same moment would both pass).
+
+
+## 2026-11-18 - Phase 2 module 5: therapy notes (6.4)
+**Decision (module 5 answers Q35-Q39):**
+- **Shape (Q35 A):** three optional sections (observations, interventions, plan, each
+  10-5000 characters, free-text rule), an optional link to one of the pair's
+  confirmed / completed / no-show sessions (at most one note per session), a
+  progress rating 1-10 and a risk level low / medium / high (Q37). At least one
+  section or rating is needed. **Encrypted at rest:** the sections, the risk level,
+  every stored version, the addenda and the patient summary. The progress rating
+  stays a plain number so it can be charted, like the mood score (2026-10-28).
+- **Who (amends the 2026-10-06 forward-note):** notes still belong to the
+  patient-psychologist **pair**, across every relationship row, so a returning
+  patient continues the same notes. But **only the currently assigned psychologist**
+  (accepted relationship, approved and active) can read or write them. The
+  forward-note's "keeps read access to their own notes after care ends" is
+  **replaced**: access ends when care ends and comes back if the same pair starts
+  care again. Patients never see notes (Q38). **Admins never see notes** (Q39): no
+  admin endpoint, and the models aren't registered in Django admin.
+- **Lock (Q36 A):** editable for 24 hours after it was written, then locked. Every
+  save, including the first, stores a full encrypted version; later changes are
+  **addenda** (10-5000 characters, immutable). Addenda are allowed at any time.
+- **No deletion (Q39 A):** there is no delete endpoint. Notes `PROTECT` the patient,
+  psychologist, relationship and session, so an account with notes can't be deleted
+  by accident; erasure **anonymises, never deletes** (2026-10-06). Only the test-data
+  SQL in `docs/deployment.md` and `seed_demo --remove` delete them, for test accounts.
+- **What the patient sees (Q38 A):** `GET /clinical-notes/me/progress/` returns
+  completed and upcoming session counts, the latest summary a psychologist wrote
+  **for them** (one per pair, replaced with `PUT`), and their mood insights (#81).
+- **Audit:** every psychologist read (list, detail, versions, progress, summary)
+  and every write writes a `therapy_note` / `progress_summary` row in the same
+  transaction (fail closed). The patient's own progress read isn't audited (same rule
+  as mood and history).
+- **Progress over time (Q37):** `GET .../progress/` lists the rated notes oldest
+  first for a chart. Ratings are the psychologist's judgement, not calculated.
+**Alternatives considered:** one free-text note (no structure for 6.14's reports);
+editing forever with versions (a note could be rewritten after the fact, weakening it
+as a record); letting the former psychologist keep reading their notes (the user's
+Q-answer: current psychologist only); showing the patient their notes (the notes are
+the psychologist's working record; the summary is written for the patient).

@@ -203,6 +203,7 @@ REST_FRAMEWORK = {
         "emergency_contacts": "30/hour",
         "check_ins": "30/hour",
         "bookings": "60/hour",
+        "clinical_notes": "120/hour",
         "password_reset": "5/hour",
         "password_reset_confirm": "20/hour",
     },

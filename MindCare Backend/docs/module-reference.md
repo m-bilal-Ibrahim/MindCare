@@ -373,4 +373,15 @@ new service, selector, or API endpoint. Keep entries one row per function/class.
 | `apps/psychologists/api/serializers.py` | `DirectoryCardSerializer.session_fee_pkr`, `.session_minutes` | Fee and length on directory cards | `GET /api/v1/psychologists/directory/` | MindCare App |
 | `apps/notifications/emails.py` | `session_requested()`, `session_confirmed()`, `session_proposed()`, `session_proposal_accepted()`, `session_cancelled_by_patient()`, `session_cancelled_by_psychologist()` | Session emails; the psychologist's never name the patient, none carries the video link | — | neither |
 
+### Phase 2 module 5: therapy notes
+
+| File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
+|---|---|---|---|---|
+| `apps/clinical_notes/models.py` | `TherapyNote`, `NoteVersion`, `NoteAddendum`, `ProgressSummary`, `RiskLevel` | Encrypted notes per patient-psychologist pair, optional session link, progress 1-10 and risk level; a version per save; immutable addenda; one summary written for the patient | — | — |
+| `apps/clinical_notes/services.py` | `list_notes()`, `get_note()`, `note_versions()` | A CURRENT patient's notes (all relationships of the pair), one note, its versions; audited, fail closed | `GET /api/v1/clinical-notes/patients/{relationship_id}/notes/`, `.../notes/{id}/`, `.../notes/{id}/versions/` | MindCare Web |
+| `apps/clinical_notes/services.py` | `create_note()`, `update_note()`, `add_addendum()` | Write a note (at least one section or rating; one per session), edit within 24 h (new version), addenda any time; audited | `POST .../notes/`, `PATCH .../notes/{id}/`, `POST .../notes/{id}/addenda/` | MindCare Web |
+| `apps/clinical_notes/services.py` | `progress()`, `get_summary()`, `set_summary()` | Ratings over time for a chart; the summary the patient sees; audited | `GET .../progress/`, `GET/PUT .../summary/` | MindCare Web |
+| `apps/clinical_notes/selectors.py` | `notes_for_pair()`, `progress_series()`, `summary_for_pair()` | Querysets behind the audited services | — | — |
+| `apps/clinical_notes/selectors.py` | `patient_progress()` | The patient's view: completed / upcoming session counts, latest summary, mood insights; never notes | `GET /api/v1/clinical-notes/me/progress/` | MindCare App |
+
 <!-- Add new `### apps/<app_name>` sections below as modules are implemented. -->
