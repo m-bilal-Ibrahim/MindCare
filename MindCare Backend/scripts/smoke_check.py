@@ -217,9 +217,28 @@ def patient_checks(base, t):
         "/api/v1/clinical-notes/me/progress/",
         t,
     )
+    notification_checks(base, t, "patient")
+
+
+def notification_checks(base, t, who):
+    check(
+        base,
+        "notifications",
+        f"{who} GET notifications",
+        "/api/v1/notifications/",
+        t,
+    )
+    check(
+        base,
+        "notifications",
+        f"{who} GET unread-count",
+        "/api/v1/notifications/unread-count/",
+        t,
+    )
 
 
 def psych_checks(base, t):
+    notification_checks(base, t, "psych")
     me = check(
         base,
         "6.2 onboarding",

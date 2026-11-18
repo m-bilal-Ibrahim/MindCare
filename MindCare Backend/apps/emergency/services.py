@@ -30,7 +30,12 @@ from apps.emergency.models import (
     SOSStatus,
 )
 from apps.notifications import emails
-from apps.notifications.services import send_email_after_commit
+from apps.notifications.models import NotificationType
+from apps.notifications.services import (
+    notify,
+    notify_admins,
+    send_email_after_commit,
+)
 from apps.patients.models import PatientProfile
 from apps.relationships.selectors import get_active_relationship
 from core.exceptions import DomainValidationError
@@ -110,6 +115,11 @@ def _notify(event, profile, now):
                 when=_local_time(now, psychologist.timezone),
             ),
         )
+        notify(
+            recipients=[psychologist.user_id],
+            type=NotificationType.SOS_ALERT,
+            target_id=event.pk,
+        )
         psychologist_notified = True
     return len(contacts), psychologist_notified
 
@@ -134,6 +144,9 @@ def trigger_sos(*, patient_user, latitude=None, longitude=None):
             country_id=profile.country_id,
             city_id=profile.city_id,
         )
+        # Admins see every alert (each is a record to follow up); the
+        # psychologist only when _notify runs (30-minute cooldown).
+        notify_admins(type=NotificationType.SOS_ALERT, target_id=event.pk)
         if not recently_notified:
             contacts, psychologist = _notify(event, profile, now)
             event.contacts_notified = contacts
@@ -194,6 +207,15 @@ def cancel_sos(*, patient_user, event_id):
         event.status = SOSStatus.CANCELLED
         event.cancelled_at = now
         event.save(update_fields=["status", "cancelled_at"])
+        notify_admins(type=NotificationType.SOS_CANCELLED, target_id=event.pk)
+        if event.psychologist_notified:
+            relationship = get_active_relationship(patient=event.patient)
+            if relationship is not None:  # only while still their psychologist
+                notify(
+                    recipients=[relationship.psychologist.user_id],
+                    type=NotificationType.SOS_CANCELLED,
+                    target_id=event.pk,
+                )
         if event.contacts_notified:
             for contact in EmergencyContact.objects.filter(patient=event.patient):
                 send_email_after_commit(

@@ -10,6 +10,8 @@ from django.http import Http404
 from django.utils import timezone
 
 from apps.accounts.models import ApprovalStatus, Role, User
+from apps.notifications.models import NotificationType
+from apps.notifications.services import notify
 from apps.patients.models import PatientProfile
 from apps.psychologists.models import NotAcceptingReason, PsychologistProfile
 from apps.relationships.models import (
@@ -57,6 +59,14 @@ def _log_after_commit(**fields):
     """Audit lines describe committed changes only: if the surrounding transaction
     rolls back, nothing is logged. Outside a transaction it runs immediately."""
     transaction.on_commit(lambda: log_relationship_event(**fields))
+
+
+def _notify_patient(rel, type):
+    notify(
+        recipients=[rel.patient.user_id],
+        type=type,
+        target_id=rel.pk,
+    )
 
 
 def _lock(**filters):
@@ -147,6 +157,11 @@ def request_psychologist(*, patient_user, psychologist_id):
                 )
         except IntegrityError as exc:
             raise DomainValidationError({"relationship": [ALREADY_OPEN]}) from exc
+        notify(
+            recipients=[psychologist.user_id],
+            type=NotificationType.CARE_REQUESTED,
+            target_id=rel.pk,
+        )
     _log_after_commit(
         event="requested",
         relationship_id=rel.pk,
@@ -193,6 +208,7 @@ def accept_request(*, psychologist_user, relationship_id):
         rel.status = RelationshipStatus.ACCEPTED
         rel.responded_at = now
         rel.save(update_fields=["status", "responded_at", "updated_at"])
+        _notify_patient(rel, NotificationType.CARE_ACCEPTED)
 
     rel = _answer(
         {"pk": relationship_id, "psychologist__user": psychologist_user}, now, apply
@@ -226,6 +242,7 @@ def decline_request(*, psychologist_user, relationship_id, reason=None):
                 "updated_at",
             ]
         )
+        _notify_patient(rel, NotificationType.CARE_DECLINED)
 
     rel = _answer(
         {"pk": relationship_id, "psychologist__user": psychologist_user}, now, apply
@@ -260,6 +277,8 @@ def end_relationship(*, relationship, ended_by, reason, actor_id=None):
         from apps.appointments.services import cancel_for_ended_relationship
 
         cancel_for_ended_relationship(relationship=rel)
+        if ended_by != EndedBy.PATIENT:  # the patient knows when they end it
+            _notify_patient(rel, NotificationType.CARE_ENDED)
         _log_after_commit(
             event="ended",
             relationship_id=rel.pk,

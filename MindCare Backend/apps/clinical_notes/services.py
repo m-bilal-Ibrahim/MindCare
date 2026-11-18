@@ -20,6 +20,8 @@ from apps.appointments.models import Session, SessionStatus
 from apps.audit.models import AuditAction, AuditResource
 from apps.audit.services import record_access
 from apps.clinical_notes import selectors
+from apps.notifications.models import NotificationType
+from apps.notifications.services import notify
 from apps.clinical_notes.models import (
     SECTIONS,
     NoteAddendum,
@@ -297,5 +299,10 @@ def set_summary(*, psychologist_user, relationship_id, text, ip=None):
             summary.pk,
             rel,
             ip,
+        )
+        notify(
+            recipients=[rel.patient.user_id],
+            type=NotificationType.PROGRESS_SUMMARY_UPDATED,
+            target_id=summary.pk,
         )
     return summary
