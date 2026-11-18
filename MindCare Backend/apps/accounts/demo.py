@@ -304,8 +304,53 @@ def seed_demo_accounts(*, password):
     _ensure_demo_check_ins()
     _ensure_demo_bookings()
     _ensure_demo_notes()
+    _ensure_demo_messages()
     _ensure_demo_notifications()
     return {"created": created, "existing": existing}
+
+
+# Messaging: a short, fictional exchange between demo patient 1 (Hina Raza) and
+# Dr. Sara Ahmed. Added once: skipped if the conversation already has messages.
+DEMO_MESSAGES = [  # (from patient?, minutes ago, text)
+    (
+        True,
+        180,
+        "Hi Dr. Sara, is it okay if I share my sleep diary before our session?",
+    ),
+    (False, 170, "Of course, Hina. Bring it along and we will go through it together."),
+    (True, 20, "Thank you. The breathing exercise has been helping in the mornings."),
+]
+
+
+def _ensure_demo_messages():
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from apps.messaging import services as messaging
+    from apps.messaging.models import Conversation, Message
+
+    patient = User.objects.get(email=DEMO_PATIENT_EMAILS[0])
+    rel = patient_current(patient_user=patient)
+    if rel is None or rel.status != RelationshipStatus.ACCEPTED:
+        return
+    conversation = messaging.ensure_conversation(
+        patient=rel.patient, psychologist=rel.psychologist
+    )
+    if conversation.messages.exists():
+        return
+    psych_user = rel.psychologist.user
+    for from_patient, minutes_ago, text in DEMO_MESSAGES:
+        message = messaging.send_message(
+            user=patient if from_patient else psych_user,
+            conversation_id=conversation.pk,
+            body=text,
+        )
+        when = timezone.now() - timedelta(minutes=minutes_ago)
+        Message.objects.filter(pk=message.pk).update(
+            created_at=when, read_at=None if from_patient and minutes_ago < 60 else when
+        )
+        Conversation.objects.filter(pk=conversation.pk).update(last_message_at=when)
 
 
 # In-app notifications: a few for demo patient 1 (Hina Raza) and Dr. Sara Ahmed,
@@ -699,7 +744,13 @@ def remove_demo_accounts():
     SOSEvent.objects.filter(patient__user__in=users).delete()  # PROTECT
     from apps.clinical_notes.models import ProgressSummary, TherapyNote
 
-    for model in (TherapyNote, ProgressSummary):  # PROTECT; versions cascade
+    from apps.messaging.models import Conversation
+
+    for model in (
+        TherapyNote,
+        ProgressSummary,
+        Conversation,
+    ):  # PROTECT; children cascade
         model.objects.filter(
             Q(patient__user__in=users) | Q(psychologist__user__in=users)
         ).delete()

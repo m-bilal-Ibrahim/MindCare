@@ -155,3 +155,29 @@ class EncryptedFreeTextField(EncryptedTextField):
             rule_max_length=self.rule_max_length,
         )
         return name, path, args, kwargs
+
+
+class EncryptedMessageTextField(EncryptedTextField):
+    """A chat message: multi-line normalised, the message rule in
+    docs/validation-rules.md, then stored encrypted."""
+
+    def __init__(self, *args, label="Message", rule_max_length=2000, **kwargs):
+        from core.validators import MessageTextValidator
+
+        self.label = label
+        self.rule_max_length = rule_max_length
+        super().__init__(*args, **kwargs)
+        self.validators.append(MessageTextValidator(label, rule_max_length))
+
+    def to_python(self, value):
+        from core.validators import normalize_multiline_text
+
+        value = super().to_python(value)
+        if isinstance(value, str):
+            value = normalize_multiline_text(value)
+        return value
+
+    def deconstruct(self):
+        name, path, args, kwargs = super().deconstruct()
+        kwargs.update(label=self.label, rule_max_length=self.rule_max_length)
+        return name, path, args, kwargs

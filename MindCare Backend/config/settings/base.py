@@ -44,6 +44,7 @@ LOCAL_APPS = [
     "apps.ngo",
     "apps.rewards",
     "apps.emergency",
+    "apps.messaging",
     "apps.audit",
 ]
 
@@ -207,6 +208,9 @@ REST_FRAMEWORK = {
         "password_reset": "5/hour",
         "password_reset_confirm": "20/hour",
         "notifications": "120/min",
+        # "N/<k><unit>": apps.messaging.api.views.MessageSendThrottle reads the k.
+        "messages": "30/10m",
+        "messaging": "240/min",
     },
     "NUM_PROXIES": env.int("NUM_PROXIES", default=0),
 }

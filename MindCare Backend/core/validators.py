@@ -239,6 +239,37 @@ class FreeTextValidator:
 
 
 @deconstructible
+class MessageTextValidator:
+    """Chat messages: 1-max characters, no HTML tags, at least one letter or
+    digit (so not only spaces or symbols). Looser than free text, so "ok" or
+    "10?" can be sent."""
+
+    def __init__(self, label="Message", max_length=2000):
+        self.label = label
+        self.max_length = max_length
+
+    def __call__(self, value):
+        value = value or ""
+        if not 1 <= len(value.strip()) <= self.max_length:
+            raise ValidationError(
+                _length_message(self.label, 1, self.max_length), code="length"
+            )
+        if HTML_TAG.search(value):
+            raise ValidationError(f"{self.label} can't contain HTML tags.", code="html")
+        if not any(_is_letter(ch) or ch.isdigit() for ch in value):
+            raise ValidationError(
+                f"{self.label} must contain at least one letter or number.",
+                code="letters",
+            )
+
+    def __eq__(self, other):
+        return isinstance(other, MessageTextValidator) and (
+            self.label,
+            self.max_length,
+        ) == (other.label, other.max_length)
+
+
+@deconstructible
 class IdentifierValidator:
     """License / registration numbers: A-Z 0-9 space . / - ; 3-64; a digit."""
 

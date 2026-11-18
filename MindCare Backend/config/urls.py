@@ -33,6 +33,7 @@ API_V1_APPS = [
     "ngo",
     "rewards",
     "emergency",
+    "messaging",
 ]
 
 api_v1_patterns = [

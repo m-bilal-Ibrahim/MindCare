@@ -235,6 +235,24 @@ def notification_checks(base, t, who):
         "/api/v1/notifications/unread-count/",
         t,
     )
+    messaging_checks(base, t, who)
+
+
+def messaging_checks(base, t, who):
+    check(
+        base,
+        "messaging",
+        f"{who} GET conversations",
+        "/api/v1/messaging/conversations/",
+        t,
+    )
+    check(
+        base,
+        "messaging",
+        f"{who} GET message unread-count",
+        "/api/v1/messaging/unread-count/",
+        t,
+    )
 
 
 def psych_checks(base, t):

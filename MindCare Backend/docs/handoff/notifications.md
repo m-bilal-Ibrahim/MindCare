@@ -48,6 +48,7 @@ health data. On tap: mark it read, then open the screen for `target_type`.
 | `account_approved`, `account_rejected` | psychologist / NGO | none → Web: dashboard |
 | `password_changed` | anyone | none → no navigation |
 | `progress_summary_updated` | patient | `progress_summary` → App: my progress |
+| `new_message` | the other participant | `conversation` → Web / App: that conversation (`docs/handoff/messaging.md`) |
 
 `target_type` is `""` and `target_id` is `null` when there's nothing to open. If the
 target screen answers 404/403 (e.g. care has ended since), show the backend message.

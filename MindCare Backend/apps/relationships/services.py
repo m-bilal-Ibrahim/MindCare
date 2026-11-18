@@ -208,6 +208,9 @@ def accept_request(*, psychologist_user, relationship_id):
         rel.status = RelationshipStatus.ACCEPTED
         rel.responded_at = now
         rel.save(update_fields=["status", "responded_at", "updated_at"])
+        from apps.messaging.services import ensure_conversation
+
+        ensure_conversation(patient=rel.patient, psychologist=rel.psychologist)
         _notify_patient(rel, NotificationType.CARE_ACCEPTED)
 
     rel = _answer(

@@ -1487,3 +1487,39 @@ and 6.12. Handoff: `docs/handoff/notifications.md`.)
 table nobody audits); encrypting title and body (no benefit once they hold nothing
 sensitive); Celery for creation (needs a paid worker on Render); notifying the
 psychologist on every SOS press (the 30-minute cooldown already governs alerts to them).
+
+
+## 2026-11-19 - Secure messaging: one encrypted conversation per pair, participants only
+**Decision:** (No official module of its own: supports 6.4 and the care relationship.
+Handoff: `docs/handoff/messaging.md`.)
+- **New `apps/messaging`.** One `Conversation` per patient-psychologist **pair**
+  (unique), like therapy notes, so a returning patient continues the same thread.
+  It is created in `accept_request()`; migration 0002 backfills pairs already in
+  accepted care. Profiles are `PROTECT`ed (communication records; erasure
+  anonymises, 2026-10-06).
+- **Access:** the patient always reads their conversations; they can **send only
+  while that psychologist is their current one** (else 403, read-only). The
+  psychologist can open a conversation **only while they are the current,
+  approved and active psychologist**; a former or paused one gets 404, the same
+  as admins and everyone else. **Admins never see messages** (no endpoint, not
+  in Django admin).
+- **Messages:** text only, 1-2000 characters under a new **message rule**
+  (validation-rules.md): looser than free text (one letter or digit is enough,
+  so "ok" works), still no HTML. **Encrypted at rest.** No edit. The sender may
+  delete within 5 minutes: `deleted_at` is set and the **text is wiped**, since
+  nobody, admins included, could ever read a deleted message.
+- **Audit:** sends and deletes write a `message` row (ids only, fail closed).
+  **Reads aren't audited:** both participants are the intended readers, and a
+  10-second poll would bury the trail. The body is never logged, audited, put in
+  an error or a notification.
+- **Notifications:** `new_message`, "You have a new message.", target the
+  conversation; never the text or sender.
+- **Safety:** a fixed `safety_notice` on the conversation detail points to SOS. No
+  keyword scanning or automation (thresholds must not be invented, project-vision §27).
+- **Throttles:** sending 30 per 10 minutes per user (`messages: 30/10m`; a small
+  throttle subclass reads the multiplier, which DRF doesn't), reads 240/min.
+  Polling only (open conversation 10 s, unread count 60 s); no websockets.
+**Alternatives considered:** one conversation per relationship row (a returning
+patient would lose the history); keeping deleted text for moderation (nobody may read
+it, so it would be stored for no purpose); auditing every read (noise from polling);
+the free-text rule (would refuse short replies such as "ok").

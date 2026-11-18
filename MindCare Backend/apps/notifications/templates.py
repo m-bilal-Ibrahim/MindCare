@@ -109,6 +109,12 @@ TEMPLATES = {
         "Your psychologist updated your progress summary.",
         TargetType.PROGRESS_SUMMARY,
     ),
+    # Never the message text or a preview, and never who sent it.
+    T.NEW_MESSAGE: (
+        "New message",
+        "You have a new message.",
+        TargetType.CONVERSATION,
+    ),
 }
 
 ALLOWED_PLACEHOLDERS = {"when"}

@@ -138,6 +138,10 @@ DELETE FROM clinical_notes_therapynote
 DELETE FROM clinical_notes_progresssummary
  WHERE patient_id IN (SELECT id FROM patients_patientprofile WHERE user_id IN (<ids>))
     OR psychologist_id IN (SELECT id FROM psychologists_psychologistprofile WHERE user_id IN (<ids>));
+-- 0a2. conversations (messaging; messages cascade). TEST ACCOUNTS ONLY.
+DELETE FROM messaging_conversation
+ WHERE patient_id IN (SELECT id FROM patients_patientprofile WHERE user_id IN (<ids>))
+    OR psychologist_id IN (SELECT id FROM psychologists_psychologistprofile WHERE user_id IN (<ids>));
 -- 0b. sessions (Phase 2 module 4; they PROTECT relationships and profiles)
 DELETE FROM appointments_session
  WHERE patient_id IN (SELECT id FROM patients_patientprofile WHERE user_id IN (<ids>))
