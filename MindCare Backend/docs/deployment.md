@@ -129,7 +129,16 @@ has relationship rows **can't be deleted from Django admin**. To remove test
 accounts, delete in this order, scoped to the test users' ids (replace `<ids>`):
 
 ```sql
--- 0. sessions (Phase 2 module 4; they PROTECT relationships and profiles)
+-- 0a. therapy notes and summaries (Phase 2 module 5; versions and addenda
+--     cascade). TEST ACCOUNTS ONLY: real clinical records are anonymised, never
+--     deleted (docs/decisions.md, 2026-11-18).
+DELETE FROM clinical_notes_therapynote
+ WHERE patient_id IN (SELECT id FROM patients_patientprofile WHERE user_id IN (<ids>))
+    OR psychologist_id IN (SELECT id FROM psychologists_psychologistprofile WHERE user_id IN (<ids>));
+DELETE FROM clinical_notes_progresssummary
+ WHERE patient_id IN (SELECT id FROM patients_patientprofile WHERE user_id IN (<ids>))
+    OR psychologist_id IN (SELECT id FROM psychologists_psychologistprofile WHERE user_id IN (<ids>));
+-- 0b. sessions (Phase 2 module 4; they PROTECT relationships and profiles)
 DELETE FROM appointments_session
  WHERE patient_id IN (SELECT id FROM patients_patientprofile WHERE user_id IN (<ids>))
     OR psychologist_id IN (SELECT id FROM psychologists_psychologistprofile WHERE user_id IN (<ids>));

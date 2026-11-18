@@ -269,3 +269,11 @@ as GPS location. Audio types: MP3, M4A, OGG. Documents: PDF.
 | upcoming limit | `appointments/sessions/` (POST) | — | — | — | `You can have at most 2 upcoming sessions.` |
 | `outcome` | `appointments/psychologist/sessions/{id}/outcome/` | — | Choice (`completed`, `no_show`) | yes | before the session ends → `You can mark the outcome once a confirmed session has ended.` |
 | `view` | `appointments/psychologist/sessions/` (query) | — | Choice (`requests`, `upcoming`, `past`) | no | default `upcoming` |
+| `observations`, `interventions`, `plan` | `clinical-notes/patients/{id}/notes/` | Observations / Interventions / Plan | Free text 10–5000 | no | encrypted; `""` clears a section while the note is editable |
+| `progress_rating` | `clinical-notes/patients/{id}/notes/` | Progress | Number 1–10 | no | `Progress must be a whole number between 1 and 10.` |
+| `risk_level` | `clinical-notes/patients/{id}/notes/` | — | Choice (`low`, `medium`, `high`) | no | encrypted |
+| at least one | `clinical-notes/patients/{id}/notes/` | — | — | — | `Write at least one section or add a progress rating or risk level.` |
+| `session` | `clinical-notes/patients/{id}/notes/` (POST) | — | Number ≥ 1: one of the pair's confirmed / completed / no-show sessions | no | `Choose one of this patient's confirmed or past sessions.`; `This session already has a note. Open it instead.` |
+| edit window | `clinical-notes/patients/{id}/notes/{note}/` (PATCH) | — | — | — | after 24 h → `This note is locked (24 hours after it was written). Add an addendum instead.` |
+| addendum `text` | `clinical-notes/.../notes/{note}/addenda/` | Addendum | Free text 10–5000 | yes | encrypted; can't be edited |
+| summary `text` | `clinical-notes/patients/{id}/summary/` (PUT) | Summary | Free text 10–2000 | yes | encrypted; the patient sees it |

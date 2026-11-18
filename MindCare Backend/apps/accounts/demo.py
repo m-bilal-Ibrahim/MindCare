@@ -303,7 +303,75 @@ def seed_demo_accounts(*, password):
     _ensure_demo_emergency_contact()
     _ensure_demo_check_ins()
     _ensure_demo_bookings()
+    _ensure_demo_notes()
     return {"created": created, "existing": existing}
+
+
+# Phase 2 module 5: two fictional therapy notes by Dr. Sara Ahmed about demo
+# patient 1 (one already locked, one still editable) and a summary written for
+# the patient, so the notes, progress chart and patient progress screens have data.
+DEMO_NOTES = [  # (days ago, sections, progress, risk)
+    (
+        14,
+        {
+            "observations": "Demo note. Patient described trouble sleeping before "
+            "exams and avoids group settings.",
+            "plan": "Demo note. Start a sleep diary and a short daily breathing "
+            "exercise.",
+        },
+        4,
+        "medium",
+    ),
+    (
+        0,
+        {
+            "observations": "Demo note. Sleep diary kept on most days; reports "
+            "feeling calmer in the mornings.",
+            "interventions": "Demo note. Reviewed the diary together and practised "
+            "grounding techniques.",
+        },
+        6,
+        "low",
+    ),
+]
+DEMO_SUMMARY = (
+    "Demo summary. You have kept your sleep diary well and your mornings are "
+    "calmer. Keep the breathing exercise going before exams."
+)
+
+
+def _ensure_demo_notes():
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from apps.clinical_notes import services as note_services
+    from apps.clinical_notes.models import TherapyNote
+
+    patient = User.objects.get(email=DEMO_PATIENT_EMAILS[0])
+    rel = patient_current(patient_user=patient)
+    if rel is None or rel.status != RelationshipStatus.ACCEPTED:
+        return
+    psych_user = rel.psychologist.user
+    if TherapyNote.objects.filter(
+        patient=rel.patient, psychologist=rel.psychologist
+    ).exists():
+        return
+    for days_ago, sections, progress_rating, risk_level in DEMO_NOTES:
+        note = note_services.create_note(
+            psychologist_user=psych_user,
+            relationship_id=rel.pk,
+            progress_rating=progress_rating,
+            risk_level=risk_level,
+            **sections,
+        )
+        if days_ago:  # backdate so the older note is past its 24-hour window
+            TherapyNote.objects.filter(pk=note.pk).update(
+                created_at=timezone.now() - timedelta(days=days_ago)
+            )
+    note_services.set_summary(
+        psychologist_user=psych_user, relationship_id=rel.pk, text=DEMO_SUMMARY
+    )
 
 
 # Phase 2 module 4: every demo psychologist gets a fee, a session length and
@@ -578,6 +646,12 @@ def remove_demo_accounts():
     from apps.emergency.models import SOSEvent
 
     SOSEvent.objects.filter(patient__user__in=users).delete()  # PROTECT
+    from apps.clinical_notes.models import ProgressSummary, TherapyNote
+
+    for model in (TherapyNote, ProgressSummary):  # PROTECT; versions cascade
+        model.objects.filter(
+            Q(patient__user__in=users) | Q(psychologist__user__in=users)
+        ).delete()
     from apps.appointments.models import Session
 
     Session.objects.filter(  # PROTECT

@@ -32,6 +32,8 @@ class AuditResource(models.TextChoices):
     SOS_EVENT = "sos_event", "SOS event"
     MOOD_CHECK_IN = "mood_check_in", "Mood check-in"
     APPOINTMENT = "appointment", "Appointment"
+    THERAPY_NOTE = "therapy_note", "Therapy note"
+    PROGRESS_SUMMARY = "progress_summary", "Progress summary"
 
 
 class AppendOnlyQuerySet(models.QuerySet):

@@ -12,8 +12,9 @@ role in the bullet).
 The Web is the psychologist/admin client; the App is the patient client. "Branch"
 means the work sits on an unmerged branch.
 
-Last updated: 2026-10-28 (Phase 2 module 4: booking and fees, backend). Same day:
-module 3 (mood check-ins) and module 2 (SOS), backend. Before that: 2026-10-19
+Last updated: 2026-11-18 (Phase 2 module 5: therapy notes, backend). Before that:
+2026-10-28, module 4 (booking and fees), module 3 (mood check-ins) and module 2
+(SOS), backend. Before that: 2026-10-19
 (Phase 2 module 1: password reset + email, backend).
 Before that: 2026-10-15 (Phase 2 module 0: super-admin workflow + admin-panel-2,
 backend). Earlier: 2026-10-11 (6.10 backend). Re-checked against `origin` on
@@ -48,9 +49,9 @@ backend). Earlier: 2026-10-11 (6.10 backend). Re-checked against `origin` on
 
 | Bullet | Backend | Web | App | Notes |
 |---|---|---|---|---|
-| Psychologists keep therapy notes and observations after each session | not started | mock only | — | Needs the PHI audit trail (roadmap Phase 5) |
-| Psychologists track progress and changes over time | partial (Phase 2 module 3) | mock only | — | A current patient's mood history and insights (never notes), audited. Progress ratings come with module 5 |
-| Users view summarised insights of their progress | partial (Phase 2 module 3) | — | mock only | Mood insights done: 7/30/90-day averages, distribution, top feelings, streak (`journals/check-ins/insights/`). Session count and the psychologist's patient summary come with modules 4–5. App screens: `docs/handoff/mood-check-ins.md` |
+| Psychologists keep therapy notes and observations after each session | done (Phase 2 module 5) | mock only | — | Observations / interventions / plan, optional session link, all encrypted, every read and write audited; editable 24 h, then addenda; every version kept; current psychologist only, never admins. Web screens: `docs/handoff/therapy-notes.md` |
+| Psychologists track progress and changes over time | done (Phase 2 modules 3, 5) | mock only | — | Progress rating 1–10 and risk level per note, over time for a chart (`clinical-notes/patients/{id}/progress/`), plus the patient's mood history |
+| Users view summarised insights of their progress | done (Phase 2 modules 3, 5) | — | mock only | `clinical-notes/me/progress/`: completed / upcoming sessions, the summary the psychologist writes for them, mood insights. Never notes. App screens: `docs/handoff/therapy-notes.md`, `mood-check-ins.md` |
 
 ## 6.5 Sensor Monitoring and Health Tracking
 
