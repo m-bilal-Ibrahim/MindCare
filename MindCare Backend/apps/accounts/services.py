@@ -70,6 +70,13 @@ def register_user(
                 stored_keys = store_credential_documents(
                     profile=profile, documents=credential_documents
                 )
+            if approval_status == ApprovalStatus.PENDING:
+                from apps.notifications.models import NotificationType
+                from apps.notifications.services import notify_admins
+
+                notify_admins(
+                    type=NotificationType.APPLICATION_SUBMITTED, target_id=user.pk
+                )
     except Exception as exc:
         # The transaction rolled back: remove files stored before the failure.
         for key in stored_keys:
@@ -246,7 +253,8 @@ def review_pending_account(*, admin, user_id, decision, reason=None):
 def _send_review_email(user, decision, reason):
     """Tell a psychologist or NGO the outcome; they can't find out otherwise."""
     from apps.notifications import emails
-    from apps.notifications.services import send_email_after_commit
+    from apps.notifications.models import NotificationType
+    from apps.notifications.services import notify, send_email_after_commit
 
     if decision == ApprovalStatus.APPROVED:
         template = "account_approved"
@@ -259,6 +267,14 @@ def _send_review_email(user, decision, reason):
             reason_label=dict(RejectReason.CHOICES).get(reason),
         )
     send_email_after_commit(template=template, to=user.email, message=message)
+    notify(
+        recipients=[user],
+        type=(
+            NotificationType.ACCOUNT_APPROVED
+            if decision == ApprovalStatus.APPROVED
+            else NotificationType.ACCOUNT_REJECTED
+        ),
+    )
 
 
 def deactivate_account(*, admin, user_id, reason=None):
@@ -358,13 +374,15 @@ def change_password(*, user, current_password, new_password, ip=None):
 
 def _send_password_changed_notice(user):
     from apps.notifications import emails
-    from apps.notifications.services import send_email_after_commit
+    from apps.notifications.models import NotificationType
+    from apps.notifications.services import notify, send_email_after_commit
 
     send_email_after_commit(
         template="password_changed",
         to=user.email,
         message=emails.password_changed(full_name=user.full_name),
     )
+    notify(recipients=[user], type=NotificationType.PASSWORD_CHANGED)
 
 
 # --- Password reset by emailed code (Phase 2, module 1) -----------------------

@@ -1454,3 +1454,36 @@ editing forever with versions (a note could be rewritten after the fact, weakeni
 as a record); letting the former psychologist keep reading their notes (the user's
 Q-answer: current psychologist only); showing the patient their notes (the notes are
 the psychologist's working record; the summary is written for the patient).
+
+
+## 2026-11-18 - In-app notifications: fixed templates, no sensitive text, 90-day retention
+**Decision:** (No official module of its own: cross-cutting, supporting 6.2, 6.3, 6.4
+and 6.12. Handoff: `docs/handoff/notifications.md`.)
+- **`Notification` in `apps/notifications`:** recipient, a fixed `type`, title and body,
+  `target_type` + `target_id` for deep links, `is_read` / `read_at`, `created_at`.
+- **Title and body come only from fixed templates** (`apps/notifications/templates.py`).
+  The only value filled in is a session time in the recipient's timezone. **Never**
+  names (patient or psychologist), note or summary text, mood, SOS location, contact
+  details or diagnosis; a test checks the templates. Because nothing sensitive is in
+  them, **the rows are not encrypted**, and a psychologist's notification never names
+  the patient (the same rule as the booking emails).
+- **Triggers** (after the action's transaction commits, synchronously, `robust` so a
+  failure never breaks the action, an SOS above all): booking (request, confirm,
+  propose, proposal accepted, cancel; a psychologist cancelling a request or proposal
+  is `session_declined`; completed / no-show); relationships (request, accept,
+  decline, ended by the psychologist or the system; not when the patient ends it);
+  SOS (new alert and cancel → the current psychologist, only when the alert emailed
+  them, i.e. outside the 30-minute cooldown; → every active admin on every alert);
+  psychologist / NGO registration (→ admins), approval or rejection (→ applicant);
+  password changed or reset (→ user); progress summary written or updated (→ patient).
+- **Access:** any role, own notifications only (anyone else's id is a 404). Only
+  deletes are audited (`notification`, fail closed); reads aren't, since the rows hold
+  nothing sensitive. Throttle `notifications`, 120/min per user.
+- **Retention:** rows older than 90 days are deleted on every new notification and by
+  `manage.py purge_notifications` (the SOS-coordinates pattern).
+- **Not included:** push (FCM), new emails (the existing ones are unchanged) and
+  reminders (no scheduler until Celery beat). Clients poll `unread-count/` every 60 s.
+**Alternatives considered:** storing rendered text with names (a privacy leak in a
+table nobody audits); encrypting title and body (no benefit once they hold nothing
+sensitive); Celery for creation (needs a paid worker on Render); notifying the
+psychologist on every SOS press (the 30-minute cooldown already governs alerts to them).

@@ -206,6 +206,7 @@ REST_FRAMEWORK = {
         "clinical_notes": "120/hour",
         "password_reset": "5/hour",
         "password_reset_confirm": "20/hour",
+        "notifications": "120/min",
     },
     "NUM_PROXIES": env.int("NUM_PROXIES", default=0),
 }

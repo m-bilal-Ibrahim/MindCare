@@ -304,7 +304,58 @@ def seed_demo_accounts(*, password):
     _ensure_demo_check_ins()
     _ensure_demo_bookings()
     _ensure_demo_notes()
+    _ensure_demo_notifications()
     return {"created": created, "existing": existing}
+
+
+# In-app notifications: a few for demo patient 1 (Hina Raza) and Dr. Sara Ahmed,
+# matching the seeded data, so both bells have something to show. Idempotent:
+# one per (recipient, type, target). They cascade with the demo users.
+def _ensure_demo_notifications():
+    from apps.appointments.models import BLOCKING_STATUSES, Session
+    from apps.appointments.services import _when
+    from apps.clinical_notes.models import ProgressSummary
+    from apps.notifications.models import Notification
+    from apps.notifications.models import NotificationType as T
+    from apps.notifications.templates import render
+
+    patient = User.objects.get(email=DEMO_PATIENT_EMAILS[0])
+    rel = patient_current(patient_user=patient)
+    if rel is None or rel.status != RelationshipStatus.ACCEPTED:
+        return
+    psych_user = rel.psychologist.user
+    wanted = [(patient, T.CARE_ACCEPTED, rel.pk, "", True)]
+    summary = ProgressSummary.objects.filter(
+        patient=rel.patient, psychologist=rel.psychologist
+    ).first()
+    if summary is not None:
+        wanted.append((patient, T.PROGRESS_SUMMARY_UPDATED, summary.pk, "", False))
+    session = Session.objects.filter(
+        relationship=rel, status__in=BLOCKING_STATUSES
+    ).first()
+    if session is not None:
+        when = _when(session.starts_at, rel.psychologist.timezone)
+        wanted.append((psych_user, T.SESSION_REQUESTED, session.pk, when, False))
+    pending = CareRelationship.objects.filter(
+        psychologist=rel.psychologist, status=RelationshipStatus.PENDING
+    ).first()
+    if pending is not None:
+        wanted.append((psych_user, T.CARE_REQUESTED, pending.pk, "", False))
+    for user, type, target_id, when, is_read in wanted:
+        if Notification.objects.filter(
+            recipient=user, type=type, target_id=target_id
+        ).exists():
+            continue
+        title, body, target_type = render(type, when=when)
+        Notification.objects.create(
+            recipient=user,
+            type=type,
+            title=title,
+            body=body,
+            target_type=target_type,
+            target_id=target_id,
+            is_read=is_read,
+        )
 
 
 # Phase 2 module 5: two fictional therapy notes by Dr. Sara Ahmed about demo

@@ -277,3 +277,6 @@ as GPS location. Audio types: MP3, M4A, OGG. Documents: PDF.
 | edit window | `clinical-notes/patients/{id}/notes/{note}/` (PATCH) | — | — | — | after 24 h → `This note is locked (24 hours after it was written). Add an addendum instead.` |
 | addendum `text` | `clinical-notes/.../notes/{note}/addenda/` | Addendum | Free text 10–5000 | yes | encrypted; can't be edited |
 | summary `text` | `clinical-notes/patients/{id}/summary/` (PUT) | Summary | Free text 10–2000 | yes | encrypted; the patient sees it |
+| `unread` | `notifications/` (query) | — | true/false | no | `Must be a valid boolean.` |
+| `type` | `notifications/` (query) | — | Choice (the notification types in `docs/handoff/notifications.md`) | no | |
+| body | `notifications/{id}/read/`, `notifications/read-all/` (POST) | — | empty | — | any key → `This field can't be set.` |

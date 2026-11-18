@@ -35,7 +35,8 @@ from apps.appointments.models import (
 from apps.audit.models import AuditAction, AuditResource
 from apps.audit.services import record_access
 from apps.notifications import emails
-from apps.notifications.services import send_email_after_commit
+from apps.notifications.models import NotificationType
+from apps.notifications.services import notify, send_email_after_commit
 from apps.patients.models import PatientProfile
 from apps.relationships.selectors import get_active_relationship
 from core.exceptions import DomainValidationError
@@ -111,6 +112,26 @@ def _email_patient(template, builder, session):
             psychologist_name=session.psychologist.user.full_name,
             when=_when(session.starts_at, patient.timezone),
         ),
+    )
+
+
+def _notify_psychologist(type, session):
+    psych = session.psychologist
+    notify(
+        recipients=[psych.user_id],
+        type=type,
+        target_id=session.pk,
+        when=_when(session.starts_at, psych.timezone),
+    )
+
+
+def _notify_patient(type, session):
+    patient = session.patient
+    notify(
+        recipients=[patient.user_id],
+        type=type,
+        target_id=session.pk,
+        when=_when(session.starts_at, patient.timezone),
     )
 
 
@@ -289,6 +310,7 @@ def book_session(*, patient_user, starts_at, ip=None, now=None):
             raise DomainValidationError({"starts_at": [SLOT_UNAVAILABLE]}) from exc
         _audit(patient_user, AuditAction.CREATE, session, ip)
         _email_psychologist("session_requested", emails.session_requested, session)
+        _notify_psychologist(NotificationType.SESSION_REQUESTED, session)
     return session
 
 
@@ -305,6 +327,7 @@ def accept_proposal(*, patient_user, session_id, ip=None):
         _email_psychologist(
             "session_proposal_accepted", emails.session_proposal_accepted, session
         )
+        _notify_psychologist(NotificationType.SESSION_PROPOSAL_ACCEPTED, session)
 
     return _act(now, {"pk": session_id, "patient__user": patient_user}, apply)
 
@@ -340,6 +363,7 @@ def patient_cancel_session(*, patient_user, session_id, ip=None):
         _email_psychologist(
             "session_cancelled_by_patient", emails.session_cancelled_by_patient, session
         )
+        _notify_psychologist(NotificationType.SESSION_CANCELLED, session)
 
     return _act(now, {"pk": session_id, "patient__user": patient_user}, apply)
 
@@ -359,6 +383,7 @@ def confirm_session(*, psychologist_profile, session_id, ip=None):
         session.save(update_fields=["status", "confirmed_at", "updated_at"])
         _audit(psychologist_profile.user, AuditAction.UPDATE, session, ip)
         _email_patient("session_confirmed", emails.session_confirmed, session)
+        _notify_patient(NotificationType.SESSION_CONFIRMED, session)
 
     return _act(now, {"pk": session_id, "psychologist": psychologist_profile}, apply)
 
@@ -389,6 +414,7 @@ def propose_time(*, psychologist_profile, session_id, starts_at, ip=None):
             raise DomainValidationError({"starts_at": [SLOT_UNAVAILABLE]}) from exc
         _audit(psychologist_profile.user, AuditAction.UPDATE, session, ip)
         _email_patient("session_proposed", emails.session_proposed, session)
+        _notify_patient(NotificationType.SESSION_PROPOSED, session)
 
     return _act(now, {"pk": session_id, "psychologist": psychologist_profile}, apply)
 
@@ -397,11 +423,19 @@ def psychologist_cancel_session(*, psychologist_profile, session_id, ip=None):
     now = timezone.now()
 
     def apply(session):
+        # Cancelling a request or proposal answers it: the patient sees "declined".
+        was_awaiting = session.status in AWAITING_STATUSES
         _cancel(session, CancelledBy.PSYCHOLOGIST, now)
         _audit(psychologist_profile.user, AuditAction.UPDATE, session, ip)
         _email_patient(
             "session_cancelled_by_psychologist",
             emails.session_cancelled_by_psychologist,
+            session,
+        )
+        _notify_patient(
+            NotificationType.SESSION_DECLINED
+            if was_awaiting
+            else NotificationType.SESSION_CANCELLED,
             session,
         )
 
@@ -421,6 +455,12 @@ def mark_outcome(*, psychologist_profile, session_id, outcome, ip=None):
         session.outcome_marked_at = now
         session.save(update_fields=["status", "outcome_marked_at", "updated_at"])
         _audit(psychologist_profile.user, AuditAction.UPDATE, session, ip)
+        _notify_patient(
+            NotificationType.SESSION_COMPLETED
+            if outcome == SessionStatus.COMPLETED
+            else NotificationType.SESSION_NO_SHOW,
+            session,
+        )
 
     return _act(now, {"pk": session_id, "psychologist": psychologist_profile}, apply)
 

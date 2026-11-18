@@ -384,4 +384,15 @@ new service, selector, or API endpoint. Keep entries one row per function/class.
 | `apps/clinical_notes/selectors.py` | `notes_for_pair()`, `progress_series()`, `summary_for_pair()` | Querysets behind the audited services | — | — |
 | `apps/clinical_notes/selectors.py` | `patient_progress()` | The patient's view: completed / upcoming session counts, latest summary, mood insights; never notes | `GET /api/v1/clinical-notes/me/progress/` | MindCare App |
 
+### In-app notifications
+
+| File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
+|---|---|---|---|---|
+| `apps/notifications/models.py` | `Notification`, `NotificationType`, `TargetType` | One notification per recipient: fixed type, server-built title and body, target type + id for deep links, read state; kept 90 days | — | — |
+| `apps/notifications/templates.py` | `TEMPLATES`, `render()` | The fixed wording per type; the only value filled in is a session time (`{when}`); never names or health data | — | — |
+| `apps/notifications/services.py` | `notify()`, `notify_admins()` | Create notifications after the caller's transaction commits (robust: a failure never breaks the action); purges old rows on create. Called from booking, relationships, SOS, account review / registration, password change and the progress summary | — | — |
+| `apps/notifications/services.py` | `mark_read()`, `mark_all_read()`, `delete_notification()` | Own notifications only; delete is audited (fail closed) | `POST /api/v1/notifications/{id}/read/`, `POST .../read-all/`, `DELETE .../{id}/` | MindCare Web, MindCare App |
+| `apps/notifications/services.py` | `purge_old_notifications()` | Delete notifications older than 90 days (also `manage.py purge_notifications`) | — | — |
+| `apps/notifications/selectors.py` | `notifications_for()`, `unread_count()` | The user's own list (newest first, `?unread=`, `?type=`) and unread count | `GET /api/v1/notifications/`, `GET .../unread-count/` | MindCare Web, MindCare App |
+
 <!-- Add new `### apps/<app_name>` sections below as modules are implemented. -->
