@@ -395,4 +395,17 @@ new service, selector, or API endpoint. Keep entries one row per function/class.
 | `apps/notifications/services.py` | `purge_old_notifications()` | Delete notifications older than 90 days (also `manage.py purge_notifications`) | — | — |
 | `apps/notifications/selectors.py` | `notifications_for()`, `unread_count()` | The user's own list (newest first, `?unread=`, `?type=`) and unread count | `GET /api/v1/notifications/`, `GET .../unread-count/` | MindCare Web, MindCare App |
 
+### Secure messaging
+
+| File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
+|---|---|---|---|---|
+| `apps/messaging/models.py` | `Conversation`, `Message` | One conversation per patient-psychologist pair; text messages encrypted at rest, read time, soft delete (text wiped) | — | — |
+| `apps/messaging/selectors.py` | `visible_conversations()`, `conversation_summary()` | The patient's conversations (read-only once care ended) or the psychologist's CURRENT patients' ones, with unread counts; never message text; detail adds the fixed `safety_notice` | `GET /api/v1/messaging/conversations/`, `GET .../conversations/{id}/` | MindCare Web, MindCare App |
+| `apps/messaging/selectors.py` | `get_conversation()`, `can_send()`, `messages_page()`, `total_unread()` | Participant check (else 404), write check, newest-first cursor page (`?before=`), total unread | `GET .../conversations/{id}/messages/`, `GET /api/v1/messaging/unread-count/` | MindCare Web, MindCare App |
+| `apps/messaging/services.py` | `send_message()` | Validate, store encrypted, audit, notify the other side (`new_message`, no content); 403 when read-only; 30 per 10 min | `POST .../conversations/{id}/messages/` | MindCare Web, MindCare App |
+| `apps/messaging/services.py` | `mark_read()`, `delete_message()` | Mark the other side's messages read; delete your own within 5 minutes (audited) | `POST .../conversations/{id}/read/`, `DELETE .../messages/{id}/` | MindCare Web, MindCare App |
+| `apps/messaging/services.py` | `ensure_conversation()` | Create the pair's conversation (called from `accept_request()`) | — | — |
+| `core/validators.py` | `MessageTextValidator` | Message rule: 1-2000 characters, no HTML, at least one letter or digit | — | — |
+| `core/encryption.py` | `EncryptedMessageTextField` | Encrypted model field with the message rule | — | — |
+
 <!-- Add new `### apps/<app_name>` sections below as modules are implemented. -->

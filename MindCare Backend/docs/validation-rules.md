@@ -134,6 +134,14 @@ such as `1122` that E.164 refuses. Single-line normalisation.
 2. Length 2–20 → `{Label} must be between 2 and 20 characters.`
 3. At least 2 digits → `{Label} must contain at least 2 digits.`
 
+### Message
+Used for: patient ↔ psychologist messages. Multi-line normalisation. Looser than
+free text so short replies ("ok", "10?") work.
+1. Length 1–2000 → `Message must be between 1 and 2000 characters.`
+2. No HTML (same test as free text) → `Message can't contain HTML tags.`
+3. At least one letter or digit (not only spaces or symbols)
+   → `Message must contain at least one letter or number.`
+
 ### Search text (query parameters)
 Single-line normalisation, max 120 characters. Not stored, so no character rule.
 (`GET /reference/cities/` rejects a null character with `Null characters are not
@@ -277,6 +285,9 @@ as GPS location. Audio types: MP3, M4A, OGG. Documents: PDF.
 | edit window | `clinical-notes/patients/{id}/notes/{note}/` (PATCH) | — | — | — | after 24 h → `This note is locked (24 hours after it was written). Add an addendum instead.` |
 | addendum `text` | `clinical-notes/.../notes/{note}/addenda/` | Addendum | Free text 10–5000 | yes | encrypted; can't be edited |
 | summary `text` | `clinical-notes/patients/{id}/summary/` (PUT) | Summary | Free text 10–2000 | yes | encrypted; the patient sees it |
+| `body` | `messaging/conversations/{id}/messages/` (POST) | Message | Message 1–2000 | yes | encrypted; missing → `Write a message.` |
+| `before`, `limit` | `messaging/conversations/{id}/messages/` (query) | — | Number ≥ 1 / Number 1–50 | no | default limit 30 |
+| delete window | `messaging/.../messages/{id}/` (DELETE) | — | — | — | `Messages can only be deleted within 5 minutes of sending.`, `This message was already deleted.`, someone else's → 403 `You can only delete your own messages.` |
 | `unread` | `notifications/` (query) | — | true/false | no | `Must be a valid boolean.` |
 | `type` | `notifications/` (query) | — | Choice (the notification types in `docs/handoff/notifications.md`) | no | |
 | body | `notifications/{id}/read/`, `notifications/read-all/` (POST) | — | empty | — | any key → `This field can't be set.` |

@@ -39,6 +39,8 @@ class NotificationType(models.TextChoices):
     PASSWORD_CHANGED = "password_changed", "Password changed"
     # Therapy notes (Phase 2 module 5)
     PROGRESS_SUMMARY_UPDATED = "progress_summary_updated", "Progress summary updated"
+    # Messaging
+    NEW_MESSAGE = "new_message", "New message"
 
 
 class TargetType(models.TextChoices):
@@ -49,6 +51,7 @@ class TargetType(models.TextChoices):
     SOS_EVENT = "sos_event", "SOS alert"
     PENDING_APPLICATION = "pending_application", "Pending application"
     PROGRESS_SUMMARY = "progress_summary", "Progress summary"
+    CONVERSATION = "conversation", "Conversation"
 
 
 class Notification(models.Model):
