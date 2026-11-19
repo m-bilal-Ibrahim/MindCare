@@ -217,6 +217,14 @@ def patient_checks(base, t):
         "/api/v1/clinical-notes/me/progress/",
         t,
     )
+    check(
+        base,
+        "6.4 care plan",
+        "patient GET care-plans",
+        "/api/v1/recommendations/care-plans/",
+        t,
+    )
+    check(base, "journal", "patient GET entries", "/api/v1/journals/entries/", t)
     notification_checks(base, t, "patient")
 
 

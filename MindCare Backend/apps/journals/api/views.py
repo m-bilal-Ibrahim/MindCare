@@ -15,7 +15,12 @@ from apps.journals.api.serializers import (
     CheckInSerializer,
     CheckInUpdateSerializer,
     CheckInWriteSerializer,
+    JOURNAL_SAFETY_NOTICE,
     InsightsSerializer,
+    JournalEntryQuerySerializer,
+    JournalEntrySerializer,
+    JournalEntryUpdateSerializer,
+    JournalEntryWriteSerializer,
     PsychologistCheckInSerializer,
     PsychologistMoodQuerySerializer,
     PsychologistMoodSerializer,
@@ -145,6 +150,120 @@ class InsightsView(PatientView):
     def get(self, request):
         data = selectors.insights(patient_profile=request.user.patient_profile)
         return Response(InsightsSerializer(data).data)
+
+
+class JournalWriteThrottle(UserRateThrottle):
+    scope = "journal"
+
+
+class JournalView(APIView):
+    """The private journal: patients only, their own entries only."""
+
+    permission_classes = [IsAuthenticated, IsPatient]
+
+    def get_throttles(self):
+        if self.request.method in ("POST", "PATCH", "DELETE"):
+            return [JournalWriteThrottle()]
+        return []
+
+
+class JournalEntriesView(JournalView):
+    @extend_schema(
+        parameters=[JournalEntryQuerySerializer],
+        responses={200: JournalEntrySerializer(many=True)},
+        description="Your journal entries, newest first, paginated, with a fixed "
+        "`safety_notice`. Filter by local date range and feeling tag. There is no "
+        "text search (entries are encrypted).",
+    )
+    def get(self, request):
+        query = JournalEntryQuerySerializer(data=request.query_params)
+        query.is_valid(raise_exception=True)
+        rows = selectors.journal_entries_for(
+            patient_profile=request.user.patient_profile, **query.validated_data
+        )
+        paginator = StandardPagination()
+        page = paginator.paginate_queryset(rows, request, view=self)
+        response = paginator.get_paginated_response(
+            JournalEntrySerializer(page, many=True).data
+        )
+        response.data["safety_notice"] = JOURNAL_SAFETY_NOTICE
+        return response
+
+    @extend_schema(
+        request=JournalEntryWriteSerializer,
+        responses={
+            201: JournalEntrySerializer,
+            400: OpenApiResponse(description="Invalid input, or 20 entries today."),
+            429: OpenApiResponse(description="More than 60 writes in an hour."),
+        },
+        description="Write an entry for today (your local day). Encrypted and "
+        "private: nobody else can read it.",
+    )
+    def post(self, request):
+        body = JournalEntryWriteSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        try:
+            entry = services.create_entry(
+                patient_profile=request.user.patient_profile,
+                ip=_ip(request),
+                **body.validated_data,
+            )
+        except DomainValidationError as exc:
+            raise _domain(exc) from exc
+        return Response(
+            JournalEntrySerializer(entry).data, status=status.HTTP_201_CREATED
+        )
+
+
+class JournalEntryDetailView(JournalView):
+    @extend_schema(responses={200: JournalEntrySerializer, 404: OpenApiResponse()})
+    def get(self, request, entry_id):
+        entry = selectors.journal_entry(
+            patient_profile=request.user.patient_profile, entry_id=entry_id
+        )
+        if entry is None:
+            raise Http404
+        return Response(JournalEntrySerializer(entry).data)
+
+    @extend_schema(
+        request=JournalEntryUpdateSerializer,
+        responses={
+            200: JournalEntrySerializer,
+            400: OpenApiResponse(description="Invalid input."),
+            404: OpenApiResponse(),
+        },
+        description="Edit an entry at any time. `check_in: null` unlinks it.",
+    )
+    def patch(self, request, entry_id):
+        body = JournalEntryUpdateSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        try:
+            entry = services.update_entry(
+                patient_profile=request.user.patient_profile,
+                entry_id=entry_id,
+                ip=_ip(request),
+                **body.validated_data,
+            )
+        except services.NotFound as exc:
+            raise Http404 from exc
+        except DomainValidationError as exc:
+            raise _domain(exc) from exc
+        return Response(JournalEntrySerializer(entry).data)
+
+    @extend_schema(
+        responses={204: None, 404: OpenApiResponse()},
+        description="Delete an entry for good.",
+    )
+    def delete(self, request, entry_id):
+        try:
+            services.delete_entry(
+                patient_profile=request.user.patient_profile,
+                entry_id=entry_id,
+                ip=_ip(request),
+            )
+        except services.NotFound as exc:
+            raise Http404 from exc
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class PsychologistMoodsView(APIView):

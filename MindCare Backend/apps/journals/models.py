@@ -10,7 +10,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from core.encryption import EncryptedFreeTextField
+from core.encryption import EncryptedFreeTextField, EncryptedTextField
 from core.models import ValidatedModelMixin
 
 MOOD_MIN, MOOD_MAX = 1, 5
@@ -74,3 +74,61 @@ class MoodCheckIn(ValidatedModelMixin, models.Model):
 
     def __str__(self):
         return f"Check-in #{self.pk} ({self.local_date})"
+
+
+ENTRY_TITLE_MIN, ENTRY_TITLE_MAX = 3, 120
+ENTRY_BODY_MIN, ENTRY_BODY_MAX = 10, 10000
+MAX_ENTRIES_PER_DAY = 20
+
+
+class JournalEntry(ValidatedModelMixin, models.Model):
+    """The patient's private journal (docs/decisions.md, 2026-11-19; project-vision
+    section 11). Strictly private: no psychologist or admin endpoint, not in
+    Django admin. Title, body and tags are encrypted; the patient can edit at any
+    time and hard-delete. Encrypted columns can't be searched, so there is no
+    text search; the tag filter runs on the decrypted rows of one patient."""
+
+    patient = models.ForeignKey(
+        "patients.PatientProfile",
+        on_delete=models.CASCADE,
+        related_name="journal_entries",
+    )
+    # The patient's local date when the entry was written (their timezone).
+    local_date = models.DateField()
+    title = EncryptedFreeTextField(
+        label="Title",
+        min_length=ENTRY_TITLE_MIN,
+        rule_max_length=ENTRY_TITLE_MAX,
+        blank=True,
+        default="",
+    )
+    body = EncryptedFreeTextField(
+        label="Entry", min_length=ENTRY_BODY_MIN, rule_max_length=ENTRY_BODY_MAX
+    )
+    # Comma-separated EmotionTag slugs, encrypted (like the history concerns).
+    tags = EncryptedTextField(blank=True, default="")
+    # Optional link to the mood check-in of the same local day.
+    check_in = models.ForeignKey(
+        MoodCheckIn,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="journal_entries",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-local_date", "-created_at", "-id"]
+        indexes = [
+            models.Index(
+                fields=["patient", "local_date"], name="journals_entry_patient_day"
+            )
+        ]
+
+    def __str__(self):
+        return f"Journal entry #{self.pk} ({self.local_date})"
+
+    @property
+    def tag_list(self):
+        return [slug for slug in (self.tags or "").split(",") if slug]

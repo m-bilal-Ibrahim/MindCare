@@ -6,6 +6,8 @@ from apps.journals.api.views import (
     CheckInDetailView,
     CheckInsView,
     InsightsView,
+    JournalEntriesView,
+    JournalEntryDetailView,
     PsychologistMoodsView,
     TodayView,
 )
@@ -21,6 +23,13 @@ urlpatterns = [
         "check-ins/<int:check_in_id>/",
         CheckInDetailView.as_view(),
         name="check-in-detail",
+    ),
+    # Patients: the private journal (no psychologist or admin route exists)
+    path("entries/", JournalEntriesView.as_view(), name="entries"),
+    path(
+        "entries/<int:entry_id>/",
+        JournalEntryDetailView.as_view(),
+        name="entry-detail",
     ),
     # Psychologists: a current patient's moods (by relationship id)
     path(

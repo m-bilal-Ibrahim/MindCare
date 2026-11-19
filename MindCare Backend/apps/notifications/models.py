@@ -41,6 +41,8 @@ class NotificationType(models.TextChoices):
     PROGRESS_SUMMARY_UPDATED = "progress_summary_updated", "Progress summary updated"
     # Messaging
     NEW_MESSAGE = "new_message", "New message"
+    # Care plan
+    CARE_PLAN_UPDATED = "care_plan_updated", "Care plan updated"
 
 
 class TargetType(models.TextChoices):
@@ -52,6 +54,7 @@ class TargetType(models.TextChoices):
     PENDING_APPLICATION = "pending_application", "Pending application"
     PROGRESS_SUMMARY = "progress_summary", "Progress summary"
     CONVERSATION = "conversation", "Conversation"
+    CARE_PLAN = "care_plan", "Care plan"
 
 
 class Notification(models.Model):

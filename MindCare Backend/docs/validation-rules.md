@@ -291,3 +291,25 @@ as GPS location. Audio types: MP3, M4A, OGG. Documents: PDF.
 | `unread` | `notifications/` (query) | — | true/false | no | `Must be a valid boolean.` |
 | `type` | `notifications/` (query) | — | Choice (the notification types in `docs/handoff/notifications.md`) | no | |
 | body | `notifications/{id}/read/`, `notifications/read-all/` (POST) | — | empty | — | any key → `This field can't be set.` |
+| goal `title`, task `title` | `recommendations/psychologist/patients/{id}/care-plan/goals/`, `.../goals/{id}/tasks/` | Title | Free text 3–120, single line | yes (on POST) | encrypted |
+| goal `description` | care-plan goals | Description | Free text 10–1000 | no | encrypted; `""` clears it |
+| goal `category` | care-plan goals | — | Choice (`exercise`, `sleep`, `diet`, `mindfulness`, `social`, `therapy_homework`, `other`) | yes (on POST) | |
+| goal `target_date` | care-plan goals | — | Date, today to one year ahead (patient's local day) | no | `Target date must be between today and one year from now.`; only checked when it changes |
+| goal `status` | care-plan goals (PATCH) | — | Choice (`active`, `achieved`, `dropped`) | no | never deleted |
+| task `instructions` | care-plan tasks | Instructions | Free text 10–1000 | no | encrypted |
+| task `frequency` | care-plan tasks | — | Choice (`once`, `daily`, `weekly`) | yes (on POST) | |
+| task `times_per_week` | care-plan tasks | Times per week | Number 1–7 | weekly only | weekly without it → `Choose how many times a week (1 to 7).`; other frequencies → `Times per week is only for weekly tasks.` |
+| task `start_date`, `end_date` | care-plan tasks | — | Date, today to one year ahead | no | `Dates must be between today and one year from now.` (only when changed); `End date can't be before the start date.` |
+| task `status` | care-plan tasks (PATCH) | — | Choice (`active`, `archived`) | no | never deleted |
+| care-plan limits | care-plan goals / tasks | — | — | — | `A care plan can have at most 10 active goals.`, `A goal can have at most 10 active tasks.`, `A care plan can have at most 30 active tasks.`, `You can only add tasks to an active goal.` |
+| completion `local_date` | `recommendations/care-plans/{id}/tasks/{task}/completions/` | — | Date: today or yesterday (patient's local day) | no (default today) | `You can mark a task done for today or yesterday only.`, `This task isn't scheduled for that day.` |
+| completion `note` | care-plan completions | Note | Free text 10–500 | no | encrypted; the current psychologist reads it |
+| completion `difficulty` | care-plan completions | Difficulty | Number 1–5 | no | |
+| completion rules | care-plan completions | — | — | — | `You've already marked this task done for that day.`, `This one-off task is already done.`, `This task isn't active any more.`; read-only plan → 403 `This care plan is read-only because care with this psychologist has ended or is paused.`; undo after the day → `You can only undo a completion on the day you marked it.` |
+| `days` | care-plan `completions/` (query, both sides) | — | Choice (7, 30, 90) | no | default 30 |
+| journal `title` | `journals/entries/` | Title | Free text 3–120, single line | no | encrypted |
+| journal `body` | `journals/entries/` | Entry | Free text 10–10000 | yes (on POST) | encrypted; missing → `Write something in your entry.` |
+| journal `tags` | `journals/entries/` | — | Choice (the 12 check-in feelings), at most 5, duplicates dropped | no | encrypted; more than 5 → `Choose at most 5 feelings.` |
+| journal `check_in` | `journals/entries/` | — | Number ≥ 1: your check-in from the entry's local day, or null | no | `Choose your mood check-in from the same day as this entry.` |
+| entries per day | `journals/entries/` (POST) | — | at most 20 per local day | — | `You can write at most 20 journal entries a day.` |
+| `date_from`, `date_to`, `tag` | `journals/entries/` (query) | — | Date / Date / Choice (feelings) | no | `The start date must be on or before the end date.` |

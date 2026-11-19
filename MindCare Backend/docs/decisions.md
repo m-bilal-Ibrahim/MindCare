@@ -1523,3 +1523,87 @@ Handoff: `docs/handoff/messaging.md`.)
 patient would lose the history); keeping deleted text for moderation (nobody may read
 it, so it would be stored for no purpose); auditing every read (noise from polling);
 the free-text rule (would refuse short replies such as "ok").
+
+
+## 2026-11-19 - Care plan: psychologist-written goals and tasks the patient tracks
+**Decision (care plan answers Q1-Q18; handoff: `docs/handoff/care-plan-journal.md`):**
+- **Lives in `apps/recommendations` (Q1 A)** under `/api/v1/recommendations/`: it is the
+  "approved content reaches the patient" path, so Phase 6's AI drafts can later feed the
+  same plan **only after psychologist approval**. **No AI content in this module (Q2 A):**
+  every goal and task is typed by the psychologist; the stored triple, training consent
+  and age gate (2026-09-27) stay Phase 6 requirements.
+- **Shape (Q3 A, Q4 A):** one plan per patient-psychologist **pair** (unique, like notes
+  and messages), created with its first goal; plan → goals → tasks. Goal: title (3-120),
+  optional description (10-1000), category (`exercise`, `sleep`, `diet`, `mindfulness`,
+  `social`, `therapy_homework`, `other`), optional target date (today to +1 year), status
+  `active` / `achieved` / `dropped` (Q5 A). Task: title, optional instructions,
+  `once` / `daily` / `weekly` with 1-7 times a week, optional start and end dates (today
+  to +1 year, end ≥ start), status `active` / `archived` (Q6 A). Dates are the
+  patient's local days; ranges are checked only when a date changes, so old dates don't
+  block later edits.
+- **Limits (Q7 A):** 10 active goals, 10 active tasks per goal, 30 active tasks per plan
+  (also checked when a goal or task is made active again).
+- **Encryption (Q8 A):** titles, descriptions, instructions, completion notes and every
+  version snapshot are encrypted; status, category, frequency, dates and difficulty stay
+  plain so adherence is calculated in the database (the mood / progress-rating split).
+- **Tracking (Q9 A, Q10 A):** the patient marks a task done for **today or yesterday**
+  (their timezone), one completion per task per day (database constraint), a one-off task
+  once; optional encrypted note (10-500) and difficulty 1-5. Undo only on the day it
+  was logged. Completions are logged only while the task and goal are active and inside
+  the task's dates.
+- **Completion notes (Q11 A):** written for the plan, so the **current** psychologist
+  reads them, audited.
+- **Adherence (Q12 A):** calculated, not AI, over 7/30/90 days, per task, goal and plan,
+  for both sides. A task's schedule runs from its start date (or the day it was added,
+  if later) to its end date (or today); daily = one per day, weekly N = N per 7 days;
+  extra completions don't count twice. One-off and archived tasks are left out of the
+  percentages (one-off tasks show `is_done`); achieved and dropped goals are left out of
+  the plan total. **Completions don't count toward 6.13 streaks yet** (6.13 owns points).
+- **Editing (Q13 A, Q14 A):** the psychologist edits freely; every change bumps the plan
+  version and stores a full encrypted snapshot. Completed history is never changed and
+  nothing is hard-deleted (drop goals, archive tasks). Plans `PROTECT` both profiles
+  (erasure anonymises, 2026-10-06).
+- **Access (Q15-Q17 A):** only the CURRENT assigned psychologist (approved and active,
+  by relationship id; anyone else 404, paused 403 through the permission class). When
+  care ends the plan **freezes**: the patient keeps read-only access (403 on logging),
+  the former psychologist loses access, and it resumes if the same pair starts care
+  again. A paused psychologist's patient can read but not log. **Admins never see
+  plans** (no endpoint, not in Django admin).
+- **Audit:** every psychologist read (plan, completions, versions) and every write
+  (goal, task, completion, undo) writes a `care_plan` / `care_plan_completion` row in
+  the same transaction (fail closed). The patient's own reads aren't audited.
+- **Notifications (Q18 A):** the patient gets `care_plan_updated` ("Your psychologist
+  updated your care plan.") on every psychologist change; never what changed. Nothing
+  to the psychologist on completions; no reminders until Celery beat; no email.
+- **Throttles:** psychologist writes 120/hour, patient logging 60/hour.
+**Alternatives considered:** a new `care_plans` app (would split the approved-content
+path from Phase 6); a flat task list (no grouping by goal for 6.14 reports); private
+completion notes (the psychologist needs the patient's feedback on the plan); hard
+delete (would rewrite adherence history).
+
+
+## 2026-11-19 - Patient journal: strictly private, encrypted, no scanning
+**Decision (journal answers Q19-Q24):**
+- **`JournalEntry` in `apps/journals` (Q19 A)**, separate from the 500-character check-in
+  note: optional title (3-120), body (10-10,000), up to 5 feeling tags from the check-in
+  list, optional link to the mood check-in of the same local day. Several entries a day,
+  at most 20.
+- **Strictly private (Q20 A):** no psychologist path, no sharing, never admins (no
+  endpoint, not in Django admin) — project-vision §11, "the journal belongs to the
+  patient". Sharing chosen entries was considered and declined.
+- **Encryption and audit (Q21 A):** title, body and tags encrypted (tags as a
+  comma-separated encrypted value, like the history concerns). Writes and deletes are
+  audited (`journal_entry`, ids only, fail closed); the patient's own reads aren't.
+- **Edit and delete (Q22 A):** editable at any time with no version history; hard delete
+  by the patient.
+- **List (Q23 A):** paginated, newest first, filter by local date range in the database
+  and by tag after decryption (bounded by one patient's entries). No text search:
+  encrypted columns can't be searched.
+- **Safety (Q24 A):** 60 writes an hour per user; the list returns a fixed
+  `safety_notice` pointing to SOS and the local emergency number. **No keyword scanning
+  or alerts** (thresholds must not be invented, project-vision §27; and nobody else may
+  read the journal).
+**Alternatives considered:** extending the check-in note (one a day, 500 characters);
+sharing entries with the current psychologist (Q20 B: new behaviour, declined); version
+history (unnecessary for a private journal); risk-word flagging (conflicts with §27 and
+the privacy promise).
