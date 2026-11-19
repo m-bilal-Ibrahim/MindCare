@@ -408,4 +408,27 @@ new service, selector, or API endpoint. Keep entries one row per function/class.
 | `core/validators.py` | `MessageTextValidator` | Message rule: 1-2000 characters, no HTML, at least one letter or digit | — | — |
 | `core/encryption.py` | `EncryptedMessageTextField` | Encrypted model field with the message rule | — | — |
 
+### Care plan (apps/recommendations)
+
+Paths below are under `/api/v1/recommendations/`; `PLAN` = `psychologist/patients/{relationship_id}/care-plan/`.
+
+| File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
+|---|---|---|---|---|
+| `apps/recommendations/models.py` | `CarePlan`, `CarePlanGoal`, `CarePlanTask`, `TaskCompletion`, `CarePlanVersion` | One plan per pair → goals → tasks; completions per local day; an encrypted snapshot per version. Text and notes encrypted; status, category, frequency and dates plain | — | — |
+| `apps/recommendations/selectors.py` | `plan_detail()`, `empty_plan()`, `task_range()` | The plan with goals, tasks, done today, last completion, one-off `is_done` and adherence % (7/30/90 days) per task, goal and plan | `GET PLAN`, `GET care-plans/{id}/` | MindCare Web, MindCare App |
+| `apps/recommendations/selectors.py` | `patient_plans()`, `patient_plan()`, `plan_summary()`, `can_track()` | The patient's own plans (one per psychologist); tracking only while that psychologist is current | `GET care-plans/` | MindCare App |
+| `apps/recommendations/selectors.py` | `completions_for_plan()`, `versions_for_plan()` | Completions in the last N days (notes included); stored versions | `GET care-plans/{id}/completions/` | MindCare App |
+| `apps/recommendations/services.py` | `get_plan()`, `list_completions()`, `list_versions()` | The CURRENT psychologist's audited reads | `GET PLAN`, `GET PLAN completions/`, `GET PLAN versions/` | MindCare Web |
+| `apps/recommendations/services.py` | `create_goal()`, `update_goal()` | Add a goal (creates the plan), edit or change status; limits, target-date range; new version, audit, `care_plan_updated` notification | `POST PLAN goals/`, `PATCH PLAN goals/{id}/` | MindCare Web |
+| `apps/recommendations/services.py` | `create_task()`, `update_task()` | Add a task to an active goal, edit or archive; frequency and date rules, limits; new version, audit, notification | `POST PLAN goals/{id}/tasks/`, `PATCH PLAN tasks/{id}/` | MindCare Web |
+| `apps/recommendations/services.py` | `log_completion()`, `undo_completion()` | The patient marks a task done for today or yesterday (note, difficulty), or undoes it the same day; 403 when read-only; audited | `POST care-plans/{id}/tasks/{task}/completions/`, `DELETE .../completions/{id}/` | MindCare App |
+
+### Journal (apps/journals)
+
+| File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
+|---|---|---|---|---|
+| `apps/journals/models.py` | `JournalEntry` | The patient's private entry: local date, title, body, tags (all encrypted), optional same-day check-in link | — | — |
+| `apps/journals/selectors.py` | `journal_entries_for()`, `journal_entry()` | The patient's own entries, newest first, by date range and tag (tag filtered after decryption) | `GET /api/v1/journals/entries/`, `GET .../entries/{id}/` | MindCare App |
+| `apps/journals/services.py` | `create_entry()`, `update_entry()`, `delete_entry()` | Write (20 a day), edit any time, hard delete; audited, ids only. No psychologist or admin path | `POST /api/v1/journals/entries/`, `PATCH/DELETE .../entries/{id}/` | MindCare App |
+
 <!-- Add new `### apps/<app_name>` sections below as modules are implemented. -->

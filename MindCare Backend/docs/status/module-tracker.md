@@ -12,7 +12,8 @@ role in the bullet).
 The Web is the psychologist/admin client; the App is the patient client. "Branch"
 means the work sits on an unmerged branch.
 
-Last updated: 2026-11-19 (secure messaging, backend). Before that: 2026-11-18
+Last updated: 2026-11-19 (care plan + private journal, backend; earlier the same
+day, secure messaging). Before that: 2026-11-18
 (in-app notifications, backend; earlier the same day, Phase 2 module 5: therapy
 notes). Before that:
 2026-10-28, module 4 (booking and fees), module 3 (mood check-ins) and module 2
@@ -52,8 +53,8 @@ backend). Earlier: 2026-10-11 (6.10 backend). Re-checked against `origin` on
 | Bullet | Backend | Web | App | Notes |
 |---|---|---|---|---|
 | Psychologists keep therapy notes and observations after each session | done (Phase 2 module 5) | mock only | — | Observations / interventions / plan, optional session link, all encrypted, every read and write audited; editable 24 h, then addenda; every version kept; current psychologist only, never admins. Web screens: `docs/handoff/therapy-notes.md` |
-| Psychologists track progress and changes over time | done (Phase 2 modules 3, 5) | mock only | — | Progress rating 1–10 and risk level per note, over time for a chart (`clinical-notes/patients/{id}/progress/`), plus the patient's mood history |
-| Users view summarised insights of their progress | done (Phase 2 modules 3, 5) | — | mock only | `clinical-notes/me/progress/`: completed / upcoming sessions, the summary the psychologist writes for them, mood insights. Never notes. App screens: `docs/handoff/therapy-notes.md`, `mood-check-ins.md` |
+| Psychologists track progress and changes over time | done (Phase 2 modules 3, 5; care plan) | mock only | — | Progress rating 1–10 and risk level per note, over time for a chart (`clinical-notes/patients/{id}/progress/`), the patient's mood history, and care-plan adherence (7/30/90 days) with the patient's completion notes. Web screens: `docs/handoff/care-plan-journal.md` |
+| Users view summarised insights of their progress | done (Phase 2 modules 3, 5; care plan) | — | mock only | `clinical-notes/me/progress/`: completed / upcoming sessions, the summary the psychologist writes for them, mood insights. Never notes. Care plan: goals, tasks, done today, adherence. App screens: `docs/handoff/therapy-notes.md`, `mood-check-ins.md`, `care-plan-journal.md` |
 
 ## 6.5 Sensor Monitoring and Health Tracking
 
@@ -69,7 +70,7 @@ backend). Earlier: 2026-10-11 (6.10 backend). Re-checked against `origin` on
 |---|---|---|---|---|
 | AI analyses mental health and sensor data to recommend exercises, sleep schedule and diet | partial | partial | — | `/ai/anxiety-prediction/` forwards to `/patient-summary` (PR ai-patient-summary): self-rated social anxiety prediction, estimated tier and exercise/sleep/nutrition bundle from form input; nothing stored. Web display on branch `web/ai-recommendations`, needs no change. Sensor data and stored, approved recommendations are Phase 6/7 |
 | AI learns from psychologist feedback (approval or update) | not started | not started | — | Needs the stored triple and separate training consent (decisions.md 2026-09-27) |
-| Psychologist approves or updates recommendations | not started | mock only | not started | Care plan editor is mock |
+| Psychologist approves or updates recommendations | partial (care plan) | mock only | mock only | The care plan (psychologist-written goals and tasks the patient tracks) is built and is where approved recommendations will land. AI drafts and their approval step are Phase 6. Care plan editor on the Web is still mock: `docs/handoff/care-plan-journal.md` |
 
 ## 6.7 AI Chat Assistance
 
@@ -139,6 +140,7 @@ backend). Earlier: 2026-10-11 (6.10 backend). Re-checked against `origin` on
 
 | Item | Status | Notes |
 |---|---|---|
+| Patient journal (project-vision §11) | backend done (2026-11-19) | Private entries (title, body, feeling tags, optional same-day check-in link), all encrypted; patient only, never the psychologist or admins; edit any time, hard delete, writes audited; 20 a day; fixed safety notice; no scanning. App screens are the partner's: `docs/handoff/care-plan-journal.md` |
 | Secure messaging (patient ↔ psychologist) | backend done (2026-11-19) | One encrypted text conversation per pair; participants only (others 404, admins never); read-only for the patient after care ends, former psychologist loses access; delete within 5 min; 30 messages / 10 min; `new_message` notification without content; polling. Web and App screens are the partner's: `docs/handoff/messaging.md` |
 | In-app notifications | backend done (2026-11-18) | Fixed-template notifications for booking, relationships, SOS, account review, password change and the progress summary; list / unread-count / read / read-all / delete; 90-day retention. No push or reminders. Web and App bell screens are the partner's: `docs/handoff/notifications.md` |
 | Password reset and email | backend done (module 1) | 6-digit code by email; password-changed notice; approval/rejection emails; Brevo over HTTPS (Resend by settings). Web and App "Forgot password" screens are the partner's: `docs/handoff/password-reset-email.md`. Production sends nothing until the Render email variables are set |

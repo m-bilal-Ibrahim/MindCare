@@ -88,6 +88,29 @@ def insights(*, patient_profile, now=None):
     }
 
 
+def journal_entries_for(*, patient_profile, date_from=None, date_to=None, tag=None):
+    """The patient's own entries, newest first. Only the patient ever calls
+    this (there is no psychologist or admin path). Dates filter in the
+    database; the tag is encrypted, so it filters the decrypted rows here."""
+    from apps.journals.models import JournalEntry
+
+    qs = JournalEntry.objects.filter(patient=patient_profile)
+    if date_from:
+        qs = qs.filter(local_date__gte=date_from)
+    if date_to:
+        qs = qs.filter(local_date__lte=date_to)
+    if not tag:
+        return qs
+    return [entry for entry in qs if tag in entry.tag_list]
+
+
+def journal_entry(*, patient_profile, entry_id):
+    """One of the patient's own entries, or None."""
+    from apps.journals.models import JournalEntry
+
+    return JournalEntry.objects.filter(pk=entry_id, patient=patient_profile).first()
+
+
 def mood_history_for_psychologist(*, patient_profile, days, now=None):
     """Mood and tags only (never the note), newest first."""
     today = patient_today(patient_profile, now=now)

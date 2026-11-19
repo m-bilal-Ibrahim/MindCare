@@ -211,6 +211,9 @@ REST_FRAMEWORK = {
         # "N/<k><unit>": apps.messaging.api.views.MessageSendThrottle reads the k.
         "messages": "30/10m",
         "messaging": "240/min",
+        "care_plan": "120/hour",
+        "care_plan_tracking": "60/hour",
+        "journal": "60/hour",
     },
     "NUM_PROXIES": env.int("NUM_PROXIES", default=0),
 }
@@ -296,6 +299,10 @@ SPECTACULAR_SETTINGS = {
         "EmotionTagEnum": "apps.journals.models.EmotionTag",
         "SessionStatusEnum": "apps.appointments.models.SessionStatus",
         "SessionLengthEnum": "apps.appointments.models.SessionLength",
+        "GoalCategoryEnum": "apps.recommendations.models.GoalCategory",
+        "GoalStatusEnum": "apps.recommendations.models.GoalStatus",
+        "TaskFrequencyEnum": "apps.recommendations.models.TaskFrequency",
+        "TaskStatusEnum": "apps.recommendations.models.TaskStatus",
     },
 }
 

@@ -2,8 +2,23 @@
 
 from rest_framework import serializers
 
-from apps.journals.models import MAX_TAGS, EmotionTag, Mood, MoodCheckIn
-from core.serializers import RejectUnknownFieldsMixin, free_text_field
+from apps.journals.models import (
+    ENTRY_BODY_MAX,
+    ENTRY_BODY_MIN,
+    ENTRY_TITLE_MAX,
+    ENTRY_TITLE_MIN,
+    MAX_TAGS,
+    EmotionTag,
+    JournalEntry,
+    Mood,
+    MoodCheckIn,
+)
+from core.serializers import (
+    NormalizedCharField,
+    RejectUnknownFieldsMixin,
+    free_text_field,
+)
+from core.validators import FreeTextValidator, normalize_single_line
 
 TOO_MANY_TAGS = f"Choose at most {MAX_TAGS} feelings."
 MOOD_MESSAGE = "Mood must be a whole number between 1 and 5."
@@ -110,3 +125,76 @@ class PsychologistMoodSerializer(serializers.Serializer):
 
 class PsychologistMoodQuerySerializer(serializers.Serializer):
     days = serializers.ChoiceField(choices=[7, 30, 90], required=False, default=30)
+
+
+# --- journal entries (private to the patient) ---------------------------------
+
+DATE_ORDER = "The start date must be on or before the end date."
+JOURNAL_SAFETY_NOTICE = (
+    "Your journal is private: nobody else, not even your psychologist, can read "
+    "it, and nobody is alerted by what you write. If you are in danger or might "
+    "harm yourself, press the SOS button or call your local emergency number now."
+)
+
+
+class JournalEntryWriteSerializer(RejectUnknownFieldsMixin, serializers.Serializer):
+    title = NormalizedCharField(
+        normaliser=normalize_single_line,
+        validators=[FreeTextValidator("Title", ENTRY_TITLE_MIN, ENTRY_TITLE_MAX)],
+        required=False,
+        allow_blank=True,
+    )
+    body = free_text_field(
+        "Entry",
+        ENTRY_BODY_MIN,
+        ENTRY_BODY_MAX,
+        error_messages={"required": "Write something in your entry."},
+    )
+    tags = _tags_field(required=False)
+    check_in = serializers.IntegerField(
+        min_value=1,
+        required=False,
+        allow_null=True,
+        help_text="Optional: your mood check-in from the same day.",
+    )
+
+
+class JournalEntryUpdateSerializer(JournalEntryWriteSerializer):
+    def get_fields(self):
+        fields = super().get_fields()
+        for field in fields.values():
+            field.required = False
+        return fields
+
+
+class JournalEntrySerializer(serializers.ModelSerializer):
+    tags = serializers.ListField(
+        child=serializers.ChoiceField(choices=EmotionTag.choices), source="tag_list"
+    )
+    check_in = serializers.IntegerField(source="check_in_id", allow_null=True)
+
+    class Meta:
+        model = JournalEntry
+        fields = [
+            "id",
+            "local_date",
+            "title",
+            "body",
+            "tags",
+            "check_in",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = fields
+
+
+class JournalEntryQuerySerializer(serializers.Serializer):
+    date_from = serializers.DateField(required=False)
+    date_to = serializers.DateField(required=False)
+    tag = serializers.ChoiceField(choices=EmotionTag.choices, required=False)
+
+    def validate(self, attrs):
+        start, end = attrs.get("date_from"), attrs.get("date_to")
+        if start and end and start > end:
+            raise serializers.ValidationError({"date_from": [DATE_ORDER]})
+        return attrs

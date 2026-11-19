@@ -305,8 +305,161 @@ def seed_demo_accounts(*, password):
     _ensure_demo_bookings()
     _ensure_demo_notes()
     _ensure_demo_messages()
+    _ensure_demo_care_plan()
+    _ensure_demo_journal()
     _ensure_demo_notifications()
     return {"created": created, "existing": existing}
+
+
+# Care plan: one fictional plan by Dr. Sara Ahmed for demo patient 1 (Hina Raza),
+# 2 goals / 3 tasks, added 10 days ago, with a few completions so adherence has
+# numbers. Added once: skipped if the pair's plan already has goals.
+DEMO_PLAN = [  # (goal, [(task, completion days ago, {day: note})])
+    (
+        {
+            "title": "Sleep better before exams",
+            "description": "Demo goal. Build a steady evening routine so sleep "
+            "comes more easily in exam weeks.",
+            "category": "sleep",
+            "target_days": 60,
+        },
+        [
+            (
+                {
+                    "title": "Keep a sleep diary",
+                    "instructions": "Demo task. Write down when you went to bed, "
+                    "when you woke up and how rested you feel.",
+                    "frequency": "daily",
+                },
+                [1, 2, 3, 5, 6],
+                {2: "Demo note. Fell asleep faster after writing the diary."},
+            ),
+            (
+                {
+                    "title": "No screens 30 minutes before bed",
+                    "instructions": "Demo task. Put the phone away and read or "
+                    "stretch instead.",
+                    "frequency": "weekly",
+                    "times_per_week": 4,
+                },
+                [1, 4],
+                {},
+            ),
+        ],
+    ),
+    (
+        {
+            "title": "Feel calmer in group settings",
+            "description": "Demo goal. Practise small steps that make group "
+            "situations feel less overwhelming.",
+            "category": "social",
+            "target_days": 90,
+        },
+        [
+            (
+                {
+                    "title": "Five-minute breathing exercise",
+                    "instructions": "Demo task. Breathe in for four counts and out "
+                    "for six, for five minutes, each morning.",
+                    "frequency": "daily",
+                },
+                [1, 2, 4],
+                {4: "Demo note. Helped before the class presentation."},
+            ),
+        ],
+    ),
+]
+
+
+def _ensure_demo_care_plan():
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from apps.journals.selectors import patient_today
+    from apps.recommendations import services as plan_services
+    from apps.recommendations.models import CarePlan, CarePlanTask, TaskCompletion
+
+    patient = User.objects.get(email=DEMO_PATIENT_EMAILS[0])
+    rel = patient_current(patient_user=patient)
+    if rel is None or rel.status != RelationshipStatus.ACCEPTED:
+        return
+    if CarePlan.objects.filter(
+        patient=rel.patient, psychologist=rel.psychologist, goals__isnull=False
+    ).exists():
+        return
+    psych_user = rel.psychologist.user
+    today = patient_today(rel.patient)
+    added = timezone.now() - timedelta(days=10)
+    for goal_spec, tasks in DEMO_PLAN:
+        goal_fields = {k: v for k, v in goal_spec.items() if k != "target_days"}
+        goal = plan_services.create_goal(
+            psychologist_user=psych_user,
+            relationship_id=rel.pk,
+            target_date=today + timedelta(days=goal_spec["target_days"]),
+            **goal_fields,
+        )
+        for task_spec, done_days_ago, notes in tasks:
+            task = plan_services.create_task(
+                psychologist_user=psych_user,
+                relationship_id=rel.pk,
+                goal_id=goal.pk,
+                **task_spec,
+            )
+            # Backdate so the past completions fall inside the task's schedule.
+            CarePlanTask.objects.filter(pk=task.pk).update(created_at=added)
+            for days_ago in done_days_ago:
+                TaskCompletion.objects.create(
+                    task=task,
+                    local_date=today - timedelta(days=days_ago),
+                    note=notes.get(days_ago, ""),
+                    difficulty=2 + days_ago % 3,
+                    created_at=added + timedelta(days=10 - days_ago),
+                )
+
+
+# Journal: two fictional, private entries for demo patient 1 (the psychologist
+# never sees them). Added once: skipped if she already has entries.
+DEMO_JOURNAL = [  # (days ago, title, body, tags)
+    (
+        3,
+        "A hopeful afternoon",
+        "Demo entry. Revised for two hours and still had energy for a walk. "
+        "Writing things down helps me notice the good parts of the day.",
+        ["hopeful"],
+    ),
+    (
+        1,
+        "",
+        "Demo entry. Felt nervous before the group study session, but the "
+        "breathing exercise helped and I stayed until the end.",
+        ["anxious", "motivated"],
+    ),
+]
+
+
+def _ensure_demo_journal():
+    from datetime import timedelta
+
+    from apps.journals.models import JournalEntry, MoodCheckIn
+    from apps.journals.selectors import patient_today
+
+    profile = User.objects.get(email=DEMO_PATIENT_EMAILS[0]).patient_profile
+    if JournalEntry.objects.filter(patient=profile).exists():
+        return
+    today = patient_today(profile)
+    for days_ago, title, body, tags in DEMO_JOURNAL:
+        day = today - timedelta(days=days_ago)
+        JournalEntry.objects.create(
+            patient=profile,
+            local_date=day,
+            title=title,
+            body=body,
+            tags=",".join(sorted(tags)),
+            check_in=MoodCheckIn.objects.filter(
+                patient=profile, local_date=day
+            ).first(),
+        )
 
 
 # Messaging: a short, fictional exchange between demo patient 1 (Hina Raza) and
@@ -745,11 +898,13 @@ def remove_demo_accounts():
     from apps.clinical_notes.models import ProgressSummary, TherapyNote
 
     from apps.messaging.models import Conversation
+    from apps.recommendations.models import CarePlan
 
     for model in (
         TherapyNote,
         ProgressSummary,
         Conversation,
+        CarePlan,
     ):  # PROTECT; children cascade
         model.objects.filter(
             Q(patient__user__in=users) | Q(psychologist__user__in=users)

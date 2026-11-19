@@ -142,6 +142,33 @@ DELETE FROM clinical_notes_progresssummary
 DELETE FROM messaging_conversation
  WHERE patient_id IN (SELECT id FROM patients_patientprofile WHERE user_id IN (<ids>))
     OR psychologist_id IN (SELECT id FROM psychologists_psychologistprofile WHERE user_id IN (<ids>));
+-- 0a3. care plans (completions, tasks, goals and versions first). TEST ACCOUNTS ONLY.
+--      Journal entries go with the patient profile (CASCADE in Django; delete
+--      journals_journalentry rows first when deleting with SQL).
+DELETE FROM recommendations_taskcompletion WHERE task_id IN (
+  SELECT t.id FROM recommendations_careplantask t
+  JOIN recommendations_careplangoal g ON g.id = t.goal_id
+  JOIN recommendations_careplan p ON p.id = g.plan_id
+  WHERE p.patient_id IN (SELECT id FROM patients_patientprofile WHERE user_id IN (<ids>))
+     OR p.psychologist_id IN (SELECT id FROM psychologists_psychologistprofile WHERE user_id IN (<ids>)));
+DELETE FROM recommendations_careplantask WHERE goal_id IN (
+  SELECT g.id FROM recommendations_careplangoal g
+  JOIN recommendations_careplan p ON p.id = g.plan_id
+  WHERE p.patient_id IN (SELECT id FROM patients_patientprofile WHERE user_id IN (<ids>))
+     OR p.psychologist_id IN (SELECT id FROM psychologists_psychologistprofile WHERE user_id IN (<ids>)));
+DELETE FROM recommendations_careplangoal WHERE plan_id IN (
+  SELECT id FROM recommendations_careplan
+  WHERE patient_id IN (SELECT id FROM patients_patientprofile WHERE user_id IN (<ids>))
+     OR psychologist_id IN (SELECT id FROM psychologists_psychologistprofile WHERE user_id IN (<ids>)));
+DELETE FROM recommendations_careplanversion WHERE plan_id IN (
+  SELECT id FROM recommendations_careplan
+  WHERE patient_id IN (SELECT id FROM patients_patientprofile WHERE user_id IN (<ids>))
+     OR psychologist_id IN (SELECT id FROM psychologists_psychologistprofile WHERE user_id IN (<ids>)));
+DELETE FROM recommendations_careplan
+ WHERE patient_id IN (SELECT id FROM patients_patientprofile WHERE user_id IN (<ids>))
+    OR psychologist_id IN (SELECT id FROM psychologists_psychologistprofile WHERE user_id IN (<ids>));
+DELETE FROM journals_journalentry
+ WHERE patient_id IN (SELECT id FROM patients_patientprofile WHERE user_id IN (<ids>));
 -- 0b. sessions (Phase 2 module 4; they PROTECT relationships and profiles)
 DELETE FROM appointments_session
  WHERE patient_id IN (SELECT id FROM patients_patientprofile WHERE user_id IN (<ids>))

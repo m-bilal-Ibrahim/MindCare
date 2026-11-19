@@ -115,6 +115,12 @@ TEMPLATES = {
         "You have a new message.",
         TargetType.CONVERSATION,
     ),
+    # Never what changed: no goal or task text.
+    T.CARE_PLAN_UPDATED: (
+        "Care plan updated",
+        "Your psychologist updated your care plan.",
+        TargetType.CARE_PLAN,
+    ),
 }
 
 ALLOWED_PLACEHOLDERS = {"when"}
