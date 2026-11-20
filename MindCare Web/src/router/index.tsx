@@ -52,6 +52,7 @@ const SettingsPage = lazy(() => import('../pages/SettingsPage'));
 const AiAssessmentPage = lazy(() => import('../pages/AiAssessmentPage'));
 const ChangePasswordPage = lazy(() => import('../pages/ChangePasswordPage'));
 const AdminAdminsPage = lazy(() => import('../pages/AdminAdminsPage'));
+const TherapistNotesPage = lazy(() => import('../pages/TherapistNotesPage'));
 
 const PageLoader: React.FC = () => (
   <div className="min-h-screen bg-[#F5F0E8] flex items-center justify-center" aria-live="polite" aria-label="Loading page">
@@ -88,6 +89,7 @@ const AppRouter: React.FC = () => (
             <Route path={CONSOLE_ROUTES.TODAY} element={<RequireTherapistAuth><TherapistTodayPage /></RequireTherapistAuth>} />
             <Route path={CONSOLE_ROUTES.PATIENTS} element={<RequireTherapistAuth><TherapistPatientsPage /></RequireTherapistAuth>} />
             <Route path={CONSOLE_ROUTES.PATIENT_DETAIL} element={<RequireTherapistAuth><PatientDetailPage /></RequireTherapistAuth>} />
+            <Route path={CONSOLE_ROUTES.PATIENT_NOTES} element={<RequireTherapistAuth><TherapistNotesPage /></RequireTherapistAuth>} />
             <Route path={CONSOLE_ROUTES.SCHEDULE} element={<RequireTherapistAuth><TherapistSchedulePage /></RequireTherapistAuth>} />
             <Route path={CONSOLE_ROUTES.REQUESTS} element={<RequireTherapistAuth><TherapistRequestsPage /></RequireTherapistAuth>} />
             <Route path={CONSOLE_ROUTES.IN_SESSION} element={<RequireTherapistAuth><InSessionPage /></RequireTherapistAuth>} />

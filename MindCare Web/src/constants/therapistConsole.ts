@@ -42,10 +42,12 @@ export const CONSOLE_ROUTES = {
   WEEKLY_REPORT: '/therapist/reports/:patientId',
   CIRCLES: '/therapist/circles',
   PROFILE: '/therapist/profile',
+  PATIENT_NOTES: '/therapist/patients/:rel/notes',
   AI_ASSESSMENT: '/therapist/ai-assessment',
 } as const;
 
 export const buildPatientDetailRoute = (patientId: string) => `/therapist/patients/${patientId}`;
+export const buildPatientNotesRoute = (relationshipId: number) => `/therapist/patients/${relationshipId}/notes`;
 export const buildCarePlanRoute = (patientId: string) => `/therapist/care-plans/${patientId}`;
 export const buildWeeklyReportRoute = (patientId: string) => `/therapist/reports/${patientId}`;
 

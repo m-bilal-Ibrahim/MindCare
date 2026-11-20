@@ -11,7 +11,7 @@ import TherapistLayout from '../components/therapist/TherapistLayout';
 import Avatar from '../components/common/Avatar';
 import ConfirmSheet from '../components/therapist/ConfirmSheet';
 import { ErrorPanel, LoadingPanel, formatDate } from '../components/therapist/ApiStates';
-import { CONSOLE_ROUTES } from '../constants/therapistConsole';
+import { CONSOLE_ROUTES, buildPatientNotesRoute } from '../constants/therapistConsole';
 import {
   END_REASONS,
   endRelationship,
@@ -194,6 +194,12 @@ const TherapistPatientsPage: React.FC = () => {
 
                       <div className="mt-auto flex items-center justify-between gap-3 pt-4 border-t border-gray-100">
                         <span className="text-xs text-gray-400">Patient since {formatDate(p.accepted_at)}</span>
+                        <Link
+                          to={buildPatientNotesRoute(p.relationship_id)}
+                          className="ml-auto text-sm font-semibold text-gray-700 border border-gray-200 bg-white px-4 py-2 rounded-xl hover:border-gray-400"
+                        >
+                          Notes
+                        </Link>
                         <button
                           type="button"
                           onClick={() => {
