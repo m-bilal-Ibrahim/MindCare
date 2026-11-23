@@ -540,6 +540,7 @@ ADMIN_GROUP_PERMISSIONS = {
         "dua": ("add", "change", "delete", "view"),
         "surah": ("add", "change", "delete", "view"),
     },
+    "wellness": {"wellnessitem": ("add", "change", "delete", "view")},
     "reference": {
         "city": ("add", "change", "view"),
         "country": ("view",),

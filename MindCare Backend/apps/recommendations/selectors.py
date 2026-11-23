@@ -33,6 +33,7 @@ from apps.recommendations.models import (
     TaskFrequency,
     TaskStatus,
 )
+from apps.wellness.selectors import content_summary
 
 WINDOWS = (7, 30, 90)
 
@@ -171,6 +172,7 @@ def _task_data(task, dates, patient_profile, today):
         "start_date": task.start_date,
         "end_date": task.end_date,
         "status": task.status,
+        "content": content_summary(task.content),
         "created_at": task.created_at,
         "updated_at": task.updated_at,
         "done_today": today in dates,
@@ -199,7 +201,7 @@ def plan_detail(*, plan):
     notes are listed separately."""
     profile = plan.patient
     today = patient_today(profile)
-    goals = list(plan.goals.prefetch_related("tasks"))
+    goals = list(plan.goals.prefetch_related("tasks__content"))
     task_ids = [task.pk for goal in goals for task in goal.tasks.all()]
     dates_by_task = {}
     for task_id, local_date in TaskCompletion.objects.filter(

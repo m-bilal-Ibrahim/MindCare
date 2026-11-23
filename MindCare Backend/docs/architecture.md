@@ -47,6 +47,10 @@ docs/               This file, decisions.md, roadmap.md, deployment.md
   every access to health data, credential documents and private identities.
 - **motivation** — Motivation Corner content: admin-managed text quotes, plus
   opt-in duas and surahs (with audio) in their own tables, for patients only.
+- **wellness** — the 6.9 wellness library: admin-managed articles, practices and
+  routines (diet, exercise, yoga, stress reduction, mindfulness, relaxation,
+  sleep) that patients browse and save, and psychologists link to care-plan
+  tasks. Personalised AI suggestions stay with `recommendations` (Phase 6).
 
 ## Shared modules
 

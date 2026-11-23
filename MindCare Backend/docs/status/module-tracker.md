@@ -12,7 +12,8 @@ role in the bullet).
 The Web is the psychologist/admin client; the App is the patient client. "Branch"
 means the work sits on an unmerged branch.
 
-Last updated: 2026-11-23 (6.14 reports, backend). Before that: 2026-11-19 (care
+Last updated: 2026-11-23 (6.9 wellness library, backend; earlier the same day, 6.14
+reports). Before that: 2026-11-19 (care
 plan + private journal, backend; earlier the same day, secure messaging). Before
 that: 2026-11-18
 (in-app notifications, backend; earlier the same day, Phase 2 module 5: therapy
@@ -93,9 +94,9 @@ backend). Earlier: 2026-10-11 (6.10 backend). Re-checked against `origin` on
 
 | Bullet | Backend | Web | App | Notes |
 |---|---|---|---|---|
-| Content: diet plans, exercise routines, stress-reduction techniques | not started | — | mock only | Program and breathing screens are mock |
-| Personalised suggestions from mental health needs and sensor data | not started | — | mock only | Must go through psychologist approval if AI-generated |
-| Resources: mindfulness, yoga, nutrition, relaxation | not started | — | mock only | |
+| Content: diet plans, exercise routines, stress-reduction techniques | done (6.9 library) | not started | mock only | Admin-managed articles, practices (with an optional breathing pattern for the App's player) and routines; cover image, audio, YouTube / Vimeo link; favourites; psychologists link items to care-plan tasks. 14 seeded items are **hidden placeholders awaiting clinical review**. Screens are the partner's: `docs/handoff/wellness.md` |
+| Personalised suggestions from mental health needs and sensor data | deferred to 6.6 / 6.5 | — | mock only | AI suggestions need the Phase 6 approval workflow; sensor-based ones need 6.5. Until then the psychologist personalises by linking library items to care-plan tasks |
+| Resources: mindfulness, yoga, nutrition, relaxation | done (6.9 library) | not started | mock only | Same library: categories `mindfulness`, `yoga`, `nutrition`, `relaxation`, plus `exercise`, `stress_reduction`, `sleep` |
 
 ## 6.10 Motivation Corner
 

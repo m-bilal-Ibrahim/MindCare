@@ -28,6 +28,7 @@ LOCAL_APPS = [
     "apps.stats",
     "apps.ai",
     "apps.motivation",
+    "apps.wellness",
     "apps.patients",
     "apps.psychologists",
     "apps.relationships",
@@ -215,6 +216,9 @@ REST_FRAMEWORK = {
         "care_plan_tracking": "60/hour",
         "journal": "60/hour",
         "patient_reports": "30/hour",
+        "wellness": "120/min",
+        "wellness_favourites": "60/hour",
+        "wellness_uploads": "20/hour",
     },
     "NUM_PROXIES": env.int("NUM_PROXIES", default=0),
 }
@@ -307,6 +311,9 @@ SPECTACULAR_SETTINGS = {
         "RiskLevelEnum": "apps.clinical_notes.models.RiskLevel",
         "ReportPeriodEnum": "apps.reports.selectors.ReportPeriod",
         "ReportGranularityEnum": "apps.reports.selectors.Granularity",
+        "WellnessKindEnum": "apps.wellness.models.WellnessKind",
+        "WellnessCategoryEnum": "apps.wellness.models.WellnessCategory",
+        "WellnessDifficultyEnum": "apps.wellness.models.Difficulty",
     },
 }
 

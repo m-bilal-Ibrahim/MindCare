@@ -55,8 +55,36 @@ Full example (the AI's `/patient-summary` answer, returned unchanged):
 }
 ```
 
-`estimated_severity_tier` is one of `Minimal (1-2)`, `Mild (3-4)`, `Moderate (5-6)`,
-`High (7-8)`, `Severe (9-10)`. `share_of_matching_patients` may be `null`.
+#### Every response field
+From `AnxietyPredictionResponseSerializer` (`apps/ai/api/serializers.py`), which
+documents the AI's answer; the backend passes it through unchanged. All fields are
+always present.
+
+| Field | Type | Notes |
+|---|---|---|
+| `caveat` | string | Show first: the tier and bundle are an estimate for clinician review, not validated advice |
+| `predicted_class` | string | `Low`, `Medium` or `High`: predicted self-rated social anxiety |
+| `probabilities` | object | `Low`, `Medium`, `High`: each a number (0–1) |
+| `uncertainty_flag` | boolean | `true` when P(High) ≥ 0.025: recommend priority review |
+| `warnings` | array of string | May be empty |
+| `estimated_caffeine_mg` | number | From the four caffeine servings |
+| `estimated_stress_level` | integer | From the four stress answers |
+| `confidence` | number | 0–1 |
+| `confidence_label` | string | `confident` or `borderline` |
+| `borderline_reasons` | array of string | Empty when confident |
+| `borderline_between` | array of string, or `null` | The two close classes, e.g. `["Low", "Medium"]` |
+| `estimated_severity_tier` | string | `Minimal (1-2)`, `Mild (3-4)`, `Moderate (5-6)`, `High (7-8)` or `Severe (9-10)`. An estimate, not a model prediction |
+| `severity_tier_basis` | object | See below |
+| `severity_tier_basis.method` | string | How the tier was picked |
+| `severity_tier_basis.share_of_matching_patients` | number (0–1), or `null` | |
+| `severity_tier_basis.matching_patients` | integer | |
+| `recommendation_bundle` | object | The dataset's template text for the estimated tier; decision support only, never sent to a patient without review |
+| `recommendation_bundle.exercises` | string | Free text, `;`-separated items |
+| `recommendation_bundle.sleep_schedule` | string | Free text, `;`-separated items |
+| `recommendation_bundle.nutrition` | string | Free text, `;`-separated items |
+
+The `;`-separated layout is the AI's current template text, not a contract: display
+each bundle string as text; splitting on `;` for a list is a presentation choice.
 
 ### Errors
 

@@ -25,6 +25,7 @@ from core.serializers import (
     free_text_field,
     whole_number_field,
 )
+from apps.wellness.api.serializers import LinkedContentSerializer
 from core.validators import FreeTextValidator, normalize_single_line
 
 
@@ -86,6 +87,12 @@ class TaskCreateSerializer(RejectUnknownFieldsMixin, serializers.Serializer):
     )
     start_date = serializers.DateField(required=False, allow_null=True)
     end_date = serializers.DateField(required=False, allow_null=True)
+    content = serializers.IntegerField(
+        min_value=1,
+        required=False,
+        allow_null=True,
+        help_text="Optional: id of a published wellness library item; null clears it.",
+    )
 
 
 class TaskUpdateSerializer(_Partial, TaskCreateSerializer):
@@ -148,6 +155,9 @@ class TaskSerializer(serializers.Serializer):
     start_date = serializers.DateField(allow_null=True)
     end_date = serializers.DateField(allow_null=True)
     status = serializers.ChoiceField(choices=TaskStatus.choices)
+    content = LinkedContentSerializer(
+        allow_null=True, help_text="The linked wellness library item, or null."
+    )
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField()
     done_today = serializers.BooleanField()
@@ -216,6 +226,11 @@ class TaskWriteResultSerializer(serializers.Serializer):
     start_date = serializers.DateField(allow_null=True)
     end_date = serializers.DateField(allow_null=True)
     status = serializers.ChoiceField(choices=TaskStatus.choices)
+    content = serializers.IntegerField(
+        source="content_id",
+        allow_null=True,
+        help_text="Id of the linked wellness library item, or null.",
+    )
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField()
 
@@ -246,6 +261,11 @@ class _VersionTask(serializers.Serializer):
     start_date = serializers.DateField(allow_null=True)
     end_date = serializers.DateField(allow_null=True)
     status = serializers.CharField()
+    content = serializers.IntegerField(
+        allow_null=True,
+        required=False,
+        help_text="Linked library item id; absent in versions saved before 6.9.",
+    )
 
 
 class _VersionGoal(serializers.Serializer):
