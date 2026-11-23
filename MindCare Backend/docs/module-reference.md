@@ -431,4 +431,23 @@ Paths below are under `/api/v1/recommendations/`; `PLAN` = `psychologist/patient
 | `apps/journals/selectors.py` | `journal_entries_for()`, `journal_entry()` | The patient's own entries, newest first, by date range and tag (tag filtered after decryption) | `GET /api/v1/journals/entries/`, `GET .../entries/{id}/` | MindCare App |
 | `apps/journals/services.py` | `create_entry()`, `update_entry()`, `delete_entry()` | Write (20 a day), edit any time, hard delete; audited, ids only. No psychologist or admin path | `POST /api/v1/journals/entries/`, `PATCH/DELETE .../entries/{id}/` | MindCare App |
 
+### 6.14 Automated reports (apps/reports)
+
+`REPORT` = `/api/v1/reports/psychologist/patients/{relationship_id}/report/`. No models: calculated on every request, never stored.
+
+| File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
+|---|---|---|---|---|
+| `apps/reports/services.py` | `generate_report()` | The CURRENT psychologist's report on a patient (404 otherwise); resolves the period, builds the report and writes one `patient_report` audit row in the same transaction | `GET REPORT` | MindCare Web |
+| `apps/reports/services.py` | `resolve_period()` | `week` (Monday–Sunday), `month` or `custom` (≤ 183 days) in the patient's local days; clipped to the pair's care start and today; the previous period of the same kind | `GET REPORT` | MindCare Web |
+| `apps/reports/selectors.py` | `build_report()`, `sections()` | Assembles the report: period, sessions, therapy notes, mood, care plan, SOS, sensors (unavailable), comparison, indicators | `GET REPORT` | MindCare Web |
+| `apps/reports/selectors.py` | `sessions_section()` | Completed / no-show / cancellations (patient on time or late, psychologist, system) / expired, attendance, minutes, next confirmed session, daily or weekly series | `GET REPORT` | MindCare Web |
+| `apps/reports/selectors.py` | `notes_section()` | Note count, progress ratings (first, last, average, change) and risk levels (counts, first, latest) with series; never note text | `GET REPORT` | MindCare Web |
+| `apps/reports/selectors.py` | `mood_section()` | Check-ins, % of days, average, distribution, top 3 feelings, longest streak, series; never the check-in note | `GET REPORT` | MindCare Web |
+| `apps/reports/selectors.py` | `care_plan_section()` | Adherence per plan, goal and task over the period (shared calculation; today counts once done), completions, difficulty, note count, goals achieved / dropped, series | `GET REPORT` | MindCare Web |
+| `apps/reports/selectors.py` | `sos_section()`, `comparison()`, `indicators()` | SOS count and dates; headline numbers vs the previous period; factual statements with no clinical thresholds | `GET REPORT` | MindCare Web |
+| `apps/reports/selectors.py` | `care_started_on()`, `buckets()` | The pair's first accepted day; daily buckets up to 31 days, else weeks starting Monday | — | — |
+| `apps/recommendations/selectors.py` | `expected_and_done()`, `history_range()`, `percent()` | The one adherence calculation (now takes a window end), and a task's schedule in past periods: archived tasks and closed goals count until `archived_at` / `closed_at` | — | — |
+| `apps/recommendations/services.py` | `update_goal()`, `update_task()` | Now also set `closed_at` (achieved / dropped) and `archived_at` (archived), cleared when made active again | `PATCH PLAN goals/{id}/`, `PATCH PLAN tasks/{id}/` | MindCare Web |
+| `apps/accounts/demo.py` | `_ensure_demo_report_history()` | About 90 days of fictional history for the demo pair (care backdated 95 days, check-ins, rated notes, past sessions, an older goal with an archived task, one closed SOS), each part added once | — | — |
+
 <!-- Add new `### apps/<app_name>` sections below as modules are implemented. -->

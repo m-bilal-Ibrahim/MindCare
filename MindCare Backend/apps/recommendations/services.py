@@ -331,12 +331,18 @@ def update_goal(*, psychologist_user, relationship_id, goal_id, ip=None, **chang
             own = goal.tasks.filter(status=TaskStatus.ACTIVE).count()
             if _active_task_count(plan) + own > MAX_ACTIVE_TASKS:
                 raise _invalid("status", TOO_MANY_TASKS)
+        extra = []
+        if "status" in changes and changes["status"] != goal.status:
+            goal.closed_at = (
+                None if changes["status"] == GoalStatus.ACTIVE else timezone.now()
+            )
+            extra.append("closed_at")
         for field in fields:
             value = changes[field]
             if field in BLANKABLE:
                 value = value or ""
             setattr(goal, field, value)
-        goal.save(update_fields=[*fields, "updated_at"])
+        goal.save(update_fields=[*fields, *extra, "updated_at"])
         _changed(plan, psychologist_user, AuditAction.UPDATE, goal.pk, ip)
     return goal
 
@@ -415,13 +421,19 @@ def update_task(*, psychologist_user, relationship_id, task_id, ip=None, **chang
             for f in fields
             if f in ("start_date", "end_date") and changes[f] != getattr(task, f)
         ]
+        extra = []
+        if "status" in changes and changes["status"] != task.status:
+            task.archived_at = (
+                timezone.now() if changes["status"] == TaskStatus.ARCHIVED else None
+            )
+            extra.append("archived_at")
         for field in fields:
             value = changes[field]
             if field in BLANKABLE:
                 value = value or ""
             setattr(task, field, value)
         _check_task(task, today, changed=changed)
-        task.save(update_fields=[*fields, "updated_at"])
+        task.save(update_fields=[*fields, *extra, "updated_at"])
         _changed(plan, psychologist_user, AuditAction.UPDATE, task.pk, ip)
     return task
 

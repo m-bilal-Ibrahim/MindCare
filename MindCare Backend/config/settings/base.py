@@ -214,6 +214,7 @@ REST_FRAMEWORK = {
         "care_plan": "120/hour",
         "care_plan_tracking": "60/hour",
         "journal": "60/hour",
+        "patient_reports": "30/hour",
     },
     "NUM_PROXIES": env.int("NUM_PROXIES", default=0),
 }
@@ -303,6 +304,9 @@ SPECTACULAR_SETTINGS = {
         "GoalStatusEnum": "apps.recommendations.models.GoalStatus",
         "TaskFrequencyEnum": "apps.recommendations.models.TaskFrequency",
         "TaskStatusEnum": "apps.recommendations.models.TaskStatus",
+        "RiskLevelEnum": "apps.clinical_notes.models.RiskLevel",
+        "ReportPeriodEnum": "apps.reports.selectors.ReportPeriod",
+        "ReportGranularityEnum": "apps.reports.selectors.Granularity",
     },
 }
 

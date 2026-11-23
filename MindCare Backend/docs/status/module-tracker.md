@@ -12,8 +12,9 @@ role in the bullet).
 The Web is the psychologist/admin client; the App is the patient client. "Branch"
 means the work sits on an unmerged branch.
 
-Last updated: 2026-11-19 (care plan + private journal, backend; earlier the same
-day, secure messaging). Before that: 2026-11-18
+Last updated: 2026-11-23 (6.14 reports, backend). Before that: 2026-11-19 (care
+plan + private journal, backend; earlier the same day, secure messaging). Before
+that: 2026-11-18
 (in-app notifications, backend; earlier the same day, Phase 2 module 5: therapy
 notes). Before that:
 2026-10-28, module 4 (booking and fees), module 3 (mood check-ins) and module 2
@@ -132,9 +133,9 @@ backend). Earlier: 2026-10-11 (6.10 backend). Re-checked against `origin` on
 
 | Bullet | Backend | Web | App | Notes |
 |---|---|---|---|---|
-| Weekly and monthly reports on activity, mood and therapy progress | not started | mock only | — | Depends on 6.4, 6.5 and sessions |
-| Visual insights: trends, behaviour changes, sensor indicators | not started | mock only | — | |
-| Psychologists use reports to adjust treatment | not started | mock only | — | |
+| Weekly and monthly reports on activity, mood and therapy progress | done (reports, on demand) | mock only | — | `GET reports/psychologist/patients/{id}/report/` (`period` = week, month or custom): sessions, note ratings and risk levels, mood, care-plan adherence, SOS; never note, check-in or journal text. On demand only (no scheduler, so no automatic weekly email). Web screens: `docs/handoff/reports.md` |
+| Visual insights: trends, behaviour changes, sensor indicators | partial (reports) | mock only | — | Chart-ready series (daily ≤ 31 days, else weekly), comparison with the previous period, factual indicators. **Sensor indicators wait for 6.5** (`sensors.available: false`) |
+| Psychologists use reports to adjust treatment | done (reports) | mock only | — | Current psychologist only, audited; per-goal and per-task adherence feeds care-plan edits |
 
 ## Cross-cutting
 

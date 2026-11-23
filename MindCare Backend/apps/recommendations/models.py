@@ -112,6 +112,10 @@ class CarePlanGoal(ValidatedModelMixin, models.Model):
     status = models.CharField(
         max_length=10, choices=GoalStatus.choices, default=GoalStatus.ACTIVE
     )
+    # When the goal was last marked achieved or dropped; cleared when it is made
+    # active again. Reports use it for adherence in past periods (6.14). Goals
+    # closed before 2026-11-23 have none and are left out of report adherence.
+    closed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -149,6 +153,10 @@ class CarePlanTask(ValidatedModelMixin, models.Model):
     status = models.CharField(
         max_length=10, choices=TaskStatus.choices, default=TaskStatus.ACTIVE
     )
+    # When the task was last archived; cleared when it is made active again.
+    # Reports treat the task as scheduled until then (6.14). Tasks archived
+    # before 2026-11-23 have none and are left out of report adherence.
+    archived_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 

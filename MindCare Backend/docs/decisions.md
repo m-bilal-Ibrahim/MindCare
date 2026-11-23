@@ -1607,3 +1607,55 @@ delete (would rewrite adherence history).
 sharing entries with the current psychologist (Q20 B: new behaviour, declined); version
 history (unnecessary for a private journal); risk-word flagging (conflicts with §27 and
 the privacy promise).
+
+
+## 2026-11-23 - 6.14 reports: on demand for the current psychologist, calculated, never stored
+**Decision (reports answers Q1-Q24, all option A; handoff: `docs/handoff/reports.md`):**
+- **Who (Q1-Q3):** only the CURRENT assigned psychologist (approved and active), by
+  the relationship id the care plan and notes use, `GET
+  /api/v1/reports/psychologist/patients/{id}/report/`. Anyone else 404; paused 403
+  (permission class); patients and admins never. Throttle `patient_reports`, 30/hour.
+- **Periods (Q4-Q7):** `week` (Monday-Sunday) or `month`, picked by any day in it
+  (default the current one, marked `is_partial`), or `custom` up to 183 days, in the
+  **patient's** local days (Asia/Karachi fallback). Never past today, and **never
+  before this pair's care first started** (the earliest accepted row of the pair), so
+  the report never widens mood access beyond the time in care. On demand only: no
+  scheduler, no weekly job.
+- **Sections (Q8-Q16):** sessions (outcomes, cancellations by who and how late,
+  expired, attendance = completed ÷ (completed + no-show), minutes, next confirmed;
+  no fees); therapy notes (count, progress ratings, risk levels; **never note text,
+  addenda or the summary**); mood (counts, average, distribution, top 3 feelings,
+  longest streak; **never the check-in note**); care plan (adherence per plan, goal and
+  task, completions, difficulty, goals achieved / dropped, the psychologist's own
+  titles; completion notes **counted, never returned**); SOS (count, dates, status;
+  never location or contacts); `sensors: {"available": false}` until 6.5. **The
+  journal is never read, not even counted.** No notifications or messages.
+- **Past adherence (Q12):** `CarePlanTask.archived_at` and `CarePlanGoal.closed_at`
+  are set from now on (cleared when made active again); an archived task counts until
+  the day before it was archived, a closed goal's tasks until the day before it
+  closed. Items archived or closed before this change have no date, are left out, and
+  the report says how many (`legacy_items_excluded`). The care-plan adherence
+  calculation now takes a window end (`expected_and_done()`), shared by both. In a
+  report **today counts only once the task is done**, so a partial period doesn't read
+  as missed (the live care-plan view is unchanged).
+- **Comparison and indicators (Q17, Q18):** attendance, average mood, adherence and
+  average progress rating against the previous period of the same kind (clipped to
+  the care start the same way); indicators are factual statements ("Risk level went
+  from medium to low.", "1 no-show."). **No clinical threshold:** any non-zero change
+  is reported and the psychologist judges it (project-vision §27).
+- **Output (Q19-Q21):** JSON only; series `[{"date", "value"}]` with `null` for
+  empty buckets, daily up to 31 days, else weekly (labelled by the week's Monday). No
+  PDF package: the Web prints with the browser. **Never stored**, so there is no extra
+  copy of health data to encrypt or delete.
+- **Audit (Q22):** one `patient_report` row per report (psychologist, patient user id,
+  relationship id), fail closed, in the same transaction. No notification (Q23).
+- **Demo (Q24):** `seed_demo` gives the demo pair about 90 days of history (care
+  backdated 95 days, check-ins, rated notes, past sessions with each outcome, an older
+  goal with an archived task, one closed SOS), each part added once.
+- **No new tests in this module** (the user's instruction for this PR, 2026-11-23),
+  a deliberate exception to the "service-layer test" rule in CLAUDE.md; verified by
+  hand on the local database instead (see the PR).
+**Alternatives considered:** stored snapshots (Q20 B: another copy of health data);
+server-side PDF (Q21 B: a new package); rebuilding past statuses from plan versions
+(Q12 B: complex); rolling 7/30/90-day windows only (Q4 B: no calendar weeks or
+months); reaching back before care started (Q6 B: widens mood access).
