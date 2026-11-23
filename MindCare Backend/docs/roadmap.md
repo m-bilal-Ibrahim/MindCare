@@ -17,7 +17,7 @@ and @decisions.md for the reasoning behind scope and ordering choices.
 | 5 | Journals & psychologist notes — first PHI-sensitive module. **The DB-backed PHI access audit trail must ship before or with this phase** (see @decisions.md) | Not started |
 | 6 | AI recommendation workflow (backend side): psychologist approval gate, stub endpoint calling the separate AI service | Not started |
 | 7 | Wearable data ingestion — first phase that actually requires Celery + Redis | Not started |
-| 8 | Automated reports | Not started |
+| 8 | Automated reports | On-demand reports done (6.14, 2026-11-23); scheduled weekly reports need a scheduler; sensor indicators wait for Phase 7 |
 | 9 | Payments (Stripe) | Not started |
 | 10 | Notifications (Firebase Cloud Messaging); also adds email verification, deliberately deferred from Phase 1 | Not started |
 | 11 | Communities (creator approval + moderation) | Not started |

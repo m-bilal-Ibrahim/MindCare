@@ -16,6 +16,10 @@ Adherence (calculated, not AI) per task, goal and plan over the last 7, 30 and
 - one-off tasks and archived tasks are left out of the percentages (one-off
   tasks report `is_done` instead); goals that are achieved or dropped are left
   out of the plan's total.
+
+Reports (6.14) reuse `expected_and_done()` over past periods with
+`history_range()`, which counts archived tasks and closed goals up to when
+they were archived or closed.
 """
 
 from datetime import timedelta
@@ -79,10 +83,33 @@ def task_range(task, patient_profile, today):
     return start, end
 
 
-def _expected_and_done(task, dates, patient_profile, today, window_start):
-    """(expected, done) for one recurring task in one window."""
+def history_range(task, goal, patient_profile, today):
+    """(first, last) scheduled local day of a recurring task for reports over
+    past periods (6.14), or None if it never counts. Unlike the live plan view,
+    an archived task counts until the day before it was archived, and a task of
+    an achieved or dropped goal until the day before the goal closed. Archived
+    tasks and closed goals without a timestamp (from before 2026-11-23) are
+    left out."""
+    if task.frequency == TaskFrequency.ONCE:
+        return None
     start, end = task_range(task, patient_profile, today)
-    start = max(start, window_start)
+    if task.status == TaskStatus.ARCHIVED:
+        if task.archived_at is None:
+            return None
+        end = min(end, local_date_of(task.archived_at, patient_profile) - timedelta(1))
+    if goal.status != GoalStatus.ACTIVE:
+        if goal.closed_at is None:
+            return None
+        end = min(end, local_date_of(goal.closed_at, patient_profile) - timedelta(1))
+    return start, end
+
+
+def expected_and_done(task, dates, scheduled, window_start, window_end):
+    """(expected, done) for one recurring task whose schedule is `scheduled`
+    (first, last), inside the window [window_start, window_end]. The one
+    adherence calculation, shared by the care plan and reports."""
+    start = max(scheduled[0], window_start)
+    end = min(scheduled[1], window_end)
     days = (end - start).days + 1
     if days <= 0:
         return 0.0, 0.0
@@ -94,7 +121,13 @@ def _expected_and_done(task, dates, patient_profile, today, window_start):
     return expected, min(float(done), expected)
 
 
-def _percent(expected, done):
+def _expected_and_done(task, dates, patient_profile, today, window_start):
+    """(expected, done) for one recurring task in a window ending today."""
+    scheduled = task_range(task, patient_profile, today)
+    return expected_and_done(task, dates, scheduled, window_start, today)
+
+
+def percent(expected, done):
     return round(100 * done / expected) if expected > 0 else None
 
 
@@ -119,7 +152,7 @@ def _windows(tasks, dates_by_task, patient_profile, today):
             )
             expected += e
             done += d
-        result[str(days)] = _percent(expected, done)
+        result[str(days)] = percent(expected, done)
     return result
 
 

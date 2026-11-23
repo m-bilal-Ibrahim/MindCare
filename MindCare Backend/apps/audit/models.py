@@ -39,6 +39,7 @@ class AuditResource(models.TextChoices):
     CARE_PLAN = "care_plan", "Care plan"
     CARE_PLAN_COMPLETION = "care_plan_completion", "Care plan completion"
     JOURNAL_ENTRY = "journal_entry", "Journal entry"
+    PATIENT_REPORT = "patient_report", "Patient report"
 
 
 class AppendOnlyQuerySet(models.QuerySet):

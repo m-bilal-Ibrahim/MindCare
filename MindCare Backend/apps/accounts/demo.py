@@ -307,8 +307,261 @@ def seed_demo_accounts(*, password):
     _ensure_demo_messages()
     _ensure_demo_care_plan()
     _ensure_demo_journal()
+    _ensure_demo_report_history()
     _ensure_demo_notifications()
     return {"created": created, "existing": existing}
+
+
+# 6.14 reports: about 90 days of fictional history for demo patient 1 (Hina Raza)
+# with Dr. Sara Ahmed, so every report section and chart has data. Care is
+# backdated to start 95 days ago; each piece below is added once.
+DEMO_HISTORY_DAYS = 90
+DEMO_CARE_STARTED_DAYS_AGO = 95
+DEMO_OLDER_TAGS = [
+    ["anxious", "tired"],
+    ["stressed"],
+    ["calm"],
+    ["lonely"],
+    ["hopeful"],
+    ["tired"],
+    ["grateful", "calm"],
+]
+DEMO_OLDER_NOTES = [  # (days ago, sections, progress, risk)
+    (
+        80,
+        {
+            "observations": "Demo note. First assessment: poor sleep, worry about "
+            "exams and withdrawal from friends."
+        },
+        2,
+        "high",
+    ),
+    (
+        58,
+        {
+            "observations": "Demo note. Sleeping a little better; still avoids "
+            "group study."
+        },
+        3,
+        "medium",
+    ),
+    (
+        35,
+        {
+            "interventions": "Demo note. Introduced a short breathing exercise and "
+            "a walking routine."
+        },
+        3,
+        "medium",
+    ),
+]
+# (days ago, outcome): weekly sessions at 11:00 in the patient's timezone.
+DEMO_PAST_SESSIONS = [
+    (84, "completed"),
+    (77, "completed"),
+    (70, "completed"),
+    (63, "cancelled_psychologist"),
+    (56, "completed"),
+    (49, "no_show"),
+    (42, "completed"),
+    (35, "late_cancel"),
+    (28, "completed"),
+    (21, "no_show"),
+    (14, "completed"),
+    (7, "completed"),
+]
+DEMO_HABIT_GOAL = {
+    "title": "Build a gentle exercise habit",
+    "description": "Demo goal. Small amounts of movement each week to lift "
+    "energy and mood.",
+    "category": "exercise",
+}
+DEMO_HABIT_TASKS = [  # (task, weekdays done, archived days ago or None)
+    (
+        {
+            "title": "Twenty-minute walk",
+            "instructions": "Demo task. Walk at an easy pace for twenty minutes.",
+            "frequency": "weekly",
+            "times_per_week": 3,
+        },
+        (0, 2, 4),
+        None,
+    ),
+    (
+        {
+            "title": "Morning stretching",
+            "instructions": "Demo task. Five minutes of gentle stretching after "
+            "waking up.",
+            "frequency": "daily",
+        },
+        (0, 1, 3, 5),
+        30,
+    ),
+]
+
+
+def _ensure_demo_report_history():
+    from datetime import datetime, time, timedelta
+
+    from django.utils import timezone
+
+    from apps.appointments.models import CancelledBy, Session, SessionStatus
+    from apps.clinical_notes import services as note_services
+    from apps.clinical_notes.models import TherapyNote
+    from apps.emergency.models import LocationSource, SOSEvent, SOSOutcome, SOSStatus
+    from apps.journals.models import MoodCheckIn
+    from apps.journals.selectors import patient_today
+    from apps.recommendations import services as plan_services
+    from apps.recommendations.models import CarePlanGoal, CarePlanTask, TaskCompletion
+    from apps.reports.selectors import patient_tz
+
+    patient = User.objects.get(email=DEMO_PATIENT_EMAILS[0])
+    rel = patient_current(patient_user=patient)
+    if rel is None or rel.status != RelationshipStatus.ACCEPTED:
+        return
+    profile, psych = rel.patient, rel.psychologist
+    psych_user = psych.user
+    now = timezone.now()
+    today = patient_today(profile)
+    tz = patient_tz(profile)
+
+    # Care started 95 days ago, so the whole history is inside the pair's care.
+    started = now - timedelta(days=DEMO_CARE_STARTED_DAYS_AGO)
+    if rel.responded_at is None or rel.responded_at > started:
+        CareRelationship.objects.filter(pk=rel.pk).update(
+            requested_at=started - timedelta(hours=6), responded_at=started
+        )
+
+    # Mood: one check-in a day for 90 days (most days), a slow upward trend.
+    existing = set(
+        MoodCheckIn.objects.filter(patient=profile).values_list("local_date", flat=True)
+    )
+    for days_ago in range(8, DEMO_HISTORY_DAYS + 1):
+        day = today - timedelta(days=days_ago)
+        if day in existing or days_ago % 9 == 0:  # a few missed days
+            continue
+        trend = 2 if days_ago > 60 else 3 if days_ago > 25 else 4
+        MoodCheckIn.objects.create(
+            patient=profile,
+            local_date=day,
+            mood=max(1, min(5, trend + (days_ago % 3) - 1)),
+            tags=DEMO_OLDER_TAGS[days_ago % len(DEMO_OLDER_TAGS)],
+        )
+
+    # Older rated notes with risk levels, so progress and risk have a trend.
+    cutoff = now - timedelta(days=20)
+    if not TherapyNote.objects.filter(
+        patient=profile, psychologist=psych, created_at__lt=cutoff
+    ).exists():
+        for days_ago, note_sections, rating, risk in DEMO_OLDER_NOTES:
+            note = note_services.create_note(
+                psychologist_user=psych_user,
+                relationship_id=rel.pk,
+                progress_rating=rating,
+                risk_level=risk,
+                **note_sections,
+            )
+            TherapyNote.objects.filter(pk=note.pk).update(
+                created_at=now - timedelta(days=days_ago)
+            )
+
+    # Past weekly sessions with each outcome. Past rows never block a slot.
+    settings_row = psych.booking_settings
+    if not Session.objects.filter(
+        relationship=rel, status=SessionStatus.COMPLETED
+    ).exists():
+        for days_ago, outcome in DEMO_PAST_SESSIONS:
+            day = today - timedelta(days=days_ago)
+            starts = datetime.combine(day, time(11), tzinfo=tz)
+            ends = starts + timedelta(minutes=settings_row.session_minutes)
+            row = {
+                "relationship": rel,
+                "patient": profile,
+                "psychologist": psych,
+                "starts_at": starts,
+                "ends_at": ends,
+                "blocked_until": ends + timedelta(minutes=10),
+                "duration_minutes": settings_row.session_minutes,
+                "fee_pkr": settings_row.fee_pkr or 3000,
+                "requested_starts_at": starts,
+                "confirmed_at": starts - timedelta(days=3),
+            }
+            if outcome in ("completed", "no_show"):
+                row["status"] = outcome
+                row["outcome_marked_at"] = ends + timedelta(hours=1)
+            else:
+                row["status"] = SessionStatus.CANCELLED
+                late = outcome == "late_cancel"
+                row["cancelled_by"] = (
+                    CancelledBy.PATIENT if late else CancelledBy.PSYCHOLOGIST
+                )
+                row["is_late_cancellation"] = late
+                row["cancelled_at"] = starts - timedelta(hours=3 if late else 48)
+            Session.objects.create(**row)
+
+    # A care-plan goal from 85 days ago: a walk 3x a week, and a daily stretch
+    # that was archived 30 days ago (shows past adherence with archived tasks).
+    added = now - timedelta(days=85)
+    if not CarePlanTask.objects.filter(
+        goal__plan__patient=profile,
+        goal__plan__psychologist=psych,
+        created_at__lt=now - timedelta(days=60),
+    ).exists():
+        goal = plan_services.create_goal(
+            psychologist_user=psych_user, relationship_id=rel.pk, **DEMO_HABIT_GOAL
+        )
+        CarePlanGoal.objects.filter(pk=goal.pk).update(created_at=added)
+        for task_spec, weekdays, archived_days_ago in DEMO_HABIT_TASKS:
+            task = plan_services.create_task(
+                psychologist_user=psych_user,
+                relationship_id=rel.pk,
+                goal_id=goal.pk,
+                **task_spec,
+            )
+            CarePlanTask.objects.filter(pk=task.pk).update(created_at=added)
+            last = 1
+            if archived_days_ago is not None:
+                plan_services.update_task(
+                    psychologist_user=psych_user,
+                    relationship_id=rel.pk,
+                    task_id=task.pk,
+                    status="archived",
+                )
+                CarePlanTask.objects.filter(pk=task.pk).update(
+                    archived_at=now - timedelta(days=archived_days_ago)
+                )
+                last = archived_days_ago + 1
+            for days_ago in range(84, last - 1, -1):
+                day = today - timedelta(days=days_ago)
+                # Fewer completions early on, more later.
+                if day.weekday() not in weekdays or (days_ago > 50 and days_ago % 2):
+                    continue
+                TaskCompletion.objects.create(
+                    task=task,
+                    local_date=day,
+                    difficulty=4 if days_ago > 50 else 2,
+                    note="Demo note. Felt better afterwards."
+                    if days_ago % 20 == 0
+                    else "",
+                    created_at=datetime.combine(day, time(20), tzinfo=tz),
+                )
+
+    # One past SOS alert, closed as a false alarm (no location stored).
+    if not SOSEvent.objects.filter(patient=profile).exists():
+        event = SOSEvent.objects.create(
+            patient=profile,
+            status=SOSStatus.CLOSED,
+            location_source=LocationSource.PROFILE_CITY
+            if profile.city_id
+            else LocationSource.NONE,
+            country=profile.country,
+            city=profile.city,
+            closed_at=now - timedelta(days=40),
+            outcome=SOSOutcome.FALSE_ALARM,
+        )
+        SOSEvent.objects.filter(pk=event.pk).update(
+            created_at=now - timedelta(days=40, hours=1)
+        )
 
 
 # Care plan: one fictional plan by Dr. Sara Ahmed for demo patient 1 (Hina Raza),

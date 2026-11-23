@@ -313,3 +313,7 @@ as GPS location. Audio types: MP3, M4A, OGG. Documents: PDF.
 | journal `check_in` | `journals/entries/` | — | Number ≥ 1: your check-in from the entry's local day, or null | no | `Choose your mood check-in from the same day as this entry.` |
 | entries per day | `journals/entries/` (POST) | — | at most 20 per local day | — | `You can write at most 20 journal entries a day.` |
 | `date_from`, `date_to`, `tag` | `journals/entries/` (query) | — | Date / Date / Choice (feelings) | no | `The start date must be on or before the end date.` |
+| `period` | `reports/psychologist/patients/{id}/report/` (query) | — | Choice (`week`, `month`, `custom`) | no | default `week` |
+| `start` | report (query) | — | Date (patient's local day) | custom yes; else no | week / month: any day in it, default the current one. Custom without both → `Choose a start and an end date for a custom period.`; after today → `The period can't start in the future.`; ending before care started → `Choose a period after care with this patient started on {YYYY-MM-DD}.` |
+| `end` | report (query) | — | Date (patient's local day) | custom only | with week / month → `An end date is only for custom periods.`; `The end date can't be before the start date.`; longer than 183 days → `A custom period can be at most 183 days.` |
+| unknown query keys | report (query) | — | — | — | `This field can't be set.` |
