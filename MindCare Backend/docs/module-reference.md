@@ -471,4 +471,27 @@ Paths below are under `/api/v1/recommendations/`; `PLAN` = `psychologist/patient
 | `apps/recommendations/services.py` | `create_task()`, `update_task()`, `_resolve_content()` | Tasks take an optional `content` (published library item id, null clears); a change adds a plan version (snapshot keeps the id), audit row and notification | `POST/PATCH PLAN goals/{id}/tasks/`, `PATCH PLAN tasks/{id}/` | MindCare Web |
 | `apps/recommendations/selectors.py` | `plan_detail()` | Each task now carries `content` (the linked item's summary or null) | `GET PLAN`, `GET /api/v1/recommendations/care-plans/{id}/` | MindCare Web, MindCare App |
 
+### Scheduler and reminders (apps/notifications)
+
+Run by GitHub Actions cron (`.github/workflows/backend-scheduler-*.yml`), not Celery. Setup: `docs/deployment.md`, "Scheduler".
+
+| File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
+|---|---|---|---|---|
+| `apps/notifications/models.py` | `ReminderPreference` | A user's reminder switches (check-in, care plan, session-reminder email); no row = all on | — | — |
+| `apps/notifications/models.py` | `SentReminder`, `ReminderKind` | One row per reminder, written before sending; unique (user, kind, target, slot) so nothing is sent twice; kept 30 days | — | — |
+| `apps/notifications/selectors.py` | `reminder_preferences_for()`, `reminder_preferences_by_user()` | The user's switches, or the defaults | `GET /api/v1/notifications/preferences/` | MindCare App, MindCare Web |
+| `apps/notifications/selectors.py` | `sessions_to_remind()`, `care_requests_to_remind()`, `patients_for_daily_reminders()` | Reminder candidates (confirmed sessions, pending requests about to expire, active patients), loading only the columns the scheduler role may read | — | — |
+| `apps/notifications/services.py` | `update_reminder_preferences()` | Change any of the three switches | `PATCH /api/v1/notifications/preferences/` | MindCare App, MindCare Web |
+| `apps/notifications/services.py` | `send_session_reminders()`, `send_care_request_reminders()`, `send_care_plan_reminders()`, `send_check_in_reminders()`, `send_reminders()` | The reminder jobs: time windows in the recipient's timezone, quiet hours for daily reminders, opt-out, claim-before-send; in-app plus email for the 24 h session and care-request reminders | — (`manage.py send_reminders`) | — |
+| `apps/notifications/services.py` | `run_maintenance()`, `purge_old_sent_reminders()` | Daily clean-up (notifications, SOS coordinates, reset codes, sent-reminder records) and database heartbeat | — (`manage.py run_maintenance`) | — |
+| `apps/notifications/services.py` | `advisory_lock()`, `in_quiet_hours()` | One run of each command at a time (Postgres advisory lock); 22:00-08:00 local | — | — |
+| `apps/notifications/management/commands/_scheduler.py` | `SchedulerCommand` | Shared runner: `--dry-run` (roll back, send nothing), `--only`, lock, synchronous email, counts-only JSON output | — | — |
+| `apps/notifications/management/commands/send_reminders.py`, `run_maintenance.py` | `Command` | The two scheduled commands | — | — |
+| `apps/notifications/emails.py` | `session_reminder_patient()`, `session_reminder_psychologist()`, `care_request_expiring()` | Reminder emails; the psychologist's never name the patient | — | — |
+| `apps/accounts/services.py` | `purge_old_reset_codes()` | Delete reset codes older than a day (on every reset request and daily) | — | — |
+| `apps/relationships/selectors.py` | `visible_psychologist_q()`, `current_psychologist_ids()` | The approved-and-active filter; each patient's current psychologist in one query | — | — |
+| `apps/recommendations/selectors.py` | `plans_with_tasks_due()` | Which patients' current care plan has a task due today and not done (ids and dates only) | — | — |
+| `apps/journals/selectors.py` | `patients_checked_in()` | Which patients already checked in on their local day | — | — |
+| `config/settings/scheduler.py` | — | Settings for the GitHub runner: no encryption or storage keys, in-memory cache, synchronous email, TLS to the database | — | — |
+
 <!-- Add new `### apps/<app_name>` sections below as modules are implemented. -->

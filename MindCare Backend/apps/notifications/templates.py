@@ -121,6 +121,28 @@ TEMPLATES = {
         "Your psychologist updated your care plan.",
         TargetType.CARE_PLAN,
     ),
+    # Scheduled reminders (2026-11-23). Never the other person's name, never a
+    # task title, never anything about mood.
+    T.SESSION_REMINDER: (
+        "Upcoming session",
+        "Reminder: you have a session on {when}. The video link is on the session.",
+        TargetType.SESSION,
+    ),
+    T.CARE_REQUEST_EXPIRING: (
+        "Care request expiring",
+        "A care request expires on {when}. Accept or decline it before then.",
+        TargetType.CARE_RELATIONSHIP,
+    ),
+    T.CARE_PLAN_REMINDER: (
+        "Care plan for today",
+        "You have care-plan tasks for today. Mark them done when you can.",
+        TargetType.CARE_PLAN,
+    ),
+    T.CHECK_IN_REMINDER: (
+        "Daily check-in",
+        "You haven't checked in today. How are you feeling?",
+        TargetType.CHECK_IN,
+    ),
 }
 
 ALLOWED_PLACEHOLDERS = {"when"}

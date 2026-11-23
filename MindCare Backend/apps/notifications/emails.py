@@ -203,6 +203,34 @@ def session_proposed(*, patient_name, psychologist_name, when):
     )
 
 
+def session_reminder_psychologist(*, psychologist_name, when):
+    return _simple(
+        f"Upcoming session ({PRODUCT})",
+        f"Hi {psychologist_name},",
+        f"A reminder: you have a session with one of your patients on {when}. "
+        f"The details are in {PRODUCT}.",
+    )
+
+
+def session_reminder_patient(*, patient_name, psychologist_name, when):
+    return _simple(
+        f"Your session is coming up ({PRODUCT})",
+        f"Hi {patient_name},",
+        f"A reminder: your session with {psychologist_name} is on {when}. The "
+        f"video link is in {PRODUCT}. You can turn these emails off in your "
+        "settings.",
+    )
+
+
+def care_request_expiring(*, psychologist_name, when):
+    return _simple(
+        f"A care request expires soon ({PRODUCT})",
+        f"Hi {psychologist_name},",
+        f"A patient's care request expires on {when}. Open {PRODUCT} to accept "
+        "or decline it before then.",
+    )
+
+
 def session_cancelled_by_psychologist(*, patient_name, psychologist_name, when):
     return _simple(
         f"Session cancelled ({PRODUCT})",

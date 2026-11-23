@@ -16,6 +16,25 @@ _PSYCH_VISIBLE = Q(
 )
 
 
+def visible_psychologist_q():
+    """The approved-and-active rule as a filter on a row with a `psychologist`
+    relation (used by the scheduled reminders)."""
+    return _PSYCH_VISIBLE
+
+
+def current_psychologist_ids(*, patient_ids):
+    """{patient_id: psychologist_id} for the patients in active care (accepted,
+    psychologist approved and active): the same rule as
+    get_active_relationship(), in one query."""
+    return dict(
+        CareRelationship.objects.filter(
+            patient_id__in=set(patient_ids), status=RelationshipStatus.ACCEPTED
+        )
+        .filter(_PSYCH_VISIBLE)
+        .values_list("patient_id", "psychologist_id")
+    )
+
+
 def psychologist_is_visible(psychologist_profile):
     user = psychologist_profile.user
     return user.is_active and user.approval_status == ApprovalStatus.APPROVED

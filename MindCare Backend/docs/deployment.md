@@ -220,10 +220,142 @@ Check the ids with a `SELECT` first, and run it inside a transaction
 - **HSTS:** `prod.py` sends `Strict-Transport-Security: max-age=86400` (one day).
   After a week with no HTTPS problems, raise `SECURE_HSTS_SECONDS` to `31536000`.
 
+## Scheduler (GitHub Actions cron)
+
+Decisions: @decisions.md, 2026-11-23. Two workflows in the repository root run
+management commands on GitHub's runner, straight against Supabase, as a
+low-privilege role. There is no Celery worker or beat.
+
+| Workflow | Schedule (UTC) | Command |
+|---|---|---|
+| `.github/workflows/backend-scheduler-maintenance.yml` | `17 22 * * *` (03:17 Asia/Karachi) | `run_maintenance`: purge notifications (90 days), SOS coordinates (90 days), reset codes (1 day) and sent-reminder records (30 days). The queries double as the **Supabase heartbeat** |
+| `.github/workflows/backend-scheduler-reminders.yml` | `7,22,37,52 * * * *` | `send_reminders`: sessions (~24 h and ~1 h), care requests expiring within 5 h, care-plan tasks (18:00 local), check-in (20:00 local) |
+
+Both take `--dry-run` (do everything in a transaction, then roll back; nothing is
+sent) and `--only <jobs>`. They print one JSON line of counts: **the repository is
+public, so its Actions logs are public**. Never add a log line with names, emails,
+ids or text.
+
+### 1. Create the database role (Supabase SQL editor, once)
+
+Pick a long random password (a password manager's generator) and keep it there.
+The role can read only what the jobs read and change only what they change. It
+can't see the encrypted columns' key, so even its reads of those tables return
+ciphertext.
+
+```sql
+CREATE ROLE mindcare_scheduler LOGIN PASSWORD '<a long random password>'
+  NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOREPLICATION;
+
+GRANT USAGE ON SCHEMA public TO mindcare_scheduler;
+
+-- Accounts and profiles: only the columns the jobs use. Never password hashes,
+-- dates of birth, phone numbers or any other profile field.
+GRANT SELECT (id, email, full_name, is_active, approval_status, role)
+  ON accounts_user TO mindcare_scheduler;
+GRANT SELECT (id, user_id, timezone) ON patients_patientprofile TO mindcare_scheduler;
+GRANT SELECT (id, user_id, timezone)
+  ON psychologists_psychologistprofile TO mindcare_scheduler;
+
+-- Read only (encrypted columns read as ciphertext; the jobs never select them)
+GRANT SELECT ON
+  appointments_session,
+  relationships_carerelationship,
+  recommendations_careplan,
+  recommendations_careplangoal,
+  recommendations_careplantask,
+  recommendations_taskcompletion,
+  journals_moodcheckin,
+  notifications_reminderpreference
+TO mindcare_scheduler;
+
+-- Reminders write notifications and their sent-records; maintenance deletes old ones
+GRANT SELECT, INSERT, DELETE ON
+  notifications_notification,
+  notifications_sentreminder
+TO mindcare_scheduler;
+
+-- Maintenance: delete old reset codes, blank old SOS coordinates (that column only)
+GRANT SELECT, DELETE ON accounts_passwordresetcode TO mindcare_scheduler;
+GRANT SELECT (id, created_at, coordinates), UPDATE (coordinates)
+  ON emergency_sosevent TO mindcare_scheduler;
+
+-- The two tables it inserts into get their ids from these sequences
+DO $$
+DECLARE seq text;
+BEGIN
+  FOREACH seq IN ARRAY ARRAY[
+    pg_get_serial_sequence('notifications_notification', 'id'),
+    pg_get_serial_sequence('notifications_sentreminder', 'id')
+  ] LOOP
+    EXECUTE format('GRANT USAGE ON SEQUENCE %s TO mindcare_scheduler', seq);
+  END LOOP;
+END $$;
+
+-- Long queries are a bug for these jobs: cut them off.
+ALTER ROLE mindcare_scheduler SET statement_timeout = '60s';
+```
+
+This SQL hasn't been run anywhere yet (local runs used the local owner role). If
+a grant is missing, the first dry run fails with `permission denied for table …`
+or `… column …`: add that grant and run again.
+
+**When a later module adds a reminder or a purge on another table, grant it here
+and in this list.** A missing grant fails the run with `permission denied for
+table …`.
+
+To remove the role: `DROP OWNED BY mindcare_scheduler; DROP ROLE mindcare_scheduler;`.
+
+### 2. GitHub secrets and variables
+
+Repository → Settings → Secrets and variables → Actions. Secrets aren't passed to
+workflows run from forks.
+
+| Name | Kind | Where the value comes from |
+|---|---|---|
+| `SCHEDULER_DATABASE_URL` | Secret | Supabase → Connect → **Session pooler** (port 5432; IPv4, which GitHub's runners need: the direct connection is IPv6-only). Replace the user with `mindcare_scheduler.<project-ref>` (keep the `.<project-ref>` suffix the pooler shows) and the password with the role's password from step 1 |
+| `SCHEDULER_SECRET_KEY` | Secret | A new random value, **not** Render's `SECRET_KEY`: `python -c "import secrets; print(secrets.token_urlsafe(50))"`. The jobs sign nothing with it |
+| `EMAIL_PROVIDER_API_KEY` | Secret | The same Brevo (or Resend) API key as Render's `EMAIL_PROVIDER_API_KEY`. Leave unset to send no reminder emails |
+| `EMAIL_PROVIDER` | Variable | Same as on Render (`brevo` / `resend`). Unset = no email; `console` is turned into "off" |
+| `DEFAULT_FROM_EMAIL` | Variable | Same as on Render (the verified sender) |
+| `DEFAULT_FROM_NAME` | Variable | Same as on Render (optional; default `MindCare`) |
+| `SUPPORT_EMAIL` | Variable | Same as on Render (optional) |
+
+Not needed, deliberately: `FIELD_ENCRYPTION_KEY`, `SUPABASE_S3_*`, `REDIS_URL`
+(the workflow sets a placeholder; the scheduler settings use an in-memory cache),
+`JWT_*`.
+
+### 3. First run
+
+1. Merge, so the workflows are on `main` (GitHub only runs scheduled and manual
+   workflows from the default branch).
+2. Actions → **Backend scheduler (maintenance)** → Run workflow. `dry_run` is ticked
+   by default; leave it. The log ends with
+   `{"command": "maintenance", "dry_run": true, "database": "ok", ...}`.
+3. The same for **Backend scheduler (reminders)**.
+4. Both green: the cron schedules take over (scheduled runs are never dry runs).
+   A manual run with `dry_run` unticked runs for real.
+
+### When something goes wrong
+
+- **A failed scheduled run** emails whoever last changed the workflow's cron (GitHub's
+  default notification). `database unreachable or paused?` means Supabase paused the
+  project or the role's password/URL is wrong.
+- **60-day auto-disable:** GitHub turns off scheduled workflows in a public repository
+  after 60 days without any repository activity (no commits). Nothing fails: the runs
+  just stop, and so do the reminders and the heartbeat, and Supabase pauses after 7
+  quiet days. Re-enable under Actions → the workflow → **Enable workflow** (GitHub
+  also shows a banner and emails a warning beforehand). Check both workflows after a
+  long break.
+- **Late runs:** GitHub often starts scheduled runs 5-30 minutes late, or skips them
+  under load. Reminders work on windows, so a late run still sends what's still
+  useful and never sends twice.
+- **If the repository becomes private:** the reminders workflow (~96 runs a day) would
+  exceed the 2,000 free minutes a month. Change its cron to `7 * * * *` (hourly).
+
 ## TODO
 
-- [ ] **Supabase heartbeat workflow**: a scheduled GitHub Actions job that makes a
-      lightweight query at least every few days, so the free-tier project is never
-      paused. Not implemented yet. Until it is, a 7-day quiet period (e.g. between
-      demos or over a break) takes the database offline.
-- [ ] Celery worker as a separate Render service (first needed in Phase 7).
+- [x] **Supabase heartbeat**: the daily maintenance workflow (above) queries the
+      database every day.
+- [ ] Celery worker as a separate Render service. Not needed while the scheduler runs
+      on GitHub Actions; only if a job needs work queued from a request.

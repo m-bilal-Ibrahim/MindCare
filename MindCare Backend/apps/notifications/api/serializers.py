@@ -34,6 +34,14 @@ class EmptyBodySerializer(RejectUnknownFieldsMixin, serializers.Serializer):
     """The read / read-all actions take no body; any key is refused."""
 
 
+class ReminderPreferenceSerializer(RejectUnknownFieldsMixin, serializers.Serializer):
+    """Reminder switches (docs/decisions.md, 2026-11-23). PATCH any subset."""
+
+    check_in_reminders = serializers.BooleanField(required=False)
+    care_plan_reminders = serializers.BooleanField(required=False)
+    session_reminder_emails = serializers.BooleanField(required=False)
+
+
 class UnreadCountSerializer(serializers.Serializer):
     count = serializers.IntegerField()
 

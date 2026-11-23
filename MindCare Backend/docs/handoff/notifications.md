@@ -50,6 +50,10 @@ health data. On tap: mark it read, then open the screen for `target_type`.
 | `progress_summary_updated` | patient | `progress_summary` → App: my progress |
 | `new_message` | the other participant | `conversation` → Web / App: that conversation (`docs/handoff/messaging.md`) |
 | `care_plan_updated` | patient | `care_plan` → App: that care plan (`docs/handoff/care-plan-journal.md`) |
+| `session_reminder` | patient, psychologist | `session` → App: session detail / Web: upcoming sessions (`docs/handoff/reminders.md`) |
+| `care_request_expiring` | psychologist | `care_relationship` → Web: request inbox |
+| `care_plan_reminder` | patient | `care_plan` → App: that care plan |
+| `check_in_reminder` | patient | `check_in` (`target_id` null) → App: today's mood check-in |
 
 `target_type` is `""` and `target_id` is `null` when there's nothing to open. If the
 target screen answers 404/403 (e.g. care has ended since), show the backend message.
@@ -57,6 +61,7 @@ target screen answers 404/403 (e.g. care has ended since), show the backend mess
 ## Notes for the screens
 - Bell icon with the unread count; list with unread rows highlighted; "Mark all as
   read"; swipe / menu to delete.
-- No push notifications and no reminders yet (no scheduler): a user sees new items
-  only on the next poll or list load. Emails still go out as before.
+- No push notifications: a user sees new items only on the next poll or list load.
+  Scheduled reminders (2026-11-23) arrive the same way; see `docs/handoff/reminders.md`
+  for them and the reminder settings.
 - Handle 401 (refresh, then login) and 429 (back off; skip the next poll).
