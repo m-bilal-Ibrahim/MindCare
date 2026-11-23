@@ -273,3 +273,78 @@ def completions_for_plan(*, plan, days):
 
 def versions_for_plan(*, plan):
     return plan.versions.all()
+
+
+def plans_with_tasks_due(*, patients_today):
+    """{patient_id: plan_id} for the patients in {PatientProfile: local today}
+    whose CURRENT psychologist's plan still has a task due today: an active
+    task of an active goal, scheduled today (its start date or the day it was
+    added, to its end date), and not done yet. Daily: no completion today.
+    Weekly N: none today and fewer than N in the last 7 days. One-off: never
+    done. Used by the care-plan reminder; reads ids, dates and frequencies
+    only, never the encrypted titles or notes."""
+    from apps.recommendations.models import CarePlanTask
+    from apps.relationships.selectors import current_psychologist_ids
+
+    profiles = {p.pk: p for p in patients_today}
+    current = current_psychologist_ids(patient_ids=profiles)
+    if not current:
+        return {}
+    tasks = list(
+        CarePlanTask.objects.filter(
+            goal__plan__patient_id__in=current.keys(),
+            goal__status=GoalStatus.ACTIVE,
+            status=TaskStatus.ACTIVE,
+        ).values(
+            "id",
+            "frequency",
+            "times_per_week",
+            "start_date",
+            "end_date",
+            "created_at",
+            "goal__plan_id",
+            "goal__plan__patient_id",
+            "goal__plan__psychologist_id",
+        )
+    )
+    scheduled = []
+    for task in tasks:
+        pid = task["goal__plan__patient_id"]
+        if current.get(pid) != task["goal__plan__psychologist_id"]:
+            continue  # a former psychologist's plan: frozen, no reminders
+        profile = profiles[pid]
+        today = patients_today[profile]
+        created = local_date_of(task["created_at"], profile)
+        start = max(task["start_date"] or created, created)
+        if start <= today and (task["end_date"] is None or today <= task["end_date"]):
+            scheduled.append((task, today))
+    if not scheduled:
+        return {}
+    earliest = min(today for _, today in scheduled) - timedelta(days=6)
+    recent = {}
+    for task_id, day in TaskCompletion.objects.filter(
+        task_id__in=[t["id"] for t, _ in scheduled], local_date__gte=earliest
+    ).values_list("task_id", "local_date"):
+        recent.setdefault(task_id, []).append(day)
+    once_done = set(
+        TaskCompletion.objects.filter(
+            task_id__in=[
+                t["id"] for t, _ in scheduled if t["frequency"] == TaskFrequency.ONCE
+            ]
+        ).values_list("task_id", flat=True)
+    )
+    due = {}
+    for task, today in scheduled:
+        days = [d for d in recent.get(task["id"], []) if today - timedelta(6) <= d]
+        if task["frequency"] == TaskFrequency.ONCE:
+            open_ = task["id"] not in once_done
+        elif task["frequency"] == TaskFrequency.DAILY:
+            open_ = today not in days
+        else:
+            done_this_week = [d for d in days if d <= today]
+            open_ = today not in days and len(done_this_week) < (
+                task["times_per_week"] or 1
+            )
+        if open_:
+            due.setdefault(task["goal__plan__patient_id"], task["goal__plan_id"])
+    return due

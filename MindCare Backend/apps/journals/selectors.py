@@ -27,6 +27,19 @@ def patient_today(patient_profile, *, now=None):
     return (now or timezone.now()).astimezone(tz).date()
 
 
+def patients_checked_in(*, patient_days):
+    """Which of {patient_id: local_date} already checked in on that day. Reads
+    ids and dates only (never the encrypted note); used by the check-in
+    reminder."""
+    if not patient_days:
+        return set()
+    rows = MoodCheckIn.objects.filter(
+        patient_id__in=patient_days.keys(),
+        local_date__in=set(patient_days.values()),
+    ).values_list("patient_id", "local_date")
+    return {pid for pid, day in rows if patient_days.get(pid) == day}
+
+
 def check_ins_for(*, patient_profile):
     return MoodCheckIn.objects.filter(patient=patient_profile)
 

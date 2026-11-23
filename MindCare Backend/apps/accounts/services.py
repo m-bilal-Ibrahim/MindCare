@@ -411,6 +411,19 @@ def _resettable_user(email):
     )
 
 
+def purge_old_reset_codes(*, current=None):
+    """Delete reset codes older than a day (used, expired or not). Returns how
+    many were deleted. Runs on every reset request and in the daily
+    maintenance job (`manage.py run_maintenance`)."""
+    from datetime import timedelta
+
+    from apps.accounts.models import PasswordResetCode
+
+    cutoff = (current or now()) - timedelta(days=1)
+    deleted, _ = PasswordResetCode.objects.filter(created_at__lt=cutoff).delete()
+    return deleted
+
+
 def request_password_reset(*, email, ip=None):
     """Email a reset code if the address belongs to a resettable account that
     hasn't had 3 codes in the last hour. Returns nothing either way."""
@@ -424,9 +437,7 @@ def request_password_reset(*, email, ip=None):
     from apps.notifications.services import send_email_after_commit
 
     current = now()
-    PasswordResetCode.objects.filter(
-        created_at__lt=current - timedelta(days=1)
-    ).delete()
+    purge_old_reset_codes(current=current)
     user = _resettable_user(email)
     if user is None:
         return

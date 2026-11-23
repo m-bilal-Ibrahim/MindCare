@@ -7,6 +7,7 @@ from apps.notifications.api.views import (
     NotificationListView,
     NotificationReadView,
     ReadAllView,
+    ReminderPreferenceView,
     UnreadCountView,
 )
 
@@ -16,6 +17,7 @@ urlpatterns = [
     path("", NotificationListView.as_view(), name="list"),
     path("unread-count/", UnreadCountView.as_view(), name="unread-count"),
     path("read-all/", ReadAllView.as_view(), name="read-all"),
+    path("preferences/", ReminderPreferenceView.as_view(), name="preferences"),
     path("<int:notification_id>/read/", NotificationReadView.as_view(), name="read"),
     path("<int:notification_id>/", NotificationDetailView.as_view(), name="detail"),
 ]

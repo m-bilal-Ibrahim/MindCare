@@ -1,0 +1,88 @@
+# Scheduled reminders for MindCare Backend
+# (MindCare Backend/docs/decisions.md, 2026-11-23: scheduler; setup in
+# MindCare Backend/docs/deployment.md, "Scheduler").
+#
+# Runs `manage.py send_reminders` every 15 minutes on the GitHub runner, straight
+# against Supabase through the session pooler, as the low-privilege role
+# `mindcare_scheduler`. Reminders work on time windows and are recorded before
+# they are sent, so late, skipped or repeated runs never send twice.
+# The logs of this PUBLIC repository are public: the command prints counts only.
+#
+# Free while the repository is public. If it ever becomes private, ~96 runs a day
+# exceed the 2,000 free minutes a month: change the cron to hourly ("7 * * * *").
+# GitHub disables scheduled workflows after 60 days without repository activity;
+# re-enable it under Actions -> this workflow -> "Enable workflow".
+name: Backend scheduler (reminders)
+
+on:
+  schedule:
+    # Every 15 minutes, off the hour (GitHub delays top-of-hour runs most).
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run: count only, roll back, send nothing"
+        type: boolean
+        default: true
+      only:
+        description: "Jobs (comma-separated) or all"
+        type: choice
+        default: all
+        options: [all, sessions, care_requests, care_plan, check_in]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-scheduler-reminders
+  cancel-in-progress: false
+
+jobs:
+  reminders:
+    if: github.repository == 'm-bilal-Ibrahim/MindCare'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: "MindCare Backend"
+    env:
+      DJANGO_SETTINGS_MODULE: config.settings.scheduler
+      DATABASE_URL: ${{ secrets.SCHEDULER_DATABASE_URL }}
+      SECRET_KEY: ${{ secrets.SCHEDULER_SECRET_KEY }}
+      # Placeholder: base.py requires it; the scheduler settings use an in-memory cache.
+      REDIS_URL: redis://localhost:6379/0
+      EMAIL_PROVIDER: ${{ vars.EMAIL_PROVIDER }}
+      EMAIL_PROVIDER_API_KEY: ${{ secrets.EMAIL_PROVIDER_API_KEY }}
+      DEFAULT_FROM_EMAIL: ${{ vars.DEFAULT_FROM_EMAIL }}
+      DEFAULT_FROM_NAME: ${{ vars.DEFAULT_FROM_NAME }}
+      SUPPORT_EMAIL: ${{ vars.SUPPORT_EMAIL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: "MindCare Backend/requirements/base.txt"
+
+      - name: Install dependencies
+        run: pip install -r requirements/base.txt
+
+      - name: Check the secrets are set
+        run: |
+          if [ -z "${DATABASE_URL}" ] || [ -z "${SECRET_KEY}" ]; then
+            echo "::error::Set the SCHEDULER_DATABASE_URL and SCHEDULER_SECRET_KEY secrets. See MindCare Backend/docs/deployment.md, Scheduler."
+            exit 1
+          fi
+
+      - name: Send reminders
+        env:
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+          ONLY: ${{ inputs.only || 'all' }}
+        run: |
+          flags="--only ${ONLY}"
+          if [ "${DRY_RUN}" = "true" ]; then flags="${flags} --dry-run"; fi
+          python manage.py send_reminders ${flags} || {
+            echo "::error::send_reminders failed (database unreachable or paused?)."
+            exit 1
+          }

@@ -12,8 +12,8 @@ role in the bullet).
 The Web is the psychologist/admin client; the App is the patient client. "Branch"
 means the work sits on an unmerged branch.
 
-Last updated: 2026-11-23 (6.9 wellness library, backend; earlier the same day, 6.14
-reports). Before that: 2026-11-19 (care
+Last updated: 2026-11-23 (scheduler and reminders, backend; earlier the same day,
+6.9 wellness library and 6.14 reports). Before that: 2026-11-19 (care
 plan + private journal, backend; earlier the same day, secure messaging). Before
 that: 2026-11-18
 (in-app notifications, backend; earlier the same day, Phase 2 module 5: therapy
@@ -144,7 +144,8 @@ backend). Earlier: 2026-10-11 (6.10 backend). Re-checked against `origin` on
 |---|---|---|
 | Patient journal (project-vision §11) | backend done (2026-11-19) | Private entries (title, body, feeling tags, optional same-day check-in link), all encrypted; patient only, never the psychologist or admins; edit any time, hard delete, writes audited; 20 a day; fixed safety notice; no scanning. App screens are the partner's: `docs/handoff/care-plan-journal.md` |
 | Secure messaging (patient ↔ psychologist) | backend done (2026-11-19) | One encrypted text conversation per pair; participants only (others 404, admins never); read-only for the patient after care ends, former psychologist loses access; delete within 5 min; 30 messages / 10 min; `new_message` notification without content; polling. Web and App screens are the partner's: `docs/handoff/messaging.md` |
-| In-app notifications | backend done (2026-11-18) | Fixed-template notifications for booking, relationships, SOS, account review, password change and the progress summary; list / unread-count / read / read-all / delete; 90-day retention. No push or reminders. Web and App bell screens are the partner's: `docs/handoff/notifications.md` |
+| In-app notifications | backend done (2026-11-18) | Fixed-template notifications for booking, relationships, SOS, account review, password change and the progress summary; list / unread-count / read / read-all / delete; 90-day retention. No push. Web and App bell screens are the partner's: `docs/handoff/notifications.md` |
+| Scheduler and reminders | backend done (2026-11-23) | GitHub Actions cron runs `run_maintenance` (daily purges + Supabase heartbeat) and `send_reminders` (every 15 min): session (~24 h, ~1 h), care request expiring, care-plan tasks due, check-in; in-app, email for the 24 h session and care-request ones; quiet hours, opt-out at `notifications/preferences/`. **Not live until the role and GitHub secrets are set up** (`docs/deployment.md`, "Scheduler"). Settings screens are the partner's: `docs/handoff/reminders.md` |
 | Password reset and email | backend done (module 1) | 6-digit code by email; password-changed notice; approval/rejection emails; Brevo over HTTPS (Resend by settings). Web and App "Forgot password" screens are the partner's: `docs/handoff/password-reset-email.md`. Production sends nothing until the Render email variables are set |
 | Super-admin workflow and password change | backend done (module 0) | Web screens (admin management, change password) and the App's change-password screen are the partner's; see `docs/handoff/admin-panel-2.md` |
 | Patient ↔ psychologist relationships | Backend done, Web done, App mock only | Patient side in the App is Phase 1 item (f) |

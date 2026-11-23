@@ -16,6 +16,7 @@ from apps.notifications.api.serializers import (
     NotificationQuerySerializer,
     NotificationSerializer,
     ReadAllSerializer,
+    ReminderPreferenceSerializer,
     UnreadCountSerializer,
 )
 from apps.notifications.models import NotificationType
@@ -94,6 +95,34 @@ class ReadAllView(NotificationView):
         _empty_body(request)
         updated = services.mark_all_read(user=request.user)
         return Response(ReadAllSerializer({"updated": updated}).data)
+
+
+class ReminderPreferenceView(NotificationView):
+    @extend_schema(
+        responses={200: ReminderPreferenceSerializer},
+        description=(
+            "Your reminder switches (all on by default). check_in_reminders and "
+            "care_plan_reminders apply to patients; session_reminder_emails to "
+            "patients and psychologists. In-app session and care-request "
+            "reminders can't be turned off."
+        ),
+    )
+    def get(self, request):
+        row = selectors.reminder_preferences_for(user=request.user)
+        return Response(ReminderPreferenceSerializer(row).data)
+
+    @extend_schema(
+        request=ReminderPreferenceSerializer,
+        responses={200: ReminderPreferenceSerializer},
+        description="Change any of your reminder switches.",
+    )
+    def patch(self, request):
+        body = ReminderPreferenceSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        row = services.update_reminder_preferences(
+            user=request.user, **body.validated_data
+        )
+        return Response(ReminderPreferenceSerializer(row).data)
 
 
 class NotificationDetailView(NotificationView):

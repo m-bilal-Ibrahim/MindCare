@@ -43,6 +43,11 @@ class NotificationType(models.TextChoices):
     NEW_MESSAGE = "new_message", "New message"
     # Care plan
     CARE_PLAN_UPDATED = "care_plan_updated", "Care plan updated"
+    # Scheduled reminders (docs/decisions.md, 2026-11-23: scheduler)
+    SESSION_REMINDER = "session_reminder", "Session reminder"
+    CARE_REQUEST_EXPIRING = "care_request_expiring", "Care request expiring"
+    CARE_PLAN_REMINDER = "care_plan_reminder", "Care plan reminder"
+    CHECK_IN_REMINDER = "check_in_reminder", "Check-in reminder"
 
 
 class TargetType(models.TextChoices):
@@ -55,6 +60,7 @@ class TargetType(models.TextChoices):
     PROGRESS_SUMMARY = "progress_summary", "Progress summary"
     CONVERSATION = "conversation", "Conversation"
     CARE_PLAN = "care_plan", "Care plan"
+    CHECK_IN = "check_in", "Mood check-in"
 
 
 class Notification(models.Model):
@@ -87,3 +93,73 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.type} → user {self.recipient_id}"
+
+
+# --- Scheduled reminders (docs/decisions.md, 2026-11-23: scheduler) ------------
+# Run by `manage.py send_reminders` from a GitHub Actions cron, not Celery beat.
+
+SENT_REMINDER_RETENTION_DAYS = 30
+
+
+class ReminderPreference(models.Model):
+    """A user's reminder switches. No row means every default (all on).
+
+    In-app session and care-request reminders can't be turned off: they're about
+    appointments and requests the user already made or must answer. The rows hold
+    no health data, so nothing is encrypted or audited.
+    """
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="reminder_preference",
+    )
+    # Patients only (in-app): "you haven't checked in today", 20:00 local.
+    check_in_reminders = models.BooleanField(default=True)
+    # Patients only (in-app): "you have care-plan tasks for today", 18:00 local.
+    care_plan_reminders = models.BooleanField(default=True)
+    # Patients and psychologists: the email copy of the 24-hour session reminder.
+    session_reminder_emails = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Reminder preferences of user {self.user_id}"
+
+
+class ReminderKind(models.TextChoices):
+    SESSION_24H = "session_24h", "Session in about 24 hours"
+    SESSION_1H = "session_1h", "Session in about 1 hour"
+    CARE_REQUEST_EXPIRING = "care_request_expiring", "Care request expiring"
+    CARE_PLAN_DAILY = "care_plan_daily", "Care-plan tasks today"
+    CHECK_IN_DAILY = "check_in_daily", "No check-in today"
+
+
+class SentReminder(models.Model):
+    """One row per reminder sent, written BEFORE it is sent: the unique key makes
+    a re-run, an overlapping run or a late run send it at most once. Ids and a
+    slot only (a session's start time or the recipient's local date); kept 30
+    days."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="sent_reminders",
+    )
+    kind = models.CharField(max_length=30, choices=ReminderKind.choices)
+    # The session or care relationship it was about; 0 for the daily reminders.
+    target_id = models.PositiveBigIntegerField(default=0)
+    # Session reminders: the start time (UTC, ISO 8601), so a moved session
+    # gets a fresh reminder. Daily reminders: the recipient's local date.
+    slot = models.CharField(max_length=32, blank=True, default="")
+    created_at = models.DateTimeField(default=timezone.now, db_index=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "kind", "target_id", "slot"],
+                name="notifications_one_reminder_per_slot",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.kind} → user {self.user_id}"

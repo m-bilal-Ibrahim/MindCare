@@ -337,3 +337,5 @@ as GPS location. Audio types: MP3, M4A, OGG. Documents: PDF.
 | `kind`, `max_duration`, `search` | `wellness/items/` (query) | — / Maximum duration / Search | Choice / Number 1–180 / Search text | no | |
 | favourites | `wellness/items/{id}/favourite/` (PUT) | — | — | — | more than 200 → `You can save up to 200 items.`; unpublished → 404 |
 | task `content` | care-plan tasks (POST, PATCH) | — | Number ≥ 1: a published wellness item, or null | no | `Choose a published item from the wellness library.`; null clears it |
+| `check_in_reminders`, `care_plan_reminders`, `session_reminder_emails` | `notifications/preferences/` (PATCH) | — | Choice (true/false) | no (any subset) | `Must be a valid boolean.`; any other key → `This field can't be set.` |
+| `--only` | `manage.py send_reminders` / `run_maintenance` (command option) | — | Comma-separated Choice (`sessions`, `care_requests`, `care_plan`, `check_in` / `notifications`, `sos_locations`, `reset_codes`, `sent_reminders`) or `all` | no | `Unknown job(s): {names}. Choose from: {jobs}.` |

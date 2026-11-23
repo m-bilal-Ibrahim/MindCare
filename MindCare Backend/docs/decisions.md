@@ -1720,3 +1720,75 @@ audience); separate tables per kind (same fields everywhere); Markdown bodies (a
 renderer in both frontends); video uploads (storage size); psychologist-authored
 content (a second review queue); a "practised today" log (a second tracking system
 beside the care plan); seeding visible content (unreviewed text in front of patients).
+
+
+## 2026-11-23 - Scheduler: GitHub Actions cron runs management commands; reminders in-app first
+**Decision (scheduler answers Q1-Q24, all option A except Q22: B; setup:
+`docs/deployment.md`, "Scheduler"; handoff: `docs/handoff/reminders.md`):**
+- **No Celery beat or worker (Q1, Q21).** Two workflows in `.github/workflows/` run
+  `manage.py run_maintenance` (daily, 03:17 Asia/Karachi) and `manage.py
+  send_reminders` (every 15 minutes, off the hour) **on GitHub's runner**, connecting
+  straight to Supabase. This uses no Render hours (the AI keep-alive already uses
+  most of the free 750) and works while Render sleeps. `config/celery.py` and the
+  package stay, unused; the Celery TODO in deployment.md remains for work queued
+  from a request.
+- **Least privilege (Q2, Q3).** A dedicated Postgres role, `mindcare_scheduler`,
+  through the Supabase **session pooler** (GitHub's runners have no IPv6, and the
+  direct connection is IPv6-only). Column-level grants on users and profiles (never
+  password hashes, dates of birth or phone numbers), read-only elsewhere, writes only
+  to notifications and sent-reminder records, plus deleting old reset codes and
+  blanking old SOS coordinates. `config/settings/scheduler.py` needs only the
+  database URL, its own `SECRET_KEY` and the email variables: **no
+  `FIELD_ENCRYPTION_KEY`** (the jobs read no encrypted column), no storage keys, an
+  in-memory cache (Redis gets a placeholder because base.py requires the variable).
+  The commands skip system checks for that reason.
+- **Email from a command is synchronous (Q4)**: the process exits after the run, so a
+  background thread would be killed. `console` is refused in these settings (public
+  logs).
+- **Jobs (Q5):** maintenance purges notifications (90 days), SOS coordinates (90
+  days), reset codes (1 day) and sent-reminder records (30 days); its queries are the
+  **Supabase heartbeat (Q20)**, and an unreachable database fails the run. Reminders:
+  - **sessions (Q6):** ~24 h before (2-24 h, only for sessions confirmed at least
+    24 h ahead; the others just got the confirmation) and 5-90 min before, to the
+    patient and the psychologist; a paused psychologist gets none;
+  - **care requests (Q7):** the psychologist, when a pending request expires within
+    5 hours (the 2026-10-06 forward-note);
+  - **care plan (Q8):** once a day from 18:00 local, if the current psychologist's
+    plan has a task due today that isn't done (daily: not done today; weekly N: not
+    today and fewer than N in 7 days; one-off: never done);
+  - **check-in (Q9):** once a day from 20:00 local, if there's no check-in today. No
+    low-mood follow-up and no thresholds (project-vision §27).
+- **Channel (Q10):** every reminder is an in-app notification from fixed templates
+  (no names, task titles or mood). Email only for the 24-hour session reminder and
+  the care-request reminder. The psychologist's never name the patient.
+- **Time (Q11, Q12):** cron in UTC; every reminder in the recipient's profile
+  timezone (Asia/Karachi fallback). Quiet hours 22:00-08:00 for the care-plan and
+  check-in reminders; session and care-request reminders always go out.
+- **Opt-out (Q13):** `ReminderPreference` (check-in, care plan, session-reminder
+  email; all on by default; no row = defaults), `GET/PATCH
+  /api/v1/notifications/preferences/`. In-app session and care-request reminders
+  can't be turned off. Not health data: not encrypted, not audited.
+- **Idempotency (Q14, Q15):** each reminder writes a `SentReminder` row (user, kind,
+  target, slot: the session's start time or the local date) **before** it is sent,
+  under a unique constraint, so re-runs and overlaps never send twice (at most once:
+  if creating the notification fails after commit, it isn't retried). Plus a
+  Postgres advisory lock per command and a workflow `concurrency` group. Jobs work on
+  windows, so a late GitHub run still sends what's useful and skips what isn't.
+- **Expiry stays evaluated on read (Q17):** no job writes `expired`.
+- **Operations (Q16, Q18, Q19, Q23, Q24):** `--dry-run` runs everything in a
+  transaction and rolls back (notifications and emails are on_commit, so nothing is
+  sent); `--only <jobs>`; manual runs default to dry run. Output is one JSON line of
+  counts: **the repository is public, so are its Actions logs.** A failed run fails
+  the workflow, and GitHub emails the last editor of the cron. GitHub disables
+  scheduled workflows after 60 days without repository activity; deployment.md
+  explains re-enabling. Free while the repository is public; hourly if it ever
+  becomes private.
+- **Tests (Q22 B):** no new tests and the suite isn't run (the user's instruction for
+  this PR), a deliberate exception to the service-layer test rule in CLAUDE.md, like
+  6.14 and 6.9. Verified by running both commands locally (dry and real).
+**Alternatives considered:** a token-protected endpoint on Render called by the
+workflow (keeps credentials on Render, but keeps the free instance awake and adds a
+public endpoint); the app's owner `DATABASE_URL` in GitHub (full access from a public
+repository's secrets); a Celery worker and beat on Render (paid); "sent" timestamp
+columns on each model (one mechanism per reminder kind instead of one); emailing
+every reminder (spam risk on an unauthenticated sender domain).
