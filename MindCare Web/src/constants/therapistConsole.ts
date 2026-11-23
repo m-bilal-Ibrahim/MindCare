@@ -55,7 +55,7 @@ export const buildWeeklyReportRoute = (patientId: string) => `/therapist/reports
 export const THERAPIST_NAV_PRACTICE: TherapistNavItem[] = [
   { id: 'today', label: 'Today', route: CONSOLE_ROUTES.TODAY, icon: 'home' },
   { id: 'patients', label: 'Patients', route: CONSOLE_ROUTES.PATIENTS, icon: 'users' },
-  { id: 'schedule', label: 'Schedule', route: CONSOLE_ROUTES.SCHEDULE, icon: 'calendar', badge: 3 },
+  { id: 'schedule', label: 'Schedule', route: CONSOLE_ROUTES.SCHEDULE, icon: 'calendar' },
   { id: 'requests', label: 'Requests', route: CONSOLE_ROUTES.REQUESTS, icon: 'inbox' },
   { id: 'messages', label: 'Messages', route: CONSOLE_ROUTES.MESSAGES, icon: 'message', badge: 2 },
 ];
