@@ -450,4 +450,25 @@ Paths below are under `/api/v1/recommendations/`; `PLAN` = `psychologist/patient
 | `apps/recommendations/services.py` | `update_goal()`, `update_task()` | Now also set `closed_at` (achieved / dropped) and `archived_at` (archived), cleared when made active again | `PATCH PLAN goals/{id}/`, `PATCH PLAN tasks/{id}/` | MindCare Web |
 | `apps/accounts/demo.py` | `_ensure_demo_report_history()` | About 90 days of fictional history for the demo pair (care backdated 95 days, check-ins, rated notes, past sessions, an older goal with an archived task, one closed SOS), each part added once | — | — |
 
+### 6.9 Wellness library (apps/wellness)
+
+`W` = `/api/v1/wellness/`. Admin-managed general content; not personal or health data, so nothing is encrypted or audited (except the care-plan link, audited by the care plan).
+
+| File | Function / Class | Purpose | API Endpoint | Frontend Consumer |
+|---|---|---|---|---|
+| `apps/wellness/models.py` | `WellnessItem` | Article, practice or routine in one of 7 categories: title, summary, body, steps, duration, difficulty, safety note, source, video link (YouTube / Vimeo), optional breathing pattern, cover image and audio keys, `is_published` (default hidden), `ever_linked` | — | — |
+| `apps/wellness/models.py` | `WellnessFavourite` | A patient's saved item (private, one per item, at most 200) | — | — |
+| `apps/wellness/selectors.py` | `published_items()`, `published_item()` | Published items filtered by category, kind, difficulty, maximum duration and title / summary search | `GET W items/`, `GET W items/{id}/` | MindCare App, MindCare Web |
+| `apps/wellness/selectors.py` | `favourite_item_ids()`, `patient_favourites()` | Which listed items the patient saved; their saved items that are still published | `GET W items/`, `GET W favourites/` | MindCare App |
+| `apps/wellness/selectors.py` | `admin_items()` | Every item, published or hidden, for the admin console | `GET W admin/items/` | MindCare Web |
+| `apps/wellness/selectors.py` | `content_summary()` | What a care-plan task shows about its linked item; a hidden item shows "This resource is no longer available." | (care plan responses) | MindCare App, MindCare Web |
+| `apps/wellness/services.py` | `create_item()`, `update_item()`, `delete_item()` | Admin CRUD with full model validation (kind rules); delete refused once an item was ever linked to a care-plan task; structured log lines with ids only | `POST W admin/items/`, `PATCH/DELETE W admin/items/{id}/` | MindCare Web |
+| `apps/wellness/services.py` | `set_media()`, `remove_media()` | Replace or remove the cover image (re-encoded, 1600 px) or audio in private storage; old file deleted after commit | `PUT/DELETE W admin/items/{id}/image/`, `.../audio/` | MindCare Web |
+| `apps/wellness/services.py` | `add_favourite()`, `remove_favourite()` | Save a published item (idempotent, 200 limit with a row lock) or unsave it | `PUT/DELETE W items/{id}/favourite/` | MindCare App |
+| `apps/wellness/services.py` | `item_for_link()`, `mark_linked()` | A published item a psychologist may link (else 400 on `content`), locked; remember it was linked | (care-plan task create / edit) | MindCare Web |
+| `apps/wellness/admin.py` | `WellnessItemAdmin` | Django admin with image / audio upload, publish / hide actions; no delete for linked items, no bulk delete; favourites not registered | `/admin/` | Django admin |
+| `apps/wellness/migrations/0002_seed_placeholder_items.py` | `seed()` | 14 hidden PLACEHOLDER items (2 per category) for clinical review before publishing | — | — |
+| `apps/recommendations/services.py` | `create_task()`, `update_task()`, `_resolve_content()` | Tasks take an optional `content` (published library item id, null clears); a change adds a plan version (snapshot keeps the id), audit row and notification | `POST/PATCH PLAN goals/{id}/tasks/`, `PATCH PLAN tasks/{id}/` | MindCare Web |
+| `apps/recommendations/selectors.py` | `plan_detail()` | Each task now carries `content` (the linked item's summary or null) | `GET PLAN`, `GET /api/v1/recommendations/care-plans/{id}/` | MindCare Web, MindCare App |
+
 <!-- Add new `### apps/<app_name>` sections below as modules are implemented. -->

@@ -317,3 +317,23 @@ as GPS location. Audio types: MP3, M4A, OGG. Documents: PDF.
 | `start` | report (query) | — | Date (patient's local day) | custom yes; else no | week / month: any day in it, default the current one. Custom without both → `Choose a start and an end date for a custom period.`; after today → `The period can't start in the future.`; ending before care started → `Choose a period after care with this patient started on {YYYY-MM-DD}.` |
 | `end` | report (query) | — | Date (patient's local day) | custom only | with week / month → `An end date is only for custom periods.`; `The end date can't be before the start date.`; longer than 183 days → `A custom period can be at most 183 days.` |
 | unknown query keys | report (query) | — | — | — | `This field can't be set.` |
+| `kind` | `wellness/admin/items/` | — | Choice (`article`, `practice`, `routine`) | yes (on POST) | |
+| `category` | `wellness/admin/items/`, `wellness/items/` (query) | — | Choice (`nutrition`, `exercise`, `yoga`, `stress_reduction`, `mindfulness`, `relaxation`, `sleep`) | admin POST yes; query no | |
+| `title` | `wellness/admin/items/` | Title | Free text 3–120, single line | yes (on POST) | |
+| `summary` | `wellness/admin/items/` | Summary | Free text 10–300 | yes (on POST) | |
+| `body` | `wellness/admin/items/` | Body | Free text 30–20000 | articles yes | articles without it → `Write the article text.` |
+| `steps[]` | `wellness/admin/items/` | Step | Free text 3–500 each, single line; at most 20 | practices and routines: at least 1 | `Add at most 20 steps.`; missing → `Add at least one step.` |
+| `duration_minutes` | `wellness/admin/items/` | Duration | Number 1–180 | yes (on POST) | |
+| `difficulty` | `wellness/admin/items/`, `wellness/items/` (query) | — | Choice (`gentle`, `moderate`, `demanding`) | no | default `gentle` |
+| `safety_note` | `wellness/admin/items/` | Safety note | Free text 10–500 | no | |
+| `source` | `wellness/admin/items/` | Source | Free text 3–200, single line | no | |
+| `video_url` | `wellness/admin/items/` | Video link | HTTPS URL, domains `youtube.com`, `youtu.be`, `vimeo.com` | no | `""` clears it |
+| breathing pattern | `wellness/admin/items/` | Breath in / Hold / Breath out / Hold after breathing out | Number 1–20 / 0–20 / 1–20 / 0–20 | no | all four or none → `Set all four breathing times, or none.`; not a practice → `A breathing pattern is only for practices.` |
+| `sort_order` | `wellness/admin/items/` | Sort order | Number 0–32767 | no | |
+| `is_published` | `wellness/admin/items/` (body and query) | — | true/false | no | new items default `false` |
+| `image` | `wellness/admin/items/{id}/image/` (multipart) | Cover image | File: JPG, PNG, WEBP; 5 MB; shrunk to 1600 px | yes (on PUT) | missing → `Choose an image to upload.` |
+| `audio` | `wellness/admin/items/{id}/audio/` (multipart) | Audio | File: MP3, M4A, OGG; 15 MB | yes (on PUT) | missing → `Choose an audio file to upload.` |
+| delete | `wellness/admin/items/{id}/` (DELETE) | — | — | — | ever linked to a care plan → `This item has been used in a care plan. Hide it instead.` |
+| `kind`, `max_duration`, `search` | `wellness/items/` (query) | — / Maximum duration / Search | Choice / Number 1–180 / Search text | no | |
+| favourites | `wellness/items/{id}/favourite/` (PUT) | — | — | — | more than 200 → `You can save up to 200 items.`; unpublished → 404 |
+| task `content` | care-plan tasks (POST, PATCH) | — | Number ≥ 1: a published wellness item, or null | no | `Choose a published item from the wellness library.`; null clears it |

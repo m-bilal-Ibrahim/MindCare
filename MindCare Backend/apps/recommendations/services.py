@@ -76,8 +76,21 @@ TASK_FIELDS = (
     "start_date",
     "end_date",
     "status",
+    "content",
 )
 BLANKABLE = ("description", "instructions")
+
+
+def _resolve_content(fields):
+    """Replace a `content` id with the published library item (6.9), or a 400.
+    Returns the item (or None) so the caller can mark it linked."""
+    if fields.get("content") is None:
+        return None
+    from apps.wellness.services import item_for_link
+
+    item = item_for_link(fields["content"])
+    fields["content"] = item
+    return item
 
 
 class NotYourPatient(Exception):
@@ -157,6 +170,7 @@ def _snapshot(plan):
                         "start_date": task.start_date and task.start_date.isoformat(),
                         "end_date": task.end_date and task.end_date.isoformat(),
                         "status": task.status,
+                        "content": task.content_id,
                     }
                     for task in goal.tasks.all()
                 ],
@@ -379,6 +393,8 @@ def create_task(*, psychologist_user, relationship_id, goal_id, ip=None, **field
         if goal.status != GoalStatus.ACTIVE:
             raise _invalid("non_field_errors", GOAL_NOT_ACTIVE)
         _check_task_limits(plan, goal, "non_field_errors")
+        fields = dict(fields)
+        linked = _resolve_content(fields)
         task = CarePlanTask(
             goal=goal,
             **{
@@ -389,6 +405,10 @@ def create_task(*, psychologist_user, relationship_id, goal_id, ip=None, **field
         )
         _check_task(task, today, changed=fields.keys())
         task.save()
+        if linked is not None:
+            from apps.wellness.services import mark_linked
+
+            mark_linked(linked)
         _changed(plan, psychologist_user, AuditAction.CREATE, task.pk, ip)
     return task
 
@@ -409,6 +429,14 @@ def update_task(*, psychologist_user, relationship_id, task_id, ip=None, **chang
         fields = [f for f in TASK_FIELDS if f in changes]
         if not fields:
             return task
+        linked = None
+        if "content" in changes and changes["content"] != task.content_id:
+            changes = dict(changes)
+            linked = _resolve_content(changes)
+        elif "content" in changes:
+            fields.remove("content")  # unchanged: keep the item even if hidden
+            if not fields:
+                return task
         if (
             changes.get("status") == TaskStatus.ACTIVE
             and task.status != TaskStatus.ACTIVE
@@ -434,6 +462,10 @@ def update_task(*, psychologist_user, relationship_id, task_id, ip=None, **chang
             setattr(task, field, value)
         _check_task(task, today, changed=changed)
         task.save(update_fields=[*fields, *extra, "updated_at"])
+        if linked is not None:
+            from apps.wellness.services import mark_linked
+
+            mark_linked(linked)
         _changed(plan, psychologist_user, AuditAction.UPDATE, task.pk, ip)
     return task
 

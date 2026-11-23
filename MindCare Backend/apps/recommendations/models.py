@@ -157,6 +157,15 @@ class CarePlanTask(ValidatedModelMixin, models.Model):
     # Reports treat the task as scheduled until then (6.14). Tasks archived
     # before 2026-11-23 have none and are left out of report adherence.
     archived_at = models.DateTimeField(null=True, blank=True)
+    # Optional wellness library item the psychologist linked (6.9). PROTECT:
+    # a linked item can only be hidden, never deleted (apps/wellness).
+    content = models.ForeignKey(
+        "wellness.WellnessItem",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="care_plan_tasks",
+    )
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 

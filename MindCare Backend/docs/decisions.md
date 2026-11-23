@@ -1659,3 +1659,64 @@ the privacy promise).
 server-side PDF (Q21 B: a new package); rebuilding past statuses from plan versions
 (Q12 B: complex); rolling 7/30/90-day windows only (Q4 B: no calendar weeks or
 months); reaching back before care started (Q6 B: widens mood access).
+
+
+## 2026-11-23 - 6.9 wellness library: admin-managed content, linked to care-plan tasks; seed content is a placeholder
+**Decision (6.9 answers Q1-Q27, all option A except Q25: B; handoff:
+`docs/handoff/wellness.md`):**
+- **New `apps/wellness`** at `/api/v1/wellness/` (Q1), one `WellnessItem` table with
+  `kind` = `article` / `practice` / `routine` (Q2, Q3) and one category from a fixed
+  list: `nutrition`, `exercise`, `yoga`, `stress_reduction`, `mindfulness`,
+  `relaxation`, `sleep` (Q4). No free tags: `difficulty` (`gentle` / `moderate` /
+  `demanding`) and `duration_minutes` (1-180) are the filters (Q5).
+- **Fields (Q6, Q7):** title 3-120, summary 10-300, body 30-20,000 plain text
+  (required for articles), up to 20 single-line steps of 3-500 (at least one for
+  practices and routines), safety note 10-500, source 3-200, sort order. Plain text
+  only, no Markdown.
+- **Breathing pattern (small decision, from Q26):** the App's mock breathing player
+  needs seconds per phase, so a practice may carry `breath_in_seconds` (1-20),
+  `breath_hold_seconds` (0-20), `breath_out_seconds` (1-20) and
+  `breath_hold_after_out_seconds` (0-20): all four or none, practices only.
+- **Media (Q8, Q9, Q22):** optional cover image (JPG / PNG / WEBP, 5 MB, re-encoded,
+  EXIF removed, shrunk to 1600 px) and audio (MP3 / M4A / OGG, 15 MB) in private
+  storage with 5-minute signed URLs; video only as an https **link** on
+  `youtube.com`, `youtu.be` or `vimeo.com`, opened outside the app (no video uploads:
+  free-tier storage). No media is seeded; admins upload what they hold the rights to.
+- **Management (Q10-Q12):** admins only (any admin; the "MindCare admins" group gets
+  the Django admin permissions), through an admin API and Django admin. **New items
+  start hidden** (`is_published=False`). An item a care-plan task has **ever** linked
+  to (`ever_linked`) can't be deleted, only hidden; Django admin has no bulk delete.
+- **Reading (Q13-Q15):** patients and approved, active psychologists read published
+  items (list with filters and title / summary search, detail); admins use the admin
+  API. A fixed disclaimer comes with the list and every item.
+- **Favourites (Q16):** patients save up to 200 items; private (never shown to the
+  psychologist or admins, not in Django admin), ids only, not encrypted, not audited.
+  **No progress tracking in the library (Q17):** progress comes from care-plan tasks.
+- **Care-plan link (Q18, Q19):** a task takes an optional `content` (a published item
+  id; null clears it), set only by the current psychologist through the existing task
+  create / edit endpoints, so it adds a plan version (the id is in the encrypted
+  snapshot), the `care_plan` audit row and the `care_plan_updated` notification. When
+  the item is later hidden, the task shows "This resource is no longer available."
+  and the item isn't returned. Linking admin-written content is the psychologist's
+  choice, not an AI recommendation, so the Phase 6 approval rule doesn't apply here.
+- **Diet (Q20):** general nutrition content only; no individual meal plans or calorie
+  targets (personal, so they belong in the care plan or 6.6).
+- **Seed content (Q21): 14 PLACEHOLDER items (2 per category), seeded HIDDEN by
+  migration `wellness.0002`.** Written generically by the MindCare team, with no
+  numbers, no claims that anything treats or cures a condition, and a safety note on
+  every physical item. **A clinical advisor must review every item before an admin
+  publishes it for real users.** `seed_demo` publishes nothing.
+- **Audit (Q23):** none for library reads, favourites or admin edits (the same as
+  quotes; admin edits write structured log lines with ids only).
+- **Limits (Q24):** `wellness` 120/min, `wellness_favourites` 60/hour,
+  `wellness_uploads` 20/hour (plus `admin`).
+- **Tests (Q25 B):** no new tests in this module and the suite isn't run (the user's
+  instruction for this PR), a deliberate exception to the service-layer test rule in
+  CLAUDE.md, like 6.14.
+- **Out of scope:** personalised and AI suggestions (6.6) and sensor-based ones (6.5);
+  6.9 bullet 2 is deferred to them (Q27).
+**Alternatives considered:** content inside `apps/motivation` (different purpose and
+audience); separate tables per kind (same fields everywhere); Markdown bodies (a
+renderer in both frontends); video uploads (storage size); psychologist-authored
+content (a second review queue); a "practised today" log (a second tracking system
+beside the care plan); seeding visible content (unreviewed text in front of patients).
